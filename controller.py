@@ -345,7 +345,7 @@ def main(args):
     doGADataGenerate = False  # doGADataGenerate is True if the user selects to generate the GA data.
     viewToGenerateFrom = ''  # The view from which the GA data should be generated from. If you want to get the data about all proteins then you would do all_all_targ
     viewEndings = ['nr_n', 'nr_p']  # These are the endings on the view (i.e. the characters that come after the final '_'. Supplied in the same order as the classification.
-    GAClassifications = ['Non_Target', 'Target']  # The names for the two classifications.
+    GAClassifications = ['Unlabelled', 'Target']  # The names for the two classifications.
     
     #===========================================================================
     # Parse the User Input.
@@ -657,6 +657,7 @@ def main(args):
             shutil.rmtree(outputDirectory)
         os.mkdir(outputDirectory)
         geneticAlgorithmProcessedData = outputDirectory + '/' + viewToGenerateFrom.upper() + '.txt'
+        categoricalMappingDataLocation = outputDirectory + '/CategoricalMapping.txt'
         columnDataLocation = outputDirectory + '/Columns.txt'
         ECDataLocation = outputDirectory + '/ECNumbers.txt'
         subcellLocation = outputDirectory + '/SubcellularLocation.txt'
@@ -887,9 +888,12 @@ def main(args):
                 else:
                     resultsNonTarget.append(tuple(currentRecord))
 
-        utilities.gadatageneration.fortran(resultsTarget, resultsNonTarget, columns, geneticAlgorithmProcessedData, columnDataLocation, ECDataLocation,
-                                           subcellLocation, healthStateLocation, bodySiteLocation, developmentalStageLocation)
-        utilities.gadatageneration.fortran_split(geneticAlgorithmProcessedData, classes=[1, 2], splits=5, outputLocation=outputDirectory)
+#        utilities.gadatageneration.fortran(resultsTarget, resultsNonTarget, columns, geneticAlgorithmProcessedData, columnDataLocation, ECDataLocation,
+#                                           subcellLocation, healthStateLocation, bodySiteLocation, developmentalStageLocation)
+#        utilities.gadatageneration.fortran_split(geneticAlgorithmProcessedData, classes=[1, 2], splits=5, outputLocation=outputDirectory)
+        utilities.gadatageneration.pulearning(resultsTarget, resultsNonTarget, columns, geneticAlgorithmProcessedData, categoricalMappingDataLocation,
+                                           columnDataLocation, ECDataLocation, subcellLocation, healthStateLocation, bodySiteLocation,
+                                           developmentalStageLocation)
 
         conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)
         # Get the GO term data for the target proteins.

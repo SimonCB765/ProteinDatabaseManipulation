@@ -105,12 +105,6 @@ def tableINSERT(cursor, insertInto, values, tupleList):
             raise TypeError(error)
         position += 1
 
-##    # Split the tuplList into smaller pieces so that the maximum size for an INSERT is not exceeded
-##    length = len(tupleList)
-##    itemsInSplit = 100
-##    tupleList = [ tupleList[i * length / itemsInSplit : (i+1) * length / itemsInSplit] for i in range(itemsInSplit)]
-##    for i in tupleList:
-##        cursor.executemany('INSERT INTO ' + insertInto + ' VALUES ' + values, i)
     cursor.executemany('INSERT INTO ' + insertInto + ' VALUES ' + values, tupleList)
 
     return cursor

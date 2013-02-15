@@ -7,8 +7,18 @@ Created on 10 Oct 2011
 import utilities.list2file
 
 def main(unigeneProfiles, parsedUnigene, unigeneParsedTotals):
+    """
+    Takes the file that summaraiss the expression profile of ESTs in each cluster, and returns two processed files.
+    parsedUnigene - A file of tuples, one on each line.
+        The first element of the tuple is the UniGene numerical Id of the cluster.
+        The remaining elements of the tuple are records of the number of ESTs expressed for each expression option.
+    unigeneParsedTotals - A file of 2-tuples, one on each line.
+        The first element of the tuple is the body site, developmental stage or health site of the expression.
+        The second element of the tuple is the number of ESTs for the given body site, developmental stage or health state over all cluster.
+    """
+
     # If new expressions are added to UniGene, or some that are not in the human list get added, then you can
-    # simply add a column to the UniGene database table and add the value to the expression list in the
+    # simply add a column to the UniGene database table and add the expression to the expression list in the
     # appropriate location.
     expression = ['embryoid body', 'blastocyst', 'fetus', 'neonate', 'infant', 'juvenile', 'adult', 'adrenal tumor',
                   'bladder carcinoma','breast (mammary gland) tumor', 'cervical tumor', 'chondrosarcoma',
@@ -23,7 +33,7 @@ def main(unigeneProfiles, parsedUnigene, unigeneParsedTotals):
                   'nerve', 'ovary', 'pancreas', 'parathyroid', 'pharynx', 'pituitary gland', 'placenta','prostate',
                   'salivary gland', 'skin', 'spleen', 'stomach', 'testis', 'thymus', 'thyroid', 'tonsil', 'trachea',
                   'umbilical cord', 'uterus','vascular']
-    
+
     exprTotalIDs = ['DS_Embryoid_Body', 'DS_Blastocyst', 'DS_Fetus', 'DS_Neonate', 'DS_Infant', 'DS_Juvenile',
                   'DS_Adult', 'HS_Adrenal_Tumor', 'HS_Bladder_Carcinoma', 'HS_Breast_Mammary_Gland_Tumor',
                   'HS_Cervical_Tumor', 'HS_Chondrosarcoma', 'HS_Colorectal_Tumor', 'HS_Esophageal_Tumor',
@@ -45,7 +55,8 @@ def main(unigeneProfiles, parsedUnigene, unigeneParsedTotals):
     defaultExpression = [0] * len(expression)
     ID = None
     expressionProfiles = {}  # Indexed by the UniGene cluster ID
-    
+
+    # For each cluster ID record the number of ESTs for each expression option.
     readIn = open(unigeneProfiles, 'r')
     for line in readIn:
         if line[0] == '>':
@@ -62,10 +73,10 @@ def main(unigeneProfiles, parsedUnigene, unigeneParsedTotals):
         expressionProfiles[ID][insertLoc] = chunks[0]
         exprTotalValues[exprTotalIDs[insertLoc]] = chunks[1]
     readIn.close()
-    
+
     # Create the lists of tuples for insertion.
     tupleList = [str(tuple([i] + expressionProfiles[i])) for i in expressionProfiles.keys()]
     utilities.list2file.main(tupleList, parsedUnigene)
-    
+
     tupleList = [str(tuple([i, exprTotalValues[i]])) for i in exprTotalValues.keys()]
     utilities.list2file.main(tupleList, unigeneParsedTotals)

@@ -8,17 +8,20 @@ import re
 
 import utilities.list2file
 
-def main(TTDTargets, TTDUPAccessions, TTDDrugXref, TTDTarget2Drug, TTDCIDs):
-    """Extract only 'successful' (i.e. approved) targets from the TTD database.
-
-    The database should be downloaded in the raw text format.
-
-    TTDTargets @type - string
-    TTDTargets @use  - the file location of the TTD database
-    TTDUPAccessions @type - string
-    TTDUPAccessions @use  - the file location for the UniProt Accessions of the approved TTD targets to be output
+def main(TTDTargets, TTDUPAccessions, TTDDrugXref, TTDTarget2Drug):
     """
-    
+    Takes the TTD target database data and the TTD drug data, and returns ont file of the UniProt accessions of the approved target proteins and one containing a mapping of approved targets to approved drugs.
+    TDUPAccessions - A file of UniProt accessions, one on each line.
+        Each UP accession in the file is the target of an approved drug (as recorded by the TTD).
+    TTDTarget2Drug - A tab separated (tsv) file, with three elements on each line.
+        The first element is the TTD ID for the protein.
+        The second element is a comma separated list of UniProt accessions that the first element is linked to.
+        The third element is a semi-colon separated list of approved drugs that target the protein. For each drug a comma separated list of three elements is recorded.
+            The first element is the name of the drug (as recorded by the TTD).
+            The second element is the CAS number of the drug.
+            The third element is the PubChem CID for the drug.
+    """
+
     foundProtIDs = []
     target2Drug = {}
     target2Uniprot = {}
@@ -27,7 +30,6 @@ def main(TTDTargets, TTDUPAccessions, TTDDrugXref, TTDTarget2Drug, TTDCIDs):
     for line in inputFile:
         if line[:4] == 'TTDS':
             # Found an approved target.
-            
             # It's possible for one TTD target to be associated with multiple UniProt IDs.
             # For this reason all UniProt IDs associated with a TTD target are recorded.
             chunks = (line.strip()).split('\t')
@@ -51,7 +53,7 @@ def main(TTDTargets, TTDUPAccessions, TTDDrugXref, TTDTarget2Drug, TTDCIDs):
     foundProtIDs.sort()
 
     utilities.list2file.main(foundProtIDs, TTDUPAccessions)
-    
+
     # Extract drug info.
     pubchemCIDs = set([])
     drugInfo = {}
@@ -73,7 +75,7 @@ def main(TTDTargets, TTDUPAccessions, TTDDrugXref, TTDTarget2Drug, TTDCIDs):
             else:
                 drugInfo[chunks[0]]['CID'] = drugCID[1]
     inputFile.close()
-    
+
     target2DrugOutput = []
     for i in target2Drug.keys():
         target = i
@@ -95,7 +97,7 @@ def main(TTDTargets, TTDUPAccessions, TTDDrugXref, TTDTarget2Drug, TTDCIDs):
             drugs.append(drugName + ',' + CAS + ',' + CID)
         drugs = ';'.join(drugs)
         target2DrugOutput.append('\t'.join([target, uniprot, drugs]))
-    
+
     utilities.list2file.main(target2DrugOutput, TTDTarget2Drug)
-    
+
     print '\tNumber of approved UniProt targets in the TTD: ', len(target2DrugOutput)

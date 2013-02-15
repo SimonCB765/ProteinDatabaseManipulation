@@ -10,6 +10,16 @@ import utilities.MySQLaccess as mysql
 import utilities.list2file
 
 def main(goSchema, parsedGO):
+    """
+    Returns a file containing the parsed GO data.
+    parsedGO - A file of 6-tuples, one on each line.
+        The first element is the numerical identifier of the GO term.
+        The second element is the name of the GO term.
+        The third element is the category (biological_process, cellular component or molecular_function) that the term belongs to.
+        The fourth element is all the paths from the term to the category it belongs to. The paths are separated from one another using semi-colons, and the elements of each path are separated from one another using '#'.
+        The fifth element is all the level one terms along the paths. These are all the terms that are in a path in element four and are diect descendants of the category in element three.
+        The sixth element is all the level two terms along the paths. These are all the terms that are in a path in element four and are diect descendants of the terms in element five.
+    """
 
     # Connect to the GO schema.
     connGO, cursorGO = mysql.openConnection('root', goSchema)

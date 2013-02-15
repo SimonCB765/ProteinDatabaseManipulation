@@ -68,108 +68,143 @@ def print_help():
     print 'See the README for further information.'
 
 def main(args):
-    
+
     #===========================================================================
     # Data File Locations.
     #===========================================================================
     # Folders containing the data.
-    folderChEMBL = DATA + '/ChEMBL'
-    folderDB = DATA + '/DrugBank'
-    folderGO = DATA + '/GeneOntology'
-    folderTTD = DATA + '/TherapeuticTargetDatabase'
-    folderUP = DATA + '/UniProt'
-    folderUG = DATA + '/UniGene'
-    folderEG = DATA + '/EntrezGene'
-    folderCOSMIC = DATA + '/COSMIC'
-    folderEnsembl = DATA + '/Ensembl'
-    folderBiomart = folderEnsembl + '/Biomart'
-    folderEnsemblPerlAPI = folderEnsembl + '/PerlAPI'
-    folderSEG = DATA + '/SEG'
-    folderEpestfind = DATA + '/Epestfind'
-    folderPepstats = DATA + '/Pepstats'
-    folderBLAST = DATA + '/BLAST'
-    folderCulling = DATA + '/Culling'
     folderBindingDB = DATA + '/BindingDB'
-    folderPathwayCommons = DATA + '/PathwayCommons'
-    folderGAData = DATA + '/GeneticAlgorithmData'
-    folderPredictions = DATA + '/Predictions'
-    folderPharmGKB = DATA + '/PharmGKB'
-    folderCGI = DATA + '/CancerGeneIndex'
-    folderCGC = DATA + '/CancerGeneCensus'
-    folderMeSH = DATA + '/MeSH'
+    folderBiomart = folderEnsembl + '/Biomart'
+    folderBLAST = DATA + '/BLAST'
     folderCancerTargets = DATA + '/CancerTargets'
-    
-    # PharmGKB files used.
-    pharmGKBDiseases = folderPharmGKB + '/Diseases.tsv'
-    pharmGKBDrugs = folderPharmGKB + '/Drugs.tsv'
-    pharmGKBGenes = folderPharmGKB + '/Genes.tsv'
-    pharmGKBRelationships = folderPharmGKB + '/Relationships.tsv'
-    pharmGKBInitialisation = folderPharmGKB + '/Initialisation.sql'
-    pharmGKBDrugTargets = folderPharmGKB + '/UPAccDrugTargets.txt'
-    
-    # PathwayCommons files used.
-    pathwayElements = folderPathwayCommons + '/PathwayElements.txt'  # The file containing all the pathways in PathwayCommons, and their elements.
-    
+    folderCGC = DATA + '/CancerGeneCensus'
+    folderCGI = DATA + '/CancerGeneIndex'
+    folderChEMBL = DATA + '/ChEMBL'
+    folderCOSMIC = DATA + '/COSMIC'
+    folderCulling = DATA + '/Culling'
+    folderDB = DATA + '/DrugBank'
+    folderEnsembl = DATA + '/Ensembl'
+    folderEnsemblPerlAPI = folderEnsembl + '/PerlAPI'
+    folderEpestfind = DATA + '/Epestfind'
+    folderGAData = DATA + '/GeneticAlgorithmData'
+    folderGO = DATA + '/GeneOntology'
+    folderPathwayCommons = DATA + '/PathwayCommons'
+    folderPepstats = DATA + '/Pepstats'
+    folderPredictions = DATA + '/Predictions'
+    folderSEG = DATA + '/SEG'
+    folderTTD = DATA + '/TherapeuticTargetDatabase'
+    folderUG = DATA + '/UniGene'
+    folderUP = DATA + '/UniProt'
+
     # BindingDB files used.
     bindingSDF = folderBindingDB + '/BindingDB2D.sdf'
     binding2PubChem = folderBindingDB + '/BDB_cid.txt'
-#    bindingPubChemCIDs = folderBindingDB + '/BindingPubChemCIDs.txt'
-#    bindingPubChemSDF = folderBindingDB + '/PubChem.sdf.gz'
     bindingParsed = folderBindingDB + '/BindingDBParsed.txt'
-#    bindingInChis = folderBindingDB + '/PubChemInChis.txt'
-    
-    # BLAST files used.
-    psiblastExe = folderBLAST + '/psiblast.exe'
-    makeBLASTDatabaseExe = folderBLAST + '/makeblastdb.exe'
-    
-    # SEG files used.
-    SEGExe = folderSEG + '/segmasker.exe'
-    
-    # epestfind files used.
-    epestfindExe = folderEpestfind + '/epestfind.exe'
-    
-    # pepstats files used.
-    pepstatsExe = folderPepstats + '/pepstats.exe'
-    
+
     # Biomart files used.
     biomartScript = folderBiomart + '/biomartquery.pl'
     biomartQuery = folderBiomart + '/BiomartQuery.xml'
-    
-    # TTD files used.
-    TTDTargets = folderTTD + '/TTDTargetDataset.txt'
-    TTDUPAccessions = folderTTD + '/UPAccessions.txt'
-    TTDDrugXref = folderTTD + '/TTDDrugXref.txt'
-    TTDTarget2Drug = folderTTD + '/TTDTarget2Drug.txt'
-    TTDSIDs = folderTTD + '/TTDSIDs.gz'
-    
+
+    # BLAST files used.
+    psiblastExe = folderBLAST + '/psiblast.exe'
+    makeBLASTDatabaseExe = folderBLAST + '/makeblastdb.exe'
+
+    # File of all known FDA approved anti-cancer targets.
+    cancerTargets = folderCancerTargets + '/CancerDrugs.txt'
+
+    # Cancer Gene Census files used.
+    CGCData = folderCGC + '/cancer_gene_census.tsv'  # A file containing the Cancer Gene Census data.
+    CGCParsed = folderCGC + '/CGCParsedData.txt'  # A tab separated (tsv) file, with three elements on each line.
+                                                  # The first element is the NCBI gene ID of the gene.
+                                                  # The second element is Y if the gene contains a cancer causing germline mutation, else it is N.
+                                                  # The third element is Y if the gene contains a cancer causing somatic mutation, else it is N.
+
+    # Cancer Gene Index files used.
+    CGIData = folderCGI + '/NCI_CancerIndex_allphases_disease.xml'
+    CGIUPAccessions = folderCGI + '/CGIUPAccessions.txt'
+    CGIHGNCIDs = folderCGI + '/CGIHGNCIDs.txt'
+
+    # ChEMBL files used.
+    completeChEMBLDatabase = folderChEMBL + '/ChEMBL.sql'  # The ChEMBL database.
+    ChEMBLUPAccessions = folderChEMBL + '/UPAccessions.txt'
+    ChEMBLCID = folderChEMBL + '/PubChemCIDs.txt'
+
+    # COSMIC files used.
+    cosmicData = folderCOSMIC + '/CosmicCompleteExport_v59_220512.tsv'
+    cosmicParsedGene = folderCOSMIC + '/COSMICParsedGene.txt'
+    cosmicParsedGene2Mutation = folderCOSMIC + '/COSMICParsedGene2Mutation.txt'
+    cosmicParsedMutation = folderCOSMIC + '/COSMICParsedMutation.txt'
+
     # DrugBank files used.
     DBTargetFasta = folderDB + '/DrugBankApprovedTargets.fasta'
     DBTargetExternalLinks = folderDB + '/ExternalTargetLinks.csv'
-#    DBDrugExternalLinks = folderDB + '/ExternalTargetLinks.csv'
     DBXML = folderDB + '/DrugBank.xml'
     DBDrugIDs = folderDB + '/DBDrugs.txt'
     DBTargetIDs = folderDB + '/DBTargets.txt'
-    
+
+    # Ensembl files used.
+    ensemblGeneIDs = folderEnsembl + '/EnsemblGeneIDs.txt'
+    ensemblExternalIDsOne = folderEnsembl + '/ExternalOne.txt'
+    ensemblExternalIDsTwo = folderEnsembl + '/ExternalTwo.txt'  # Two external ID files are needed due to Ensembl Biomart limitations on the number of types of external ID that can be downloaded in one request.
+    ensemblTranscripts = folderEnsembl + '/Transcript.txt'
+    ensemblParsedTranscripts = folderEnsembl + '/ParsedTranscript.txt'
+    ensemblGermSNPResults = folderEnsembl + '/GermSNPs.txt'
+    ensemblParsedGermVariants = folderEnsembl + '/ParsedGermVariants.txt'
+
+    # Ensembl Perl API files used.
+    ensemblVariationScript = folderEnsemblPerlAPI + '/EnsemblVariant.pl'
+    ensemblHomologScript = folderEnsemblPerlAPI + '/EnsemblHomologs.pl'
+    ensemblTaxonomyMap = folderEnsembl + '/EnsemblTaxonomyMap.txt'
+    ensemblHomologData = folderEnsembl + '/EnsemblHomologs.txt'
+    ensemblGenomesHomologScript = folderEnsemblPerlAPI + '/EnsemblGenomesHomologs.pl'
+    ensemblGenomesTaxonomyMap = folderEnsembl + '/EnsemblGenomesTaxonomyMap.txt'
+    ensemblGenomesHomologData = folderEnsembl + '/EnsemblGenomesHomologs.txt'
+    ensemblParsedHomology = folderEnsembl + '/EnsemblParsedHomologs.txt'
+
+    # epestfind files used.
+    epestfindExe = folderEpestfind + '/epestfind.exe'
+
     # Gene Ontology files used.
     completeGODatabase = folderGO + '/go_daily-termdb-data'  # The GO database.
-    parsedGOOutput = folderGO + '/GOParsed.txt'
-    
-    # ChEMBL files used.
-    completeChEMBLDatabase = folderChEMBL + '/ChEMBL.sql'  # The ChEMBL database.
-    ChEMBLUPAccessions = folderChEMBL + '/UPAccessions.txt'  # The file containing the UniProt accessions for the target proteins.
-##    ChEMBLDrugs = folderChEMBL + '/Drugs.txt'
-##    ChEMBLActivities = folderChEMBL + '/Activities.txt'
-    ChEMBLCID = folderChEMBL + '/PubChemCIDs.txt'
-    
-    # UniGene files used.
-    unigeneProfiles = folderUG + '/Hs.profiles'
-    unigeneParsedOutput = folderUG + '/UniGeneParsed.txt'
-    unigeneParsedTotals = folderUG + '/UniGeneTotals.txt'
+    parsedGOOutput = folderGO + '/GOParsed.txt'  # A file of 6-tuples, one on each line.
+                                                 # The first element is the numerical identifier of the GO term.
+                                                 # The second element is the name of the GO term.
+                                                 # The third element is the category (biological_process, cellular component or molecular_function) that the term belongs to.
+                                                 # The fourth element is all the paths from the term to the category it belongs to. The paths are separated from one another using semi-colons, and the elements of each path are separated from one another using '#'.
+                                                 # The fifth element is all the level one terms along the paths. These are all the terms that are in a path in element four and are diect descendants of the category in element three.
+                                                 # The sixth element is all the level two terms along the paths. These are all the terms that are in a path in element four and are diect descendants of the terms in element five.
 
-    # Entrez Gene files used.
-    entrezHumanGeneIDs = folderEG + '/Homo_sapiens.gene_info'
-    entrezParsedOutput = folderEG + '/EntrezGeneParsed.txt'
-    
+    # PathwayCommons files used.
+    pathwayElements = folderPathwayCommons + '/PathwayElements.txt'  # The file containing all the pathways in PathwayCommons, and their elements.
+
+    # pepstats files used.
+    pepstatsExe = folderPepstats + '/pepstats.exe'
+
+    # SEG files used.
+    SEGExe = folderSEG + '/segmasker.exe'
+
+    # TTD files used.
+    TTDTargets = folderTTD + '/TTDTargetDataset.txt'  # The TTD drug target database in the raw format.
+    TTDUPAccessions = folderTTD + '/UPAccessions.txt'  # A file of UniProt accessions, one on each line.
+                                                       # Each UP accession in the file is the target of an approved drug (as recorded by the TTD).
+    TTDDrugXref = folderTTD + '/TTDDrugXref.txt'  # The TTD data for the drugs in the database.
+    TTDTarget2Drug = folderTTD + '/TTDTarget2Drug.txt'  # A tab separated (tsv) file, with three elements on each line.
+                                                        # The first element is the TTD ID for the protein.
+                                                        # The second element is a comma separated list of UniProt accessions that the first element is linked to.
+                                                        # The third element is a semi-colon separated list of approved drugs that target the protein. For each drug a comma separated list of three elements is recorded.
+                                                        #     The first element is the name of the drug (as recorded by the TTD).
+                                                        #     The second element is the CAS number of the drug.
+                                                        #     The third element is the PubChem CID for the drug.
+
+    # UniGene files used.
+    unigeneProfiles = folderUG + '/Hs.profiles'  # The file containing the expression profiles for the human clusters.
+    unigeneParsedOutput = folderUG + '/UniGeneParsed.txt'  # A file of tuples, one on each line.
+                                                           # The first element of the tuple is the UniGene numerical Id of the cluster.
+                                                           # The remaining elements of the tuple are records of the number of ESTs expressed for each expression option.
+    unigeneParsedTotals = folderUG + '/UniGeneTotals.txt'  # A file of 2-tuples, one on each line.
+                                                           # The first element of the tuple is the body site, developmental stage or health site of the expression.
+                                                           # The second element of the tuple is the number of ESTs for the given body site, developmental stage or health state over all cluster.
+
     # UniProt files used.
     UPHuman = folderUP + '/UniProtHuman.xml'
     UPGPCRs = folderUP + '/UniProtGPCRs.txt'
@@ -182,47 +217,7 @@ def main(args):
     UPProteinInfo = folderUP + '/UPProteinInfo.txt'
     UPExternalLinks = folderUP + '/UPExternalLinks.csv'
     UPPPIData = folderUP + '/UPPPIData.txt'
-    
-    # Ensembl files used.
-    ensemblGeneIDs = folderEnsembl + '/EnsemblGeneIDs.txt'
-    ensemblExternalIDsOne = folderEnsembl + '/ExternalOne.txt'
-    ensemblExternalIDsTwo = folderEnsembl + '/ExternalTwo.txt'  # Two external ID files are needed due to Ensembl Biomart limitations on the number of types of external ID that can be downloaded in one request.
-    ensemblTranscripts = folderEnsembl + '/Transcript.txt'
-    ensemblParsedTranscripts = folderEnsembl + '/ParsedTranscript.txt'
-    ensemblGermSNPResults = folderEnsembl + '/GermSNPs.txt'
-    ensemblParsedGermVariants = folderEnsembl + '/ParsedGermVariants.txt'
-    
-    # Ensembl Perl API files used.
-    ensemblVariationScript = folderEnsemblPerlAPI + '/EnsemblVariant.pl'
-    ensemblHomologScript = folderEnsemblPerlAPI + '/EnsemblHomologs.pl'
-    ensemblTaxonomyMap = folderEnsembl + '/EnsemblTaxonomyMap.txt'
-    ensemblHomologData = folderEnsembl + '/EnsemblHomologs.txt'
-    ensemblGenomesHomologScript = folderEnsemblPerlAPI + '/EnsemblGenomesHomologs.pl'
-    ensemblGenomesTaxonomyMap = folderEnsembl + '/EnsemblGenomesTaxonomyMap.txt'
-    ensemblGenomesHomologData = folderEnsembl + '/EnsemblGenomesHomologs.txt'
-    ensemblParsedHomology = folderEnsembl + '/EnsemblParsedHomologs.txt'  # The results of parsing the homology data from Ensembl and Ensembl Genome
-    
-    # COSMIC files used.
-    cosmicData = folderCOSMIC + '/CosmicCompleteExport_v59_220512.tsv'
-    cosmicParsedGene = folderCOSMIC + '/COSMICParsedGene.txt'
-    cosmicParsedGene2Mutation = folderCOSMIC + '/COSMICParsedGene2Mutation.txt'
-    cosmicParsedMutation = folderCOSMIC + '/COSMICParsedMutation.txt'
 
-    # Cancer Gene Index files used.
-    CGIData = folderCGI + '/NCI_CancerIndex_allphases_disease.xml'
-    CGIUPAccessions = folderCGI + '/CGIUPAccessions.txt'
-    CGIHGNCIDs = folderCGI + '/CGIHGNCIDs.txt'
-
-    # Cancer Gene Census files used.
-    CGCData = folderCGC + '/cancer_gene_census.tsv'
-    CGCParsed = folderCGC + '/CGCParsedData.txt'
-
-    # MeSH files used.
-    MeSHData = folderMeSH + '/meshdescriptor.txt'
-
-    # File of all known FDA approved anti-cancer targets.
-    cancerTargets = folderCancerTargets + '/CancerDrugs.txt'
-    
     #===========================================================================
     # Database Schemas and Tables.
     #===========================================================================
@@ -231,30 +226,30 @@ def main(args):
     schemaGO = 'go'  # The schema for the entire GO database.
     schemaPharmGKB = 'pharmgkb'  # The schema for the PharmGKB database.
     schemaProteins = 'proteindatabase'  # The schema used to hold the human protein information tables.
-    
+
     # Names for the MySQL tables used to store information about the human proteome.
     tableEnsemblGene = schemaProteins + '.ensemblgene'  # The table used to store information about Ensembl genes.
     tableCancerGene = schemaProteins + '.cancergene'  # The table used to store information from Entrez Gene.
     tableGOInfo = schemaProteins + '.goinfo'  # The table used to store information from the GO.
     tableProteinInfo = schemaProteins + '.proteininfo'  # The table used to store information from UniProt.
     tableBLASTResults = schemaProteins + '.blastresults'  # The table used to store the information about the protein similarity.
-    tableNonRedundant = schemaProteins + '.nonredundant'
-    tablePPI = schemaProteins + '.ppi'
+    tableNonRedundant = schemaProteins + '.nonredundant'  # The table used to store the information about the non-redundant sets of proteins.
+    tablePPI = schemaProteins + '.ppi'  # The table used to store the information about the protein protin interactions.
     tableGermVariants = schemaProteins + '.germvariants'  # The table used to store Ensembl information about germ line variants.
-    tableHomologs = schemaProteins + '.homologs'
+    tableHomologs = schemaProteins + '.homologs'  # The table used to store the information about the protein homologs.
     tableUniGene = schemaProteins + '.unigene'  # The table used to store information from UniGene.
     tableUniGeneTotals = schemaProteins + '.unigenetotals'  # The table used to store the totals of the different expression options.
-    tableUniProt2Ensembl = schemaProteins + '.uniprot2ensembl'  # The table used to xref UniProt accessions and Ensembl Gene IDs. 
+    tableUniProt2Ensembl = schemaProteins + '.uniprot2ensembl'  # The table used to xref UniProt accessions and Ensembl Gene IDs.
     tableUniProt2GO = schemaProteins + '.uniprot2go'  # The table used to xref UniProt accessions and GO term IDs.
     tableUniProt2HGNC = schemaProteins + '.uniprot2hgnc'  # The table used to xref UniProt accessions and HGNC IDs.
     tableUniProt2UniGene = schemaProteins + '.uniprot2unigene'  # The table used to xref UniProt accessions and UniGene IDs.
-    tableDrugs = schemaProteins + '.drugs'
-    tablePathways = schemaProteins + '.pathways'
-    tableStability = schemaProteins + '.stability'
-    tableCOSMICGene = schemaProteins + '.cosmicgene'
+    tableDrugs = schemaProteins + '.drugs'  # The table used to store the information about the approved drugs.
+    tablePathways = schemaProteins + '.pathways'  # The table used to store the information about the pathways.
+    tableStability = schemaProteins + '.stability'  # The table used to store the information about the protein stability.
+    tableCOSMICGene = schemaProteins + '.cosmicgene'  # The table used to store the COSMIC data.
     tableCOSMICGene2Mutation = schemaProteins + '.cosmicgene2mutation'
     tableCOSMICMutation = schemaProteins + '.cosmicmutation'
-    
+
     # Names for the MySQL views used.
     viewAllAllTargRN = schemaProteins + '.all_all_targ_r_n'  # A view of all the non-target human proteins.
     viewAllAllTargRP = schemaProteins + '.all_all_targ_r_p'  # A view of all the drug target human proteins.
@@ -298,27 +293,27 @@ def main(args):
     #===========================================================================
     # Variables for User Input Parsing.
     #===========================================================================
-    
+
     # Records whether the database should be initialised.
     doInitialise = False  # doInitialise is True if the user elects to re-initialise the database.
     initialisationScript = DATA + '/Initialisation.sql'
-    
+
     # Records whether any files/database dumps need loading into the local database.
     # doLoad is True if any files/database dumps should be loaded. toLoad contains the files/database dumps to load.
     doLoad = False  # doLoad is True if files/database dumps should be loaded.
     toLoad = []  # toLoad is a list of the files/database dumps that need loading.
     validLoadArgs = ['GO', 'ChEMBL', 'PharmGKB']  # validLoadArgs is a list of the acronyms of the files/database dumps that can be loaded.
-    
+
     # Records whether files/tables need parsing, and which ones need parsing.
     doParse = False  # doParse is True if the user selects to parse files/tables.
     toParse = []  # toParse contains the list of files/tables to parse.
     validParseArgs = ['UG', 'CGC', 'GO', 'UP', 'TTD', 'DB', 'BindingDB', 'ChEMBL', 'Ensembl', 'COSMIC', 'CGI']  # validParseArgs is a list of the acronyms of the files/tables that can be parsed.
-    
+
     # Records whether database tables need updating, and which ones need updating.
     doUpdate = False  # doUpdate is True if the user selects to update database tables.
     toUpdate = []  # toUpdate contains the list of database tables to update.
     validUpdateArgs = ['UG', 'Cancer', 'GO', 'UP', 'Ensembl', 'Xref', 'Target', 'Drug', 'Pathway', 'Stability', 'COSMIC']  # validUpdateArgs is a list of the acronyms of the database tables that can be updates.
-    
+
     # Records whether the secondary structure prediction need altering.
     doSecondary = False  # doSecondary is True if the user selects to alter secondary structure predictions.
     toSecondary = ''
@@ -326,27 +321,27 @@ def main(args):
     predictionDirectionSecondary = ''
     seqsPerFileSecondary = 100
     maxSeqLenSecondary = 100000
-    
+
     # Records whether the subcellular localisation predictions need altering.
     doSubcell = False  # doSubcell is True if the user selects to alter subcellular localisation predictions.
     toSubcell = ''  # The table which is to have the predictions altered.
     outputDirectorySubcell = folderPredictions + '/SubcellularLocation'  # The directory from which the predictions should be loaded OR the fasta files written.
-    predictionDirectionSubcell = ''  # Either IN (loading predictions into the database), OUTA (all proteins will be predicted) or OUTS (only those proteins that have not been predicted will be)
+    predictionDirectionSubcell = ''  # Either IN (loading predictions into the database), OUTA (all proteins will be predicted) or OUTS (only those proteins that have not been predicted will be output)
     seqsPerFileSubcell = 100  # The number of sequences per fasta file. Only used when the direction is OUTA or OUTS.
     maxSeqLengthSubcell = 100000  # The maximum length of any one sequence in the file. Only used when the direction is OUTA or OUTS.
-    
+
     # Records whether fasta format files need outputing.
     # The fasta format file of the table toFasta[0] will be saved to the location outputLocationFasta[0].
     doFasta = False  # doFasta is True if the user selects to output fasta files of tables/views.
     toFasta = []  # The list of tables/views to generate fasta files from.
     outputLocationFasta = []  # The list of locations to save the fasta files.
-    
+
     # Records whether the genetic algorithm data should be generated.
     doGADataGenerate = False  # doGADataGenerate is True if the user selects to generate the GA data.
     viewToGenerateFrom = ''  # The view from which the GA data should be generated from. If you want to get the data about all proteins then you would do all_all_targ
     viewEndings = ['nr_n', 'nr_p']  # These are the endings on the view (i.e. the characters that come after the final '_'. Supplied in the same order as the classification.
-    GAClassifications = ['Unlabelled', 'Target']  # The names for the two classifications.
-    
+    GAClassifications = ['Unlabelled', 'Positive']  # The names for the two classifications.
+
     #===========================================================================
     # Parse the User Input.
     #===========================================================================
@@ -359,7 +354,7 @@ def main(args):
         print '\nERROR: Unknown command line option found.\n'
         print_help()
         sys.exit()
-    
+
     for opt, arg in opts:
         if opt in ['-h', '--help']:
             print_help()
@@ -426,7 +421,7 @@ def main(args):
             if len(chunks) > 1:
                 viewEndings = [chunks[1], chunks[2]]
                 GAClassifications = [chunks[3], chunks[4]]
-    
+
     #===========================================================================
     # Initialising the Database
     #===========================================================================
@@ -440,7 +435,7 @@ def main(args):
             toParse = validParseArgs
             doUpdate = True
             toUpdate = validUpdateArgs
-    
+
     #===========================================================================
     # Loading Database Schemas from Files and Database Dumps.
     #===========================================================================
@@ -455,7 +450,7 @@ def main(args):
             print '\nNow Loading PharmGKB'
             loaders.pharmgkb.main(DATABASEPASSWORD, schemaPharmGKB, pharmGKBDiseases, pharmGKBDrugs, pharmGKBGenes,
                                   pharmGKBRelationships, pharmGKBInitialisation, MYSQLBIN)
-    
+
     #===========================================================================
     # Parsing Files and Database Tables.
     #===========================================================================
@@ -468,8 +463,7 @@ def main(args):
             parsers.parseCGC.main(CGCData, CGCParsed)
         if 'GO' in toParse:
             print '\nNow Parsing GO'
-            # Process the GO database in order to extract the information about the paths of each term to
-            # its root term.
+            # Process the GO database in order to extract the information about the paths of each term to its root term.
             parsers.parseGO.main(schemaGO, parsedGOOutput)
         if 'UP' in toParse:
             print '\nNow Parsing Uniprot'
@@ -494,7 +488,7 @@ def main(args):
         if 'TTD' in toParse:
             print '\nNow Parsing TTD'
             # Parse the TTD database, to find approved targets.
-            parsers.parseTTD.main(TTDTargets, TTDUPAccessions, TTDDrugXref, TTDTarget2Drug, TTDSIDs)
+            parsers.parseTTD.main(TTDTargets, TTDUPAccessions, TTDDrugXref, TTDTarget2Drug)
         if 'DB' in toParse:
             print '\nNow Parsing DrugBank'
             # Parse the DrugBank files, to find the approved targets and drugs.
@@ -503,8 +497,6 @@ def main(args):
             print '\nNow Parsing BindingDB'
             # Parse the BindingDB SDF file to get binding affinity information about potential targets.
             parsers.parseBindingDB.main(bindingSDF, binding2PubChem, bindingParsed)
-#            , bindingPubChemCIDs,
-#                                        bindingPubChemSDF, bindingInChis)
         if 'ChEMBL' in toParse:
             print '\nNow Parsing ChEMBL'
             # Parse the ChEMBL database, to find approved targets.
@@ -514,32 +506,32 @@ def main(args):
             martName = 'ensembl'
             ensemblGeneIDList = sorted(utilities.file2list.main(ensemblGeneIDs))
             ensemblGenes = ','.join(ensemblGeneIDList)
-            
-##            # Extract the transcript information from Ensembl.
-##            datasetName = 'hsapiens_gene_ensembl'
-##            filterName = 'ensembl_gene_id'
-##            filterValue = ensemblGenes
-##            attributes = ['ensembl_gene_id', 'ensembl_transcript_id', 'transcript_count', 'transcript_biotype']
-##            utilities.biomartquery.single_filter(martName, datasetName, filterName, filterValue, attributes,
-##                                                 biomartScript, biomartQuery, ensemblTranscripts)
-            
-##            # Extract the germ variant information from Ensembl.
-##            subprocess.call(['perl', ensemblVariationScript, ensemblGeneIDs, ensemblGermSNPResults])
+
+            # Extract the transcript information from Ensembl.
+            datasetName = 'hsapiens_gene_ensembl'
+            filterName = 'ensembl_gene_id'
+            filterValue = ensemblGenes
+            attributes = ['ensembl_gene_id', 'ensembl_transcript_id', 'transcript_count', 'transcript_biotype']
+            utilities.biomartquery.single_filter(martName, datasetName, filterName, filterValue, attributes,
+                                                 biomartScript, biomartQuery, ensemblTranscripts)
+
+            # Extract the germ variant information from Ensembl.
+            subprocess.call(['perl', ensemblVariationScript, ensemblGeneIDs, ensemblGermSNPResults])
 
             # Parse the information from Ensembl.
             parsers.parseEnsembl.main(ensemblTranscripts, ensemblParsedTranscripts, ensemblGermSNPResults, ensemblParsedGermVariants)
-            
-##            # Extract and parse the homolog information from Ensembl.
-##            parsers.parseHomologs.main(ensemblHomologScript, ensemblTaxonomyMap, ensemblHomologData,
-##                                       ensemblGenomesHomologScript, ensemblGenomesTaxonomyMap,
-##                                       ensemblGenomesHomologData, ensemblParsedHomology, ensemblGeneIDs)
+
+            # Extract and parse the homolog information from Ensembl.
+           parsers.parseHomologs.main(ensemblHomologScript, ensemblTaxonomyMap, ensemblHomologData,
+                                       ensemblGenomesHomologScript, ensemblGenomesTaxonomyMap,
+                                       ensemblGenomesHomologData, ensemblParsedHomology, ensemblGeneIDs)
         if 'COSMIC' in toParse:
             print '\nNow Parsing COSMIC'
             parsers.parseCOSMIC.main(cosmicData, cosmicParsedGene, cosmicParsedMutation, cosmicParsedGene2Mutation)
         if 'CGI' in toParse:
             print '\nNow Parsing Cancer Gene Index'
             parsers.parseCGI.main(CGIData, CGIHGNCIDs, CGIUPAccessions)
-    
+
     #===========================================================================
     # Update the Information in the Database.
     #===========================================================================
@@ -612,7 +604,7 @@ def main(args):
         if 'Stability' in toUpdate:
             print '\nNow Updating Protein Stability Information'
             updaters.updatestability.main(DATABASEPASSWORD, schemaProteins, tableProteinInfo, tableStability)
-    
+
     #===========================================================================
     # Alter Secondary Structure Prediction Information.
     #===========================================================================
@@ -620,7 +612,7 @@ def main(args):
         utilities.predictions.main(toSecondary, outputDirectorySecondary, predictionDirectionSecondary,
                                    seqsPerFileSecondary, maxSeqLenSecondary, schemaProteins, DATABASEPASSWORD,
                                    'PredictedSecondaryStructure')
-    
+
     #===========================================================================
     # Alter Subcellular Localisation Prediction Information.
     #===========================================================================
@@ -628,7 +620,7 @@ def main(args):
         utilities.predictions.main(toSubcell, outputDirectorySubcell, predictionDirectionSubcell, seqsPerFileSubcell,
                                    maxSeqLengthSubcell, schemaProteins, DATABASEPASSWORD,
                                    'PredictedSubcellularLocation')
-    
+
     #===========================================================================
     # Output Fasta Files of the Specified Tables and/or Views.
     #===========================================================================
@@ -645,7 +637,7 @@ def main(args):
                 print '\t\tERROR: Creation of fasta file for table', toFasta[i], ' failed. Please check that the table',
                 print '\t\tcontains columns titled UPAccession and Sequence, and that the file location is valid.'
         mysql.closeConnection(conn, cursor)
-    
+
     #===========================================================================
     # Generate the Data File Needed for the Running of the Genetic Algorithm
     #===========================================================================
@@ -922,7 +914,7 @@ def main(args):
                 GOType = j[0]
                 levelOne = j[1].split(';')
                 levelTwo = j[2].split(';')
-                
+
                 if levelOne != ['NA']:
                     targetGOTerms[UPAccession][GOType]['LevelOne'].update(levelOne)
                 if levelTwo != ['NA']:
@@ -954,12 +946,12 @@ def main(args):
                 GOType = j[0]
                 levelOne = j[1].split(';')
                 levelTwo = j[2].split(';')
-                
+
                 if levelOne != ['NA']:
                     nonTargetGOTerms[UPAccession][GOType]['LevelOne'].update(levelOne)
                 if levelTwo != ['NA']:
                     nonTargetGOTerms[UPAccession][GOType]['LevelTwo'].update(levelTwo)
-        
+
         mysql.closeConnection(conn, cursor)
 
         utilities.generateGOsummarydata.main(targetGOTerms, nonTargetGOTerms, outputDirectory)

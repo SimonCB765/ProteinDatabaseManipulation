@@ -206,17 +206,38 @@ def main(args):
                                                            # The second element of the tuple is the number of ESTs for the given body site, developmental stage or health state over all cluster.
 
     # UniProt files used.
-    UPHuman = folderUP + '/UniProtHuman.xml'
-    UPGPCRs = folderUP + '/UniProtGPCRs.txt'
-    UPKinases = folderUP + '/UniProtKinases.txt'
-    UPProteases = folderUP + '/UniProtPeptidases.txt'
-    UPDrugIDs = folderUP + '/DBDrugs.txt'
-    UPHumanAccessionMap = folderUP + '/AccMap.txt'
-    UPHumanAccessions = folderUP + '/UPAccessions.txt'
-    UPHumanNames = folderUP + '/UPNames.txt'
-    UPProteinInfo = folderUP + '/UPProteinInfo.txt'
-    UPExternalLinks = folderUP + '/UPExternalLinks.csv'
-    UPPPIData = folderUP + '/UPPPIData.txt'
+    UPHuman = folderUP + '/UniProtHuman.xml'  # The XML file of all UniProt human proteins.
+    UPGPCRs = folderUP + '/UniProtGPCRs.txt'  # The file containing all the UniProt accessions of the GPCRs in UniProt.
+    UPKinases = folderUP + '/UniProtKinases.txt'  # The file containing the UniProt accessions of the kinases in UniProt.
+    UPProteases = folderUP + '/UniProtPeptidases.txt'  # The file containing the UniProt accessions of the proteases in UniProt.
+    UPDrugIDs = folderUP + '/DBDrugs.txt'  # A tab separated (tsv) file, with two elements on each line.
+                                           # The first element is a representative UniProt accession.
+                                           # The second element is a semi-colon separated list of DrugBank drug IDs, one ID for each DrugBank drug that is recorded as being linked to the accession in UniProt.
+    UPHumanAccessionMap = folderUP + '/AccMap.txt'  # A tab separated (tsv) file, with two elements on each line.
+                                                    # The first element is a UniProt protein accession (representative or not (most often not)).
+                                                    # The second elements is the representative UniProt accession that the accession in the first element maps to.
+    UPHumanAccessions = folderUP + '/UPAccessions.txt'  # A file with one representative human protein UniProt accession on each line.
+                                                        # The number of accessions in this file is the same as the number of human proteins recorded in UniProt.
+    UPHumanNames = folderUP + '/UPNames.txt'  # A file with one human protein name on each line.
+                                              # The number of names in this file is the same as the number of human proteins recorded in UniProt.
+    UPProteinInfo = folderUP + '/UPProteinInfo.txt'  # A file of 56-tuples, one on each line. See the README for a full description of the file.
+    UPExternalLinks = folderUP + '/UPExternalLinks.csv'  # A comma separated (csv) file, with six elements on each line.
+                                                         # The first element is a representative UniProt accession.
+                                                         # The second element is a semi-colon separated list of the Entrez Gene IDs that are recorded as being linked to the accession in UniProt.
+                                                         # The third element is a semi-colon separated list of the UniGene cluster IDs that are recorded as being linked to the accession in UniProt.
+                                                         # The fourth element is a semi-colon separated list of the Gene Ontology term IDs that are recorded as being linked to the accession in UniProt.
+                                                         # The fifth element is a semi-colon separated list of the HGNC IDs that are recorded as being linked to the accession in UniProt.
+                                                         # The sixth element is a semi-colon separated list of '-' separated lists of Ensembl records that are recorded as being linked to the accession in UniProt. The format for the '-' separated lists is:
+                                                         #     The first element is the Ensembl Gene ID that is recorded as being linked to the UniProt accession (because the transcript in the second element is linked to it).
+                                                         #     The second element is the Ensembl Transcript ID that is recorded as being linked to the UniProt accession (because the protein in the third element is linked to it).
+                                                         #     The third element is the Ensembl Protein ID that is recorded as being linked to the UniProt accession.
+                                                         #     Example : ENSG00000143627-ENST00000342741-ENSP00000339933;ENSG00000143627-ENST00000271946-ENSP00000271946
+    UPPPIData = folderUP + '/UPPPIData.txt'  # A file of 5-tuples, one on each line.
+                                             # The first element is the UniProt accession for the first protein in the interaction.
+                                             # The second element is the UniProt accession for the second protein in the interaction.
+                                             # The third element is a number if the second protein is an isofom (the number being the portion after the '-' in a UniProt isoform accession (e.g. 3 in O00257-3)), or 'No Isoform' if the second protein is not an isoform.
+                                             # The fourth element is false if the organism the second protein comes from is the same as that of the first (i.e. both are human), or true if the second protein is non-human.
+                                             # The fifth element is the number of experiments that give evidence for the interaction between the first and second proteins.
 
     #===========================================================================
     # Database Schemas and Tables.

@@ -143,23 +143,36 @@ parseUP
 			A semi-colon separated list (there sould only be one entry) of comma separated (csv) lists. Each csv list contains three elements,
 			The first element is the site where the signal peptide begins.
 			The second element is the site where the signal peptide ends.
-			the third element is N if there is no experimental evidence recorded for the signal peptide, else it is Y.
+			The third element is N if there is no experimental evidence recorded for the signal peptide, else it is Y.
 			Example : 1,29,N or 1,23,Y
-		The forty-eighth element is NA if the protein does not have any transmembrane helix information recorded for it, othersie the format is:
-			
+		The forty-eighth element is NA if the protein does not have any alpha-helical transmembrane information recorded for it, othersie the format is:
+			A semi-colon separated list of comma separated (csv) lists. Each csv list contains two elements,
+			The first element is the site where the alpha-helical transmembrane region begins.
+			The second element is the site where the alpha-helical transmembrane region ends.
+			Example : 228,248 or 242,268;274,292;303,321;456,475
 		The forty-ninth element is NA if the protein does not have any turns recorded for it, othersie the format is:
-			
+			A semi-colon separated list of comma separated (csv) lists. Each csv list contains two elements,
+			The first element is the site where the turn begins.
+			The second element is the site where the turn ends.
+			Example : 228,248 or 242,268;274,292;303,321;456,475
 		The fiftieth element is NA if the protein does not have any alphs helices recorded for it, othersie the format is:
-			
+			A semi-colon separated list of comma separated (csv) lists. Each csv list contains two elements,
+			The first element is the site where the alpha helix begins.
+			The second element is the site where the alpha helix ends.
+			Example : 228,248 or 242,268;274,292;303,321;456,475
 		The fifty-first element is NA if the protein does not have beta strands recorded for it, othersie the format is:
-			
+			A semi-colon separated list of comma separated (csv) lists. Each csv list contains two elements,
+			The first element is the site where the beta strand begins.
+			The second element is the site where the beta strand ends.
+			Example : 228,248 or 242,268;274,292;303,321;456,475
 		The fifty-second element is (Defaults to NA after parseUP.py).
 		The fifty-third element is (Defaults to NA after parseUP.py).
 		The fifty-fourth element is NA if the protein has no isoforms recorded for it, otherwise the format is:
 			A semi-colon separated list where each element of the list is a comma separated list of two elements.
 			The first element is the accession of the isoform (e.g. Q15172-1).
-			The second element is the number appended to the end of an accession to indicate an isoform in UniProt (e.g. 1 in Q15172-1).
-			Example : Q29960-1,1;Q29960-2,2 or Q15172-1,1;Q15172-2,2
+			The second element is the name of the isoform (usually the number appended to the end of an accession to indicate an isoform in UniProt (e.g. 1 in Q15172-1)).
+				Sometimes the name does not correspond to the number appended to the end of the accession of the protein. For example, an isoform of P33765 is Q6P2N6-1. The 'name' of this isoform is 3.
+			Example : Q29960-1,1;Q29960-2,2 or P33765-1,1;P33765-2,2;Q6P2N6-1,3
 		The fifty-fifth element is (Defaults to N after parseUP.py).
 		The fifty-sixth element is the sequence of the protein.
 	UPExternalLinks (UPExternalLinks) - A comma separated (csv) file, with six (the sixth is added when parseEnsembl.py is used) elements on each line.

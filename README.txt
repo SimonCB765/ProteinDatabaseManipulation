@@ -11,7 +11,7 @@ This can be converted to the representative accession using the AccMap file gene
 #################################################################
 Parsers
 #################################################################
-For the output files, the name in brackets indicates the name of the variable in the controller.pythat corresponds to the file.
+For the output files, the name in brackets indicates the name of the variable in the controller.py that corresponds to the file.
 	FileName (variableName) - Info
 
 parseBindingDB
@@ -22,10 +22,32 @@ parseCGC
 		The second element is Y if the gene contains a cancer causing germline mutation, else it is N.
 		The third element is Y if the gene contains a cancer causing somatic mutation, else it is N.
 parseCGI
+	Takes the file containg the cancer gene index data, and returns one file containing UniProt accessions that are implicated in cancer and one containing HGNC gene IDs that are implicated in cancer.
+	CGIHGNCIDs (CGIHGNCIDs) - A file with one HGNC gene ID on each line.
+	CGIUPAccessions (CGIUPAccessions) - A file with one UniProt accession on each line.
 parseChEMBL
 parseCOSMIC
 parseDB
 parseEnsembl
+	parse_variants
+	parse_transcript
+	update_xref_and_ensembl_IDs
+		Takes two files containing the cross-referencing of representative human UniProt accessions with Ensembl gene IDs, Ensembl transcript IDs, Ensembl protein IDs, Entrez Gene IDs, UniGene cluster IDs and HGNC gene IDs.
+		Returns two files.
+			UPExternalLinks (UPExternalLinks) contains the cross-referencing of the represetnative UniProt human accessions with external databases.
+			EnsemblGeneIDs (ensemblGeneIDs) contains all the Ensembl gene IDs for Ensembl genes that are linked to a representative UniProt human accession.
+		UPExternalLinks (UPExternalLinks) - A comma separated (csv) file, with six elements on each line.
+			The first element is a representative UniProt accession.
+			The second element is a semi-colon separated list of the Entrez Gene IDs that are recorded as being linked to the accession in UniProt.
+			The third element is a semi-colon separated list of the UniGene cluster IDs that are recorded as being linked to the accession in UniProt.
+			The fourth element is a semi-colon separated list of the Gene Ontology term IDs that are recorded as being linked to the accession in UniProt.
+			The fifth element is a semi-colon separated list of the HGNC IDs that are recorded as being linked to the accession in UniProt.
+			The sixth element is a semi-colon separated list of '-' separated lists of Ensembl records that are recorded as being linked to the accession in UniProt. The format for the '-' separated lists is:
+				The first element is the Ensembl Gene ID that is recorded as being linked to the UniProt accession (because the transcript in the second element is linked to it).
+				The second element is the Ensembl Transcript ID that is recorded as being linked to the UniProt accession (because the protein in the third element is linked to it).
+				The third element is the Ensembl Protein ID that is recorded as being linked to the UniProt accession.
+				Example : ENSG00000143627-ENST00000342741-ENSP00000339933;ENSG00000143627-ENST00000271946-ENSP00000271946
+		EnsemblGeneIDs (ensemblGeneIDs) - A file with one Ensembl gene ID on each line.
 parseepestfind
 parseGO
 	Returns a file containing the parsed GO data.
@@ -41,7 +63,7 @@ parsePepstats
 parsePSIBLAST
 parseSEG
 parseTTD
-	Takes the TTD target database data and the TTD drug data, and returns ont file of the UniProt accessions of the approved target proteins and one containing a mapping of approved targets to approved drugs.
+	Takes the TTD target database data and the TTD drug data, and returns one file of the UniProt accessions of the approved target proteins and one containing a mapping of approved targets to approved drugs.
 	UPAccessions (TTDUPAccessions) - A file of UniProt accessions, one on each line.
 		Each UP accession in the file is the target of an approved drug (as recorded by the TTD).
 	TTDTarget2Drug (TTDTarget2Drug) - A tab separated (tsv) file, with three elements on each line.
@@ -72,43 +94,12 @@ parseUP
 		The first element is a representative UniProt accession.
 		The second element is a semi-colon separated list of DrugBank drug IDs, one ID for each DrugBank drug that is recorded as being linked to the accession in UniProt.
 	UPProteinInfo (UPProteinInfo) - A file of 56-tuples, one on each line.
-		The entire file format is described here, but only the elements are given non-default values here.
+		Some elements of the tuple are only given default values here, the final values are calculated later before the tuple is entered into the database.
 		The first element is the representative UniProt accession for the protein.
 		The second element is the name of the protein.
-		The third element is (Defaults to 0.0 after parseUP.py).
-		The fourth element is (Defaults to 0.0 after parseUP.py).
-		The fifth element is (Defaults to 0.0 after parseUP.py).
-		The sixth element is (Defaults to 0.0 after parseUP.py).
-		The seventh element is (Defaults to 0.0 after parseUP.py).
-		The eighth element is (Defaults to 0.0 after parseUP.py).
-		The ninth element is (Defaults to 0.0 after parseUP.py).
-		The tenth element is (Defaults to 0.0 after parseUP.py).
-		The eleventh element is (Defaults to 0.0 after parseUP.py).
-		The twelfth element is (Defaults to 0.0 after parseUP.py).
-		The thirteenth element is (Defaults to 0.0 after parseUP.py).
-		The fourteenth element is (Defaults to 0.0 after parseUP.py).
-		The fifteenth element is (Defaults to 0.0 after parseUP.py).
-		The sixteenth element is (Defaults to 0.0 after parseUP.py).
-		The seventeenth element is (Defaults to 0.0 after parseUP.py).
-		The eighteenth element is (Defaults to 0.0 after parseUP.py).
-		The nineteenth element is (Defaults to 0.0 after parseUP.py).
-		The twentieth element is (Defaults to 0.0 after parseUP.py).
-		The twenty-first element is (Defaults to 0.0 after parseUP.py).
-		The twenty-second element is (Defaults to 0.0 after parseUP.py).
-		The twenty-third element is (Defaults to 0.0 after parseUP.py).
-		The twenty-fourth element is (Defaults to 0.0 after parseUP.py).
-		The twenty-fifth element is (Defaults to 0.0 after parseUP.py).
-		The twenty-sixth element is (Defaults to 0.0 after parseUP.py).
-		The twenty-seventh element is (Defaults to 0.0 after parseUP.py).
-		The twenty-eighth element is (Defaults to 0.0 after parseUP.py).
-		The twenty-ninth element is (Defaults to 0.0 after parseUP.py).
-		The thirtieth element is (Defaults to 0.0 after parseUP.py).
-		The thirty-first element is (Defaults to 0.0 after parseUP.py).
-		The thirty-second element is (Defaults to 0.0 after parseUP.py).
-		The thirty-third element is (Defaults to 0 after parseUP.py).
-		The thirty-fourth element is (Defaults to 0 after parseUP.py).
-		The thirty-fifth element is (Defaults to 0.0 after parseUP.py).
-		The thirty-sixth element is (Defaults to 0.0 after parseUP.py).
+		The third through thirty-second elements default to 0.0.
+		The thirty-third and thirty-fourth elements default to 0.
+		The thirty-fifth and thirty-sixth elements default to 0.0.
 		The thirty-seventh element is 'G-protein coupled receptor' if the protein is a GPCR, 'Ion Channel' if it is an ion channel, 'Kinase' if it is a kinase, 'Protease' if it is a protease or NA if it is none of the four.
 			The protein is determined to be a GPCR if it has the UniProt keyword identifier KW-0297 or it appears in the file of UniProt GPCRs (http://www.uniprot.org/docs/7tmrlist).
 			The protein is determined to be an ion channel if it is not a GPCR and it has any of the UniProt keyword identifiers KW-1071, KW-0851, KW-0107, KW-0869, KW-0407, KW-0631 or KW-0894.
@@ -138,7 +129,7 @@ parseUP
 			The second element is the site where the domain begins.
 			The third element is the site where the domain ends.
 			Example : Extracellular,18,699;Cytoplasmic,724,770
-		The forty-sixth element is (Defaults to NA after parseUP.py).
+		The forty-sixth element defaults to NA.
 		The forty-seventh element is NA if the protein does not have any signal peptide information recorded for it, othersie the format is:
 			A semi-colon separated list (there sould only be one entry) of comma separated (csv) lists. Each csv list contains three elements,
 			The first element is the site where the signal peptide begins.
@@ -165,17 +156,16 @@ parseUP
 			The first element is the site where the beta strand begins.
 			The second element is the site where the beta strand ends.
 			Example : 228,248 or 242,268;274,292;303,321;456,475
-		The fifty-second element is (Defaults to NA after parseUP.py).
-		The fifty-third element is (Defaults to NA after parseUP.py).
+		The fifty-second and fifty-third elements default to NA.
 		The fifty-fourth element is NA if the protein has no isoforms recorded for it, otherwise the format is:
 			A semi-colon separated list where each element of the list is a comma separated list of two elements.
 			The first element is the accession of the isoform (e.g. Q15172-1).
 			The second element is the name of the isoform (usually the number appended to the end of an accession to indicate an isoform in UniProt (e.g. 1 in Q15172-1)).
 				Sometimes the name does not correspond to the number appended to the end of the accession of the protein. For example, an isoform of P33765 is Q6P2N6-1. The 'name' of this isoform is 3.
 			Example : Q29960-1,1;Q29960-2,2 or P33765-1,1;P33765-2,2;Q6P2N6-1,3
-		The fifty-fifth element is (Defaults to N after parseUP.py).
+		The fifty-fifth element defaults to N.
 		The fifty-sixth element is the sequence of the protein.
-	UPExternalLinks (UPExternalLinks) - A comma separated (csv) file, with six (the sixth is added when parseEnsembl.py is used) elements on each line.
+	UPExternalLinks (UPExternalLinks) - A comma separated (csv) file, with six elements on each line. There are five after prseUP.py. The sixth is added when parseEnsembl.py is used.
 		The first element is a representative UniProt accession.
 		The second element is a semi-colon separated list of the Entrez Gene IDs that are recorded as being linked to the accession in UniProt.
 		The third element is a semi-colon separated list of the UniGene cluster IDs that are recorded as being linked to the accession in UniProt.

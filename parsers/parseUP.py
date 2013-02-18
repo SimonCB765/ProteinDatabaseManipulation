@@ -218,7 +218,7 @@ def main(XMLInputFile, UPGPCRs, UPKinases, UPProteases, UPHumanAccessions, UPHum
                 modeOfAction = 'Protease'
             proteinRecord[36] = modeOfAction
 
-            # Extract the external database IDs that are linked to the curretn protein.
+            # Extract the external database IDs that are linked to the current protein.
             databaseTags = [j for j in tags[i]['uniprot.entry.dbReference'] if j.parameters['type'] in databaseTypes.keys()]
             for j in databaseTags:
                 type = j.parameters['type']

@@ -102,14 +102,14 @@ def main(args):
     bindingParsed = folderBindingDB + '/BindingDBParsed.txt'
 
     # Biomart files used.
-    biomartScript = folderBiomart + '/biomartquery.pl'
-    biomartQuery = folderBiomart + '/BiomartQuery.xml'
+    biomartScript = folderBiomart + '/biomartquery.pl'  # The location of the script that submits queries to Biomart.
+    biomartQuery = folderBiomart + '/BiomartQuery.xml'  # The location where all Biomart XML queries are stored before being submitted.
 
     # BLAST files used.
     psiblastExe = folderBLAST + '/psiblast.exe'
     makeBLASTDatabaseExe = folderBLAST + '/makeblastdb.exe'
 
-    # File of all known FDA approved anti-cancer targets.
+    # File of all known FDA approved cancer drug targets.
     cancerTargets = folderCancerTargets + '/CancerDrugs.txt'
 
     # Cancer Gene Census files used.
@@ -143,8 +143,8 @@ def main(args):
     DBTargetIDs = folderDB + '/DBTargets.txt'
 
     # Ensembl files used.
-    ensemblGeneIDs = folderEnsembl + '/EnsemblGeneIDs.txt'
-    ensemblExternalIDsOne = folderEnsembl + '/ExternalOne.txt'
+    ensemblGeneIDs = folderEnsembl + '/EnsemblGeneIDs.txt'  # A file with one Ensembl gene ID on each line.
+    ensemblExternalIDsOne = folderEnsembl + '/ExternalOne.txt'  # Two external ID files are needed due to Ensembl Biomart limitations on the number of types of external ID that can be downloaded in one request.
     ensemblExternalIDsTwo = folderEnsembl + '/ExternalTwo.txt'  # Two external ID files are needed due to Ensembl Biomart limitations on the number of types of external ID that can be downloaded in one request.
     ensemblTranscripts = folderEnsembl + '/Transcript.txt'
     ensemblParsedTranscripts = folderEnsembl + '/ParsedTranscript.txt'

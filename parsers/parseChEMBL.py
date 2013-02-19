@@ -12,17 +12,24 @@ import utilities.MySQLaccess as mysql
 import utilities.list2file
 
 def main(ChEMBLTargets, ChEMBLCID, databasePassword, ChEMBLSchema):
-    """Extracts the UniProt IDs stored in the ChEMBL database.
-
+    """
+    Returns two files.
+        ChEMBLTargets contains mapping of approved drug information to the UniProt accessions of the proteins that the drug targets.
+        ChEMBLCID contains mappings of ChEMBL compound IDs to PubChem CIDs.
+    ChEMBLTargets - A tab separated (tsv) file, with seven elements on each line. There is one line for each protein that an approved target targets.
+        The first element is the UniProt accession for the target protein.
+        The second element is ChEMBL ID of the compound.
+        The third element is the name of the protein in the first element.
+        The fourth element is the activity relation (=, <, <=, > or >=).
+        The fifth element is the value of the activity observed between the compound and the protein.
+        The sixth element is the units of the value in the fifth element.
+        The seventh element is the type of activity measured (Ki, Kd, EC50, etc.)
+    ChEMBLCID - A tab separated (tsv) file, with two elements on each line.
+        The first element is the ChEMBL compound ID.
+        The second element is the PubChem CID that corresponds to the ChEMBL compound ID in the first element.
     """
 
-    extract_targets(ChEMBLTargets, ChEMBLCID, databasePassword, ChEMBLSchema)    
-##    molecules = extract_targets(ChEMBLTargets, ChEMBLCID, databasePassword, ChEMBLSchema)
-##    activities = extract_drugs(molecules, ChEMBLDrugs, databasePassword, ChEMBLSchema)
-##    extract_activities(activities, ChEMBLActivities, databasePassword, ChEMBLSchema)
-
-
-def extract_targets(ChEMBLTargets, ChEMBLCID, databasePassword, ChEMBLSchema):
+    # Create the query for extracting targets of approved drugs.
     queryTarget2Compound = """
     SELECT
         td.protein_accession,
@@ -45,40 +52,30 @@ def extract_targets(ChEMBLTargets, ChEMBLCID, databasePassword, ChEMBLSchema):
         and md.molregno = act.molregno
         and act.assay_id = a.assay_id
         and a.assay_id = a2t.assay_id
-        and a2t.confidence_score = '4'
+        and a2t.confidence_score >= '4'
         and a2t.tid = td.tid
         and td.target_type = 'PROTEIN'
         and td.db_source = 'SWISS-PROT'
     """
-    # Connect to the ChEMBL schema in the database.
+
+    # Connect to the ChEMBL schema in the database, and run the target/compound extraction query.
     conn, cursor = mysql.openConnection(databasePassword, ChEMBLSchema)
-    print '\tExtracting target information.'
     cursor.execute(queryTarget2Compound)
     resultsTarget2Compound = cursor.fetchall()
     resultsTarget2Compound = list(set(resultsTarget2Compound))
+
+    # Generate the output file of UniProt accession to drug information mappings.
     target2CompoundsDict = {}
     chemblID2Molregno = {}
     ChEMBLIDs = set([])
-##    molecules = set([])
     writeOut = open(ChEMBLTargets, 'w')
     for i in resultsTarget2Compound:
-##        molecules.add(i[1])
-##        if target2CompoundsDict.has_key(i[0]):
-##            target2CompoundsDict[i[0]].append(str(i[1]))
-##        else:
-##            target2CompoundsDict[i[0]] = []
-##            target2CompoundsDict[i[0]].append(str(i[1]))
         chemblID2Molregno[str(i[2])] = str(i[1])
         ChEMBLIDs.add(str(i[2]))
         writeOut.write(i[0] + '\t' + str(i[1]) + '\t' + str(i[3]) + '\t' + str(i[4]) + '\t' + str(i[5]) + '\t' + str(i[6]) + '\t' + str(i[7]) + '\n')
-##    for i in target2CompoundsDict.keys():
-##        target2CompoundsDict[i] = ';'.join(set(target2CompoundsDict[i]))
-##    targets = [(i + '\t' + target2CompoundsDict[i]) for i in target2CompoundsDict.keys()]
-##    print '\tNumber of approved targets in ChEMBL: ', len(targets)
     writeOut.close()
-##    utilities.list2file.main(resultsTarget2Compound, ChEMBLTargets)
     mysql.closeConnection(conn, cursor)
-    
+
     # Use Entrez EUtils to get the PubChem CIDs for the ChEMBL IDs.
     molregno2CIDs = set([])
     for i in ChEMBLIDs:
@@ -91,50 +88,7 @@ def extract_targets(ChEMBLTargets, ChEMBLCID, databasePassword, ChEMBLSchema):
             result = result.group(0)
             molregno2CIDs.add(chemblID2Molregno[i] + '\t' + result)
         fetchResult.close()
-        # Sleep for 0.6 seconds in order to stay within NCBI's guidelines of not submitting more than 3 HTTP requests a second 
+        # Sleep for 0.6 seconds in order to stay within NCBI's guidelines of not submitting more than 3 HTTP requests a second
         time.sleep(0.6)
+
     utilities.list2file.main(list(molregno2CIDs), ChEMBLCID)
-    
-##    return molecules
-
-##def extract_drugs(molecules, ChEMBLDrugs, databasePassword, ChEMBLSchema):
-##    # Connect to the ChEMBL schema in the database.
-##    conn, cursor = mysql.openConnection(databasePassword, ChEMBLSchema)
-##    print '\tExtracting drug information.'
-##    writeDrugs = open(ChEMBLDrugs, 'w')
-##    activities = set([])
-##    print len(activities)
-##    for m in molecules:
-##        cursor = mysql.tableSELECT(cursor, 'pref_name', 'molecule_dictionary', 'molregno = "' + str(m) + '"')
-##        prefNames = cursor.fetchall()[0][0]
-##        cursor = mysql.tableSELECT(cursor, 'standard_inchi', 'compound_structures', 'molregno = "' + str(m) + '"')
-##        standardInChis = cursor.fetchall()[0][0]
-##        cursor = mysql.tableSELECT(cursor, 'activity_id', 'activities', 'molregno = "' + str(m) + '"')
-##        activityIDs = cursor.fetchall()
-##        activityIDs = [str(i[0]) for i in activityIDs]
-##        activities = activities.union(activityIDs)
-##        activityIDs = ';'.join(activityIDs)
-##        writeDrugs.write(str(m) + '\t' + prefNames + '\t' + standardInChis + '\t' + activityIDs + '\n')
-##    writeDrugs.close()
-##    mysql.closeConnection(conn, cursor)
-##    
-##    return activities
-
-##def extract_activities(activities, ChEMBLActivities, databasePassword, ChEMBLSchema):
-##    # Connect to the ChEMBL schema in the database.
-##    conn, cursor = mysql.openConnection(databasePassword, ChEMBLSchema)
-##    print '\tExtracting activity information.'
-##    writeActivities = open(ChEMBLActivities, 'w')
-##    for i in activities:
-##        cursor = mysql.tableSELECT(cursor, '*', 'activities', 'activity_id="' + i + '"')
-##        resultActivities = cursor.fetchall()
-##        for j in resultActivities:
-##            type = str(j[11])
-##            typeLower = type.lower()
-##            if 'ki' in typeLower or 'kd' in typeLower or 'ic50' in typeLower or 'ec50' in typeLower:
-##                # Only interested in these four affinity measures.
-##                relation = str(j[5])
-##                value = str(j[8])
-##                units = str(j[9])
-##                writeActivities.write(i + '\t' + '\t'.join([relation, value, units, type]) + '\n')
-##    mysql.closeConnection(conn, cursor)

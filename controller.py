@@ -130,14 +130,37 @@ def main(args):
 
     # ChEMBL files used.
     completeChEMBLDatabase = folderChEMBL + '/ChEMBL.sql'  # The ChEMBL database.
-    ChEMBLUPAccessions = folderChEMBL + '/UPAccessions.txt'
-    ChEMBLCID = folderChEMBL + '/PubChemCIDs.txt'
+    ChEMBLUPAccessions = folderChEMBL + '/UPAccessions.txt'  # A tab separated (tsv) file, with seven elements on each line. There is one line for each protein that an approved target targets.
+															 # The first element is the UniProt accession for the target protein.
+															 # The second element is ChEMBL ID of the compound.
+															 # The third element is the name of the protein in the first element.
+															 # The fourth element is the activity relation (=, <, <=, > or >=).
+															 # The fifth element is the value of the activity observed between the compound and the protein.
+															 # The sixth element is the units of the value in the fifth element.
+															 # The seventh element is the type of activity measured (Ki, Kd, EC50, etc.)
+    ChEMBLCID = folderChEMBL + '/PubChemCIDs.txt'  # A tab separated (tsv) file, with two elements on each line.
+												   # The first element is the ChEMBL compound ID.
+												   # The second element is the PubChem CID that corresponds to the ChEMBL compound ID in the first element.
 
     # COSMIC files used.
-    cosmicData = folderCOSMIC + '/CosmicCompleteExport_v59_220512.tsv'
-    cosmicParsedGene = folderCOSMIC + '/COSMICParsedGene.txt'
-    cosmicParsedGene2Mutation = folderCOSMIC + '/COSMICParsedGene2Mutation.txt'
-    cosmicParsedMutation = folderCOSMIC + '/COSMICParsedMutation.txt'
+    cosmicData = folderCOSMIC + '/CosmicCompleteExport_v59_220512.tsv'  # The file containing all the COSMIC data.
+    cosmicParsedGene = folderCOSMIC + '/COSMICParsedGene.txt'  # A file of tuples with forty-nine elements, with on tuple on each line.
+															   # The first element is the gene ID.
+															   # The second element is the Ensembl transcript ID that corresponds to the gene ID in the first element.
+															   # The third element is the HGNC gene ID that corresponds to the gene ID in the first element.
+															   # Elements four through forty-nine indicate the number of times that the gene in the first element was observed in each of the forty-six primary sites.
+															   # 	The order of the primary sites in the tuple is the same as the list primarySites in the parseCOSMIC script.
+    cosmicParsedGene2Mutation = folderCOSMIC + '/COSMICParsedGene2Mutation.txt'  # A file of tuples with two elements, with one tuple on each line.
+																				 # The first element is the gene ID.
+																				 # The second element is the mutation ID.
+    cosmicParsedMutation = folderCOSMIC + '/COSMICParsedMutation.txt'  # A file of tuples with sixty-five elements, with on tuple on each line.
+																	   # The first element is the mutation ID.
+																	   # The second element is the amino acid change.
+																	   # The third element is 'Somatic', 'Unknown' or 'Germline' depending on whether the mutation is somatic, unknown or germline respectively.
+																	   # Elements four through twenty indicate the type of the mutation in the first element. Only one of the sixteen options will be set to 1 (indicating the mutation is of that type), the rest will be set to 0.
+																	   # 	The order of the mutation types in the tuple is the same as the list mutationTypes in the parseCOSMIC script.
+																	   # Elements twenty-one through sixty-five indicate the number of times that the mutation in the first element was observed in each of the forty-six primary sites.
+																	   # 	The order of the primary sites in the tuple is the same as the list primarySites in the parseCOSMIC script.
 
     # DrugBank files used.
     DBTargetFasta = folderDB + '/DrugBankApprovedTargets.fasta'  # A FASTA format file containing all the approved protein drug targets in DrugBank.

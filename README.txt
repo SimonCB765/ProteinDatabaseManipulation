@@ -33,7 +33,53 @@ parseCGI
 	CGIHGNCIDs (CGIHGNCIDs) - A file with one HGNC gene ID on each line.
 	CGIUPAccessions (CGIUPAccessions) - A file with one UniProt accession on each line.
 parseChEMBL
+	Returns two files.
+		UPAccessions (ChEMBLUPAccessions) contains mapping of approved drug information to the UniProt accessions of the proteins that the drug targets.
+		PubChemCIDs (ChEMBLCID) contains mappings of ChEMBL compound IDs to PubChem CIDs.
+	UPAccessions (ChEMBLUPAccessions) - A tab separated (tsv) file, with seven elements on each line. There is on line for each protein that an approved target targets.
+		The first element is the UniProt accession for the target protein.
+		The second element is ChEMBL ID of the compound.
+		The third element is the name of the protein in the first element.
+		The fourth element is the activity relation (=, <, <=, > or >=).
+		The fifth element is the value of the activity observed between the compound and the protein.
+		The sixth element is the units of the value in the fifth element.
+		The seventh element is the type of activity measured (Ki, Kd, EC50, etc.)
+	PubChemCIDs (ChEMBLCID) - A tab separated (tsv) file, with two elements on each line.
+		The first element is the ChEMBL compound ID.
+		The second element is the PubChem CID that corresponds to the ChEMBL compound ID in the first element.
 parseCOSMIC
+	Takes a file containing the COSMIC data, and returns three files.
+		COSMICParsedGene (cosmicParsedGene) contains a mapping of genes to the sites where they have been observed as being expressed.
+		COSMICParsedMutation (cosmicParsedMutation) contains mutations along with the amino acid changes they cause, the type of the mutation and the sites where they have been found.
+		COSMICParsedGene2Mutation (cosmicParsedGene2Mutation) contains a mapping of genes to mutations that occur in them.
+	COSMICParsedGene (cosmicParsedGene) - A file of tuples with forty-nine elements, with on tuple on each line.
+		The first element is the gene ID.
+		The second element is the Ensembl transcript ID that corresponds to the gene ID in the first element.
+		The third element is the HGNC gene ID that corresponds to the gene ID in the first element.
+		Elements four through forty-nine indicate the number of times that the gene in the first element was observed in each of the forty-six primary sites.
+			The order of the primary sites in the tuple is:
+				adrenal_gland, autonomic_ganglia, biliary_tract, bone, breast, central_nervous_system, cervix, endometrium, eye, fallopian_tube, female_genital_tract_(site_indeterminate),
+				gastrointestinal_tract_(site_indeterminate), genital_tract, haematopoietic_and_lymphoid_tissue, kidney, large_intestine, liver, lung, mediastinum, meninges, midline_organs,
+				oesophagus, ovary, pancreas, paratesticular_tissues, parathyroid, penis, pericardium, peritoneum, pituitary, placenta, pleura, prostate, retroperitoneum, salivary_gland, skin,
+				small_intestine, soft_tissue, stomach, testis, thymus, thyroid, upper_aerodigestive_tract, urinary_tract, vagina, vulva
+	COSMICParsedMutation (cosmicParsedMutation) - A file of tuples with sixty-five elements, with on tuple on each line.
+		The first element is the mutation ID.
+		The second element is the amino acid change.
+		The third element is 'Somatic', 'Unknown' or 'Germline' depending on whether the mutation is somatic, unknown or germline respectively.
+		Elements four through twenty indicate the type of the mutation in the first element. Only one of the sixteen options will be set to 1 (indicating the mutation is of that type), the rest will be set to 0.
+			The order of the sixteen types of mutation is:
+				Complex, Complex - compound substitution, Complex - deletion inframe, Complex - frameshift, Complex - insertion inframe, Deletion - In frame, Deletion - Frameshift,
+				Insertion - Frameshift, Insertion - In frame, No detectable mRNA/protein, Nonstop extension, Substitution - coding silent, Substitution - Missense, Substitution - Nonsense,
+				Unknown, Whole gene deletion
+		Elements twenty-one through sixty-five indicate the number of times that the mutation in the first element was observed in each of the forty-six primary sites.
+			The order of the primary sites in the tuple is:
+				adrenal_gland, autonomic_ganglia, biliary_tract, bone, breast, central_nervous_system, cervix, endometrium, eye, fallopian_tube, female_genital_tract_(site_indeterminate),
+				gastrointestinal_tract_(site_indeterminate), genital_tract, haematopoietic_and_lymphoid_tissue, kidney, large_intestine, liver, lung, mediastinum, meninges, midline_organs,
+				oesophagus, ovary, pancreas, paratesticular_tissues, parathyroid, penis, pericardium, peritoneum, pituitary, placenta, pleura, prostate, retroperitoneum, salivary_gland, skin,
+				small_intestine, soft_tissue, stomach, testis, thymus, thyroid, upper_aerodigestive_tract, urinary_tract, vagina, vulva
+	COSMICParsedGene2Mutation (cosmicParsedGene2Mutation) - A file of tuples with two elements, with one tuple on each line.
+		The first element is the gene ID.
+		The second element is the mutation ID.
 parseDB
 	Takes three files containging the approved targets, drug information and external database cross-references for all targets. Returns two files.
 		DBTargets (DBTargetIDs) contains the mapping of UniProt accessions to drugs that are approved and target it.

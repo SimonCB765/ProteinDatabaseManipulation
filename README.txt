@@ -15,6 +15,13 @@ For the output files, the name in brackets indicates the name of the variable in
 	FileName (variableName) - Info
 
 parseBindingDB
+	Takes two files containing information about interactions between compounds and targets and information about BindingDB compound ID to PubChem CID mappings.
+	Returns a file of binding constants between compounds and proteins.
+	BindingDBParsed (bindingParsed) - A tab separated file (tsv), with four elements on each line.
+		The first element is the UniProt accessions targeted by a compound.
+		The second element is the CID of the compound that targets the UniProt accessions in the first element.
+		The third element is the Ki for the interaction between the compound in element two and the proteins in element one.
+		The fourth element is the Kd for the interaction between the compound in element two and the proteins in element one.
 parseCGC
 	Takes the file that contains the cancer gene census data, and returns a file containing the processed CGC data.
 	CGCParsedData (CGCParsed) - A tab separated (tsv) file, with three elements on each line.
@@ -28,6 +35,18 @@ parseCGI
 parseChEMBL
 parseCOSMIC
 parseDB
+	Takes three files containging the approved targets, drug information and external database cross-references for all targets. Returns two files.
+		DBTargets (DBTargetIDs) contains the mapping of UniProt accessions to drugs that are approved and target it.
+		DBDrugs (DBDrugIDs) contains all the desired information from DrugBank about the individual drugs.
+	DBTargets (DBTargetIDs) - A tab separated (tsv) file, with two elements on each line.
+		The first element is a UniProt accession of an approved drug target.
+		The second element is a semi-colon separated list of all the drugs that are approved and target the protein in the first element.
+	DBDrugs (DBDrugIDs) - A tab separated (tsv) file, with five elements on each line.
+		The first element is the DrugBank ID of the drug.
+		The second element is the name of the drug as recorded by DrugBank.
+		The third element is a semi-colon separated list of all the DrugBank drug groups that the drug is a member of.
+		The fourth element is the CAS number of the drug as recorded by DrugBank.
+		The fifth element is a semi-colon separated list of PubChem CIDs that DrugBank has linked to the drugs.
 parseEnsembl
 	parse_variants
 	parse_transcript

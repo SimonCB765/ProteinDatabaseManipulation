@@ -97,9 +97,13 @@ def main(args):
     folderUP = DATA + '/UniProt'
 
     # BindingDB files used.
-    bindingSDF = folderBindingDB + '/BindingDB2D.sdf'
-    binding2PubChem = folderBindingDB + '/BDB_cid.txt'
-    bindingParsed = folderBindingDB + '/BindingDBParsed.txt'
+    bindingSDF = folderBindingDB + '/BindingDB2D.sdf'  # A file containing information about interactions between compounds and targets.
+    binding2PubChem = folderBindingDB + '/BDB_cid.txt'  # A file containing mappings from BindingDb compound IDs to PubChem CIDs.
+    bindingParsed = folderBindingDB + '/BindingDBParsed.txt'  # A tab separated file (tsv), with four elements on each line.
+															  # The first element is the UniProt accessions targeted by a compound.
+															  # The second element is the CID of the compound that targets the UniProt accessions in the first element.
+															  # The third element is the Ki for the interaction between the compound in element two and the proteins in element one.
+															  # The fourth element is the Kd for the interaction between the compound in element two and the proteins in element one.
 
     # Biomart files used.
     biomartScript = folderBiomart + '/biomartquery.pl'  # The location of the script that submits queries to Biomart.
@@ -120,9 +124,9 @@ def main(args):
                                                   # The third element is Y if the gene contains a cancer causing somatic mutation, else it is N.
 
     # Cancer Gene Index files used.
-    CGIData = folderCGI + '/NCI_CancerIndex_allphases_disease.xml'
-    CGIUPAccessions = folderCGI + '/CGIUPAccessions.txt'
-    CGIHGNCIDs = folderCGI + '/CGIHGNCIDs.txt'
+    CGIData = folderCGI + '/NCI_CancerIndex_allphases_disease.xml'  # A file containing the Cancer Gene Index data.
+    CGIUPAccessions = folderCGI + '/CGIUPAccessions.txt'  # A file with one UniProt accession on each line.
+    CGIHGNCIDs = folderCGI + '/CGIHGNCIDs.txt'  # A file with one HGNC gene ID on each line.
 
     # ChEMBL files used.
     completeChEMBLDatabase = folderChEMBL + '/ChEMBL.sql'  # The ChEMBL database.
@@ -136,11 +140,18 @@ def main(args):
     cosmicParsedMutation = folderCOSMIC + '/COSMICParsedMutation.txt'
 
     # DrugBank files used.
-    DBTargetFasta = folderDB + '/DrugBankApprovedTargets.fasta'
-    DBTargetExternalLinks = folderDB + '/ExternalTargetLinks.csv'
-    DBXML = folderDB + '/DrugBank.xml'
-    DBDrugIDs = folderDB + '/DBDrugs.txt'
-    DBTargetIDs = folderDB + '/DBTargets.txt'
+    DBTargetFasta = folderDB + '/DrugBankApprovedTargets.fasta'  # A FASTA format file containing all the approved protein drug targets in DrugBank.
+    DBTargetExternalLinks = folderDB + '/ExternalTargetLinks.csv'  # A csv file containing the external database cross-references for the DrugBank targets.
+	DBXML = folderDB + '/DrugBank.xml'  # All the drugs in DrugBank, including their target information.
+    DBDrugIDs = folderDB + '/DBDrugs.txt'  # A tab separated (tsv) file, with five elements on each line.
+										   # The first element is the DrugBank ID of the drug.
+										   # The second element is the name of the drug as recorded by DrugBank.
+										   # The third element is a semi-colon separated list of all the DrugBank drug groups that the drug is a member of.
+										   # The fourth element is the CAS number of the drug as recorded by DrugBank.
+										   # The fifth element is a semi-colon separated list of PubChem CIDs that DrugBank has linked to the drugs.
+    DBTargetIDs = folderDB + '/DBTargets.txt'  # A tab separated (tsv) file, with two elements on each line.
+											   # The first element is a UniProt accession of an approved drug target.
+											   # The second element is a semi-colon separated list of all the drugs that are approved and target the protein in the first element.
 
     # Ensembl files used.
     ensemblGeneIDs = folderEnsembl + '/EnsemblGeneIDs.txt'  # A file with one Ensembl gene ID on each line.
@@ -543,7 +554,7 @@ def main(args):
             parsers.parseEnsembl.main(ensemblTranscripts, ensemblParsedTranscripts, ensemblGermSNPResults, ensemblParsedGermVariants)
 
             # Extract and parse the homolog information from Ensembl.
-           parsers.parseHomologs.main(ensemblHomologScript, ensemblTaxonomyMap, ensemblHomologData,
+			parsers.parseHomologs.main(ensemblHomologScript, ensemblTaxonomyMap, ensemblHomologData,
                                        ensemblGenomesHomologScript, ensemblGenomesTaxonomyMap,
                                        ensemblGenomesHomologData, ensemblParsedHomology, ensemblGeneIDs)
         if 'COSMIC' in toParse:

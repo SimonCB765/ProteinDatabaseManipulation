@@ -12,56 +12,82 @@ def main(ensemblTranscripts, ensemblParsedTranscripts, ensemblGermSNPResults, en
     parse_transcript(ensemblTranscripts, ensemblParsedTranscripts)
 
 def parse_variants(ensemblGermSNPResults, ensemblParsedGermVariants):
+    """
+    Takes a file of germline mutations and the genes that they occur in, and returns a file of mutations and their types.
+    ensemblParsedGermVariants - A file of 25-tuples, with one on each line.
+        The first element is the Ensembl transcript ID.
+        The second element is mutation ID.
+        The third element is the Ensembl gene ID that the transcript in the first element comes from.
+        The fourth element is the amino acid change cause by the mutation ('NA' if no change is caused/known).
+        Elements five through twenty-five indicate the consequence of the mutation identified in the second element on the transcript in the first element. A 1 for an element indicates that the consequence corresponding to the element occurs.
+            The order of the primary sites in the tuple is the same as the dictionary consequenceDict in the code.
+    """
 
+    # The possible types of mutation, and their index in the mutation information tuple.
     consequenceDict = {'3PRIME_UTR' : 4, '5PRIME_UTR' : 5, 'CODING_UNKNOWN' : 6, 'COMPLEX_INDEL' : 7,
                        'DOWNSTREAM' : 8, 'ESSENTIAL_SPLICE_SITE' : 9, 'FRAMESHIFT_CODING' : 10, 'INTERGENIC' : 11,
                        'INTRONIC' : 12, 'NMD_TRANSCRIPT' : 13, 'NON_SYNONYMOUS_CODING' : 14, 'PARTIAL_CODON' : 15,
                        'REGULATORY_REGION' : 16, 'SPLICE_SITE' : 17, 'STOP_GAINED' : 18, 'STOP_LOST' : 19,
                        'SYNONYMOUS_CODING' : 20, 'TRANSCRIPTION_FACTOR_BINDING_MOTIF' : 21, 'UPSTREAM' : 22,
                        'WITHIN_MATURE_miRNA' : 23, 'WITHIN_NON_CODING_GENE' : 24}
+    # The initialised empty tuple.
     defaultTuple = ['trans', 'variant', 'gene', 'NA', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     readIn = open(ensemblGermSNPResults, 'r')
     writeOut = open(ensemblParsedGermVariants, 'w')
     currentGene = ''
-    validSNPTransPairs = set([])
-    geneSNPTransPairs = {}
+    geneSNPTransPairs = {}  # Records the tuples of the mutation information for each gene.
     for line in readIn:
         chunks = line[:-1].split('\t')
-        geneID = chunks[0]
+        geneID = chunks[0]  # The Ensembl gene ID of the gene involved in this mtuation relation is the first element of the line.
         if geneID != currentGene:
-            tuplesToWrite = set([geneSNPTransPairs[i]['tuple'] for i in geneSNPTransPairs.keys() if geneSNPTransPairs[i]['valid']])
+            # A new gene has been found (the file is ordered by genes, so all mutation related to one gene occur on contiguous lines).
+            tuplesToWrite = set([geneSNPTransPairs[i]['tuple'] for i in geneSNPTransPairs.keys() if geneSNPTransPairs[i]['valid']])  # Generate the tuple to write out for the last gene encountered.
             for i in tuplesToWrite:
+                # Write out all the tuples for the last gene encountered.
                 writeOut.write(str(i) + '\n')
             geneSNPTransPairs = {}
             currentGene = geneID
-        transcriptID = chunks[1]
-        variantID = chunks[2]
-        changeInAA = chunks[3]
-        consequence = chunks[4].split(',')
 
+        # The gene on the current line is the same as the one on the last line.
         currentTuple = list(defaultTuple)
-        currentTuple[0] = transcriptID
-        currentTuple[1] = variantID
-        currentTuple[2] = geneID
-        currentTuple[3] = 'NA' if changeInAA == '' else changeInAA
+        currentTuple[0] = chunks[1]  # Set the Ensembl transcript ID in the current tuple.
+        currentTuple[1] = chunks[2]  # Set the ID of the mutation found on the line.
+        currentTuple[2] = geneID  # Set the Ensembl gene ID of the gene found on the line.
+        changeInAA = chunks[3]  # Record the change in the amino acids in the protein sequence caused by the mutation.
+        currentTuple[3] = 'NA' if changeInAA == '' else changeInAA  # If no change in amino acids was recorded on the line, then set the change to 'NA'.
+        consequence = chunks[4].split(',')  # There can be multiple consequences of the mutation (UPSTREAM, DOWNSTREAM, ESSENTIAL_SPLICE_SITE, etc.), all separated by commas.
         for j in consequence:
+            # Set all entries in the tuple for the consequences observed for the mutation to 1. All other consequences remain 0.
             currentTuple[consequenceDict[j]] = 1
 
+        # The unique key for each mutation is the mutation ID combined with the transcript ID. This is because a mutation can affect multiple transcripts, and therefore will not be unique.
         key = tuple([transcriptID, variantID])
         if not geneSNPTransPairs.has_key(key):
+            # If the mutation ID transcript ID pair has not been seen before, then reocrd it for the first time.
             geneSNPTransPairs[key] = {'valid' : True, 'cons' : consequence, 'tuple' : tuple(currentTuple)}
         else:
             if geneSNPTransPairs[key]['valid'] == False:
-                # The (SNP, transcript) pair has already been marked as invalid.
+                # If the (SNP, transcript) pair has already been marked as invalid, then ignore it this time.
                 continue
             elif geneSNPTransPairs[key]['cons'] != consequence:
                 # There are two (or more) occurunces of the (SNP, transcript) pair, but the consequence(s) are not the same.
+                # Therefore, the mutation ID transcript ID pair should be marked as invalid.
                 geneSNPTransPairs[key]['valid'] = False
     writeOut.close()
     readIn.close()
 
 def parse_transcript(ensemblTranscripts, ensemblParsedTranscripts):
+    """
+    Takes a file containing genes, the number of transcripts they have and the type of those transcripts. Returns a file of gene transcript information.
+    ensemblParsedTranscripts - A file of 6-tuples, with one on each line.
+        The first element is the Ensembl gene ID.
+        The second element is the number of different transcripts that the gene in the first element generates.
+        The third element is the number of transcripts the gene in the first element generates that are protein coding.
+        The fourth element is the number of transcripts the gene in the first element generates that are retain intron.
+        The fifth element is the number of transcripts the gene in the first element generates that are processed transcript.
+        The sixth element is the number of transcripts the gene in the first element generates that are nonsense mediated decay.
+    """
 
     parsedOutput = {}
     readIn = open(ensemblTranscripts, 'r')
@@ -86,15 +112,6 @@ def parse_transcript(ensemblTranscripts, ensemblParsedTranscripts):
             parsedOutput[ensemblGeneID]['ProcessedTranscript'] = processedTranscript
             parsedOutput[ensemblGeneID]['NonsenseMediatedDecay'] = nonsenseMediatedDecay
     readIn.close()
-
-
-    #####################################################################################REMOVE
-    for i in parsedOutput.keys():
-        if parsedOutput[i]['Count'] != (parsedOutput[i]['ProteinCoding'] + parsedOutput[i]['RetainedIntron'] +
-                                        parsedOutput[i]['ProcessedTranscript'] +
-                                        parsedOutput[i]['NonsenseMediatedDecay']):
-            print 'ERROR: missing transcript biotype for gene ', i
-    #####################################################################################REMOVE
 
     parsedOutput = [tuple([i, parsedOutput[i]['Count'], parsedOutput[i]['ProteinCoding'], parsedOutput[i]['RetainedIntron'],
                            parsedOutput[i]['ProcessedTranscript'], parsedOutput[i]['NonsenseMediatedDecay']])

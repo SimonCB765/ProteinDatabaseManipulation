@@ -95,7 +95,26 @@ parseDB
 		The fifth element is a semi-colon separated list of PubChem CIDs that DrugBank has linked to the drugs.
 parseEnsembl
 	parse_variants
+		Takes a file of germline mutations and the genes that they occur in, and returns a file of mutations and their types.
+		ParsedGermVariants (ensemblParsedGermVariants) - A file of 25-tuples, with one on each line.
+			The first element is the Ensembl transcript ID.
+			The second element is mutation ID.
+			The third element is the Ensembl gene ID that the transcript in the first element comes from.
+			The fourth element is the amino acid change cause by the mutation ('NA' if no change is caused/known).
+			Elements five through twenty-five indicate the consequence of the mutation identified in the second element on the transcript in the first element. A 1 for an element indicates that the consequence corresponding to the element occurs.
+				The order of the consequences in the tuple is:
+					3PRIME_UTR, 5PRIME_UTR, CODING_UNKNOWN, COMPLEX_INDEL, DOWNSTREAM, ESSENTIAL_SPLICE_SITE, FRAMESHIFT_CODING, INTERGENIC, INTRONIC, NMD_TRANSCRIPT, NON_SYNONYMOUS_CODING,
+					PARTIAL_CODON, REGULATORY_REGION, SPLICE_SITE, STOP_GAINED, STOP_LOST, SYNONYMOUS_CODING, TRANSCRIPTION_FACTOR_BINDING_MOTIF, UPSTREAM, WITHIN_MATURE_miRNA,
+					WITHIN_NON_CODING_GENE
 	parse_transcript
+		Takes a file containing genes, the number of transcripts they have and the type of those transcripts. Returns a file of gene transcript information.
+		ParsedTranscript (ensemblParsedTranscripts) - A file of 6-tuples, with one on each line.
+			The first element is the Ensembl gene ID.
+			The second element is the number of different transcripts that the gene in the first element generates.
+			The third element is the number of transcripts the gene in the first element generates that are protein coding.
+			The fourth element is the number of transcripts the gene in the first element generates that are retain intron.
+			The fifth element is the number of transcripts the gene in the first element generates that are processed transcript.
+			The sixth element is the number of transcripts the gene in the first element generates that are nonsense mediated decay.
 	update_xref_and_ensembl_IDs
 		Takes two files containing the cross-referencing of representative human UniProt accessions with Ensembl gene IDs, Ensembl transcript IDs, Ensembl protein IDs, Entrez Gene IDs, UniGene cluster IDs and HGNC gene IDs.
 		Returns two files.
@@ -124,6 +143,25 @@ parseGO
 		The fifth element is all the level one terms along the paths. These are all the terms that are in a path in element four and are diect descendants of the category in element three.
 		The sixth element is all the level two terms along the paths. These are all the terms that are in a path in element four and are diect descendants of the terms in element five.
 parseHomologs
+	Takes files containing the Ensembl Perl API scripts and the list of Ensembl gene IDs linked to UniProt represetnative accessions (along with temporary files for the storing of the homolg data).
+	Returns a files containing the homolog information for all the Ensembl gene IDs linked to a representative UniProt accession, and two files containing the mappings of the taxonomy IDs to organisms used in the Esnembl databases.
+	EnsemblTaxonomyMap (ensemblTaxonomyMap) - A tab separated (tsv) file, with two elements on each line.
+		The first element is the organism ID.
+		The second element is the name of the organism that corresponds to the ID in the first element.
+	EnsemblGenomesTaxonomyMap (ensemblGenomesTaxonomyMap) - A tab separated (tsv) file, with two elements on each line.
+		The first element is the organism ID.
+		The second element is the name of the organism that corresponds to the ID in the first element.
+	EnsemblParsedHomologs (ensemblParsedHomology) - A file containing 10-tuples, with one on each line.
+		The first element is the human Ensembl gene ID.
+		The second element is the ID of the gene that is homologus to the gene in the first element.
+		The third element is the organism that the gene in the second element comes from.
+		The fourth element is the type of homolog.
+		The fifth element is the most recent common ancestor of the genes in the first two elements.
+		The sixth element is a value for dN (non-synonymous substitutions per non-synonymous site) (-1.0 if a value is not present in Ensembl for this).
+		The seventh element is a value for dS (synonymous substitutions per synonymous site) (-1.0 if a value is not present in Ensembl for this).
+		The eighth element is the percentage of the peptide which has been aligned (-1.0 if a value is not present in Ensembl for this).
+		The ninth element is the percentage of identity between both homologs (-1.0 if a value is not present in Ensembl for this).
+		The tenth element is the percentage of positivity (similarity) between both homologs (-1.0 if a value is not present in Ensembl for this).
 parsePepstats
 parsePSIBLAST
 parseSEG

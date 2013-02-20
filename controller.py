@@ -180,20 +180,47 @@ def main(args):
     ensemblGeneIDs = folderEnsembl + '/EnsemblGeneIDs.txt'  # A file with one Ensembl gene ID on each line.
     ensemblExternalIDsOne = folderEnsembl + '/ExternalOne.txt'  # Two external ID files are needed due to Ensembl Biomart limitations on the number of types of external ID that can be downloaded in one request.
     ensemblExternalIDsTwo = folderEnsembl + '/ExternalTwo.txt'  # Two external ID files are needed due to Ensembl Biomart limitations on the number of types of external ID that can be downloaded in one request.
-    ensemblTranscripts = folderEnsembl + '/Transcript.txt'
-    ensemblParsedTranscripts = folderEnsembl + '/ParsedTranscript.txt'
-    ensemblGermSNPResults = folderEnsembl + '/GermSNPs.txt'
-    ensemblParsedGermVariants = folderEnsembl + '/ParsedGermVariants.txt'
+    ensemblTranscripts = folderEnsembl + '/Transcript.txt'  # The file containing the results of extracting the transcript information from Ensembl using the Perl API.
+    ensemblParsedTranscripts = folderEnsembl + '/ParsedTranscript.txt'  # A file of 6-tuples, with one on each line.
+																		# The first element is the Ensembl gene ID.
+																		# The second element is the number of different transcripts that the gene in the first element generates.
+																		# The third element is the number of transcripts the gene in the first element generates that are protein coding.
+																		# The fourth element is the number of transcripts the gene in the first element generates that are retain intron.
+																		# The fifth element is the number of transcripts the gene in the first element generates that are processed transcript.
+																		# The sixth element is the number of transcripts the gene in the first element generates that are nonsense mediated decay.
+    ensemblGermSNPResults = folderEnsembl + '/GermSNPs.txt'  # The file containing the results of extracting the germline variants from Ensembl using the Perl API.
+    ensemblParsedGermVariants = folderEnsembl + '/ParsedGermVariants.txt'  # A file of 25-tuples, with one on each line.
+																		   # The first element is the Ensembl transcript ID.
+																		   # The second element is mutation ID.
+																		   # The third element is the Ensembl gene ID that the transcript in the first element comes from.
+																		   # The fourth element is the amino acid change cause by the mutation ('NA' if no change is caused/known).
+																		   # Elements five through twenty-five indicate the consequence of the mutation identified in the second element on the transcript in the first element. A 1 for an element indicates that the consequence corresponding to the element occurs.
+																		   # 	The order of the primary sites in the tuple is the same as the dictionary consequenceDict in the code.
+	ensemblTaxonomyMap = folderEnsembl + '/EnsemblTaxonomyMap.txt'  # A tab separated (tsv) file, with two elements on each line.
+																	# The first element is the organism ID.
+																	# The second element is the name of the organism that corresponds to the ID in the first element.
+    ensemblHomologData = folderEnsembl + '/EnsemblHomologs.txt'  # Homology data from the compara database using the standard mutli species set of species.
+	ensemblGenomesTaxonomyMap = folderEnsembl + '/EnsemblGenomesTaxonomyMap.txt'  # A tab separated (tsv) file, with two elements on each line.
+																				  # The first element is the organism ID.
+																				  # The second element is the name of the organism that corresponds to the ID in the first element.
+    ensemblGenomesHomologData = folderEnsembl + '/EnsemblGenomesHomologs.txt'  # Homology data from teh compara database using the pan_homology set of species.
+    ensemblParsedHomology = folderEnsembl + '/EnsemblParsedHomologs.txt'  # A file containing 10-tuples, with one on each line.
+																		  # The first element is the human Ensembl gene ID.
+																		  # The second element is the ID of the gene that is homologus to the gene in the first element.
+																		  # The third element is the organism that the gene in the second element comes from.
+																		  # The fourth element is the type of homolog.
+																		  # The fifth element is the most recent common ancestor of the genes in the first two elements.
+																		  # The sixth element is a value for dN (non-synonymous substitutions per non-synonymous site) (-1.0 if a value is not present in Ensembl for this).
+																		  # The seventh element is a value for dS (synonymous substitutions per synonymous site) (-1.0 if a value is not present in Ensembl for this).
+																		  # The eighth element is the percentage of the peptide which has been aligned (-1.0 if a value is not present in Ensembl for this).
+																		  # The ninth element is the percentage of identity between both homologs (-1.0 if a value is not present in Ensembl for this).
+																		  # The tenth element is the percentage of positivity (similarity) between both homologs (-1.0 if a value is not present in Ensembl for this).
 
     # Ensembl Perl API files used.
-    ensemblVariationScript = folderEnsemblPerlAPI + '/EnsemblVariant.pl'
-    ensemblHomologScript = folderEnsemblPerlAPI + '/EnsemblHomologs.pl'
-    ensemblTaxonomyMap = folderEnsembl + '/EnsemblTaxonomyMap.txt'
-    ensemblHomologData = folderEnsembl + '/EnsemblHomologs.txt'
-    ensemblGenomesHomologScript = folderEnsemblPerlAPI + '/EnsemblGenomesHomologs.pl'
-    ensemblGenomesTaxonomyMap = folderEnsembl + '/EnsemblGenomesTaxonomyMap.txt'
-    ensemblGenomesHomologData = folderEnsembl + '/EnsemblGenomesHomologs.txt'
-    ensemblParsedHomology = folderEnsembl + '/EnsemblParsedHomologs.txt'
+    ensemblVariationScript = folderEnsemblPerlAPI + '/EnsemblVariant.pl'  # The perl script used to extract the variant information from Ensembl.
+    ensemblHomologScript = folderEnsemblPerlAPI + '/EnsemblHomologs.pl'  # The perl script used to extract the standard multi species homology data from Ensembl Compara.
+    ensemblGenomesHomologScript = folderEnsemblPerlAPI + '/EnsemblGenomesHomologs.pl'  # The perl script used to extract the pan_homology homology data from Ensembl Compara.
+    
 
     # epestfind files used.
     epestfindExe = folderEpestfind + '/epestfind.exe'

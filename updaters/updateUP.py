@@ -19,14 +19,14 @@ import utilities.MySQLaccess as mysql
 def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, folderEpestfind, epestfindExe,
          folderPepstats, pepstatsExe, folderBLAST, psiblastExe, makeBLASTDatabaseExe, tableBLASTResults,
          databasePassword):
-    
+
     #===========================================================================
     # Extract and format the parsed protein data.
     #===========================================================================
     uniprotData = utilities.file2list.main(UPProteinInfo)
     uniprotData = [eval(i) for i in uniprotData]
     uniprotDict = dict([(i[0], i) for i in uniprotData])
-    
+
     #===========================================================================
     # Extract the protein information recorded in the database.
     #===========================================================================
@@ -34,7 +34,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
     cursor = mysql.tableSELECT(cursor, '*', tableProteinInfo)
     results = cursor.fetchall()
     mysql.closeConnection(conn, cursor)
-    
+
     #===========================================================================
     # Compare the parsed data with the data recorded in the table.
     #===========================================================================
@@ -45,7 +45,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
     columns = cursor.fetchall()
     mysql.closeConnection(conn, cursor)
     columns = [i[0] for i in columns]
-    
+
     toRemove = []
     toUpdate = {}
     toAdd = uniprotDict.keys()
@@ -65,7 +65,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
             toRemove.append(i[0])
     values = '(' + ('%s,' * len(uniprotData[0]))
     values = values[:-1] + ')'
-    
+
     # Record the proteins that have had their sequence changed/are newly added. These will need sequence properties
     # calculated, BLASTing and to have predictions made.
     sequenceChanged = [i for i in toUpdate.keys() if sequenceIndex in toUpdate[i]]
@@ -75,7 +75,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
     sequenceNotChangedDict = dict([(i, uniprotDict[i][-1]) for i in sequenceNotChanged])
     sequenceOfAllProteins = [i for i in set(sequenceChanged).union(sequenceNotChanged)]
     sequenceOfAllProteinsDict = dict([(i, uniprotDict[i][-1]) for i in sequenceOfAllProteins])
-    
+
     #===========================================================================
     # Remove rows from the table that are not in the parsed file.
     #===========================================================================
@@ -84,7 +84,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
         cursor = mysql.rowDELETE(cursor, tableProteinInfo, 'UPAccession="' + i + '"')
         mysql.closeConnection(conn, cursor)
     print '\tEntries removed from the UniProt table: ', len(toRemove)
-    
+
     #===========================================================================
     # Update rows that have different values in the parsed file and the table.
     #===========================================================================
@@ -98,7 +98,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
         cursor = mysql.tableUPDATE(cursor, tableProteinInfo, toSet, 'UPAccession="' + i + '"')
         mysql.closeConnection(conn, cursor)
     print '\tEntries updated in the UniProt table: ', len(toUpdate)
-    
+
     #===========================================================================
     # Add rows which are not in the table, but are in the parsed file.
     #===========================================================================
@@ -107,11 +107,11 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
     cursor = mysql.tableINSERT(cursor, tableProteinInfo, values, rowsToAdd)
     mysql.closeConnection(conn, cursor)
     print '\tEntries added to the UniProt table: ', len(toAdd)
-    
+
     if len(sequenceChanged) > 0:
         # If some sequences have changed then the annotations and BLASTing can be performed.
         print '\tNow annotating added/altered proteins.'
-    
+
         #===========================================================================
         # Annotate the proteins which have just been added to the table, or had
         # their sequence updated.
@@ -123,7 +123,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
                                  tableProteinInfo, databasePassword)
         os.remove(proteinFasta)
         os.remove(SEGOutput)
-        
+
         # Calculate the number of pest motifs.
         proteinFasta = folderEpestfind + '/TempEpestfindFasta.fasta'
         epestfindOutput = folderEpestfind + '/TempEpestfindOutput.txt'
@@ -131,7 +131,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
                              tableProteinInfo, databasePassword)
         os.remove(proteinFasta)
         os.remove(epestfindOutput)
-        
+
         # Calculate simple sequence statistics.
         proteinFasta = folderPepstats + '/TempPepstatsFasta.fasta'
         pepstatsOutput = folderPepstats + '/TempPepstatsOutput.txt'
@@ -139,7 +139,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
                                  tableProteinInfo, databasePassword)
         os.remove(proteinFasta)
         os.remove(pepstatsOutput)
-        
+
         #===========================================================================
         # Use BLAST to determine the pairwise sequence identity of all the proteins
         # in the table. Not all sequence identities need to be calculated.
@@ -161,7 +161,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
             writeTo.write('>' + i + '\n')
             writeTo.write(sequenceOfAllProteinsDict[i] + '\n')
         writeTo.close()
-        
+
         # Set the non-unique PSI-BLAST parameters
         tempQuery = folderBLAST + '/TempQuery.fasta'
         evalue = ' -evalue 1'
@@ -173,7 +173,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
         dbsize = ' -dbsize 0'
         outputFormat = ' -outfmt "7 qseqid sseqid pident length evalue"'
         numThreads = ' -num_threads 2'
-        
+
         # Blast the new and updated proteins against all the proteins.
         tempBlastDatabaseFolder = folderBLAST + '/TempAllProtDB'
         os.mkdir(tempBlastDatabaseFolder)
@@ -196,7 +196,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
         shutil.rmtree(tempBlastDatabaseFolder)
         os.remove(changedAgainstAllOutput)
         os.remove(tempQuery)
-        
+
         # Blast the non-updated proteins against the new and updated proteins, provided there are some unchanged ones.
         if len(sequenceNotChanged) > 0:
             tempBlastDatabaseFolder = folderBLAST + '/TempAddedAndChangedProtDB'
@@ -220,10 +220,10 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
             shutil.rmtree(tempBlastDatabaseFolder)
             os.remove(sameAgainstChangedOutput)
             os.remove(tempQuery)
-        
+
         os.remove(changedFasta)
         os.remove(allProteinsFasta)
-        
+
         # Enter the BLAST information into the blast results table.
         conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
         matchesFound = {}
@@ -253,7 +253,7 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
                     matchesFound[index]['Similarity'] = similarity
                     matchesFound[index]['Tuple'] = tuple([query, hit, similarity, length, eValue])
         readIn.close()
-        
+
         tuplesToAdd = []
         for i in matchesFound:
             query = matchesFound[i]['Tuple'][0]
@@ -278,64 +278,64 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
 
 def calculate_low_complexity(sequenceChangedDict, SEGExe, proteinFasta, SEGOutput, schemaProteins,
                              tableProteinInfo, databasePassword):
-    
+
     conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
-    
+
     for i in sequenceChangedDict.keys():
         # Run every protein in the table through segmasker.
         UPAcc = i
         seq = sequenceChangedDict[i]
-        
+
         # Create a FASTA format file for the protein. This is the input format used for segmasker.
         SEGInput = open(proteinFasta, 'w')
         SEGInput.write('>' + UPAcc + '\n')
         SEGInput.write(seq)
         SEGInput.close()
-        
+
         # Run segmasker on the fasta file just created.
         subprocess.call(SEGExe + ' -in ' + proteinFasta + ' -out ' + SEGOutput)
-        
+
         # Parse the segmasker output file to determine if there are any low complexity regions.
         numLowComplexity = parsers.parseSEG.main(SEGOutput)
-        
+
         # Write the number of low complexity regions into the LowComplexity column of the protein being analysed.
         cursor = mysql.tableUPDATE(cursor, tableProteinInfo, 'LowComplexity=' + str(numLowComplexity), 'UPAccession = \'' + UPAcc + '\'')
-        
-    
+
+
     mysql.closeConnection(conn, cursor)
 
 def calculate_pest_motif(sequenceChangedDict, epestfindExe, proteinFasta, epestfindOutput, schemaProteins,
                          tableProteinInfo, databasePassword):
-    
+
     # Connect to the specified schema.
     conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
-    
+
     for i in sequenceChangedDict.keys():
         # Run every protein in the table through epestfind.
         UPAcc = i
         seq = sequenceChangedDict[i]
-        
+
         # Create a FASTA format file for the protein. This is the input format used for epestfind.
         epestfindInput = open(proteinFasta, 'w')
         epestfindInput.write('>' + UPAcc + '\n')
         epestfindInput.write(seq)
         epestfindInput.close()
-        
+
         # Run epestfind on the fasta file just created.
         subprocess.call(epestfindExe + ' -sequence ' + proteinFasta + ' -outfile ' + epestfindOutput + ' -auto -window 10 -order score -graph none')
-        
+
         # Parse the epestfind output file to determine if there is a valid PEST motif.
         motifPresent = parsers.parseepestfind.main(epestfindOutput)
-        
+
         # Write the number of valid PEST motifs into the PESTMotif column of the protein being analysed.
         cursor = mysql.tableUPDATE(cursor, tableProteinInfo, 'PESTMotif=' + str(motifPresent), 'UPAccession = \'' + UPAcc + '\'')
-        
-    
+
+
     mysql.closeConnection(conn, cursor)
 
 def calculate_sequence_stats(sequenceChangedDict, pepstatsExe, proteinFasta, pepstatsOutput, schemaProteins,
                              tableProteinInfo, databasePassword):
-    
+
     # Create the lists of the different types of amino acids. trueAAs are the 20 amino acids that are coded for by the genetic code.
     aminoAcids = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
     trueAAs = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
@@ -354,9 +354,9 @@ def calculate_sequence_stats(sequenceChangedDict, pepstatsExe, proteinFasta, pep
     hydro = {'A' : 1.8, 'C' : 2.5, 'D' : -3.5, 'E' : -3.5, 'F' : 2.8, 'G' : -0.4, 'H' : -3.2, 'I' : 4.5,
              'K' : -3.9, 'L' : 3.8, 'M' : 1.9, 'N' : -3.5, 'P' : -1.6, 'Q' : -3.5, 'R' : -4.5, 'S' : -0.8,
              'T' : -0.7, 'V' : 4.2, 'W' : -0.9, 'Y' : -1.3}
-    
+
     conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
-    
+
     #===========================================================================
     # Run pepstats on all the proteins.
     #===========================================================================
@@ -367,20 +367,20 @@ def calculate_sequence_stats(sequenceChangedDict, pepstatsExe, proteinFasta, pep
         pepstatsInput.write('>' + UPAcc + '\n')
         pepstatsInput.write(seq + '\n')
     pepstatsInput.close()
-        
+
     # Run Pepstats on the newly created fasta file.
     subprocess.call(pepstatsExe + ' -sequence ' + proteinFasta + ' -outfile ' + pepstatsOutput + ' -auto')
-    
+
     # Parse the Pepstats output file to get the isoelectric point of the protein.
     pIDict = parsers.parsePepstats.main(pepstatsOutput)
-    
+
     for i in sequenceChangedDict.keys():
         UPAcc = i
         pI = pIDict[UPAcc]['pI']
-        
+
         # Write the isoelectric point into the Isoelectric column of the protein being analysed.
         cursor = mysql.tableUPDATE(cursor, tableProteinInfo, 'Isoelectric=' + str(pI), 'UPAccession = \'' + UPAcc + '\'')
-    
+
     #===========================================================================
     # Calculate the sequence statistics for the proteins.
     #===========================================================================
@@ -389,20 +389,20 @@ def calculate_sequence_stats(sequenceChangedDict, pepstatsExe, proteinFasta, pep
         UPAcc = i
         seq = sequenceChangedDict[i]
         seqLen = len(seq)
-        
+
         # Go through the amino acids in the sequence and sum up the different types.
         for aa in seq:
             index = aminoAcids.index(aa)
             stats[index] += 1
-        
+
         # Compensate for the fact that not all amino acids recorded in the sequence will be from the 20 coded for by the genome.
-        
+
 ##        # Remove O, U and X from the count of amino acids
 ##        O = stats[aminoAcids.index('O')]
 ##        U = stats[aminoAcids.index('U')]
 ##        X = stats[aminoAcids.index('X')]
 ##        seqLen = seqLen - O - U - X
-        
+
         # B corresponds to asparagine (N) or aspartic acid (D)
         # Get the number of N and the number of D and treat a B as N/(N+D) asparagines and D/(N+D) aspartic acids
         B = stats[aminoAcids.index('B')]
@@ -454,7 +454,7 @@ def calculate_sequence_stats(sequenceChangedDict, pepstatsExe, proteinFasta, pep
 
             # Calculate the hydrophobicity information.
             hydroCalc = hydroCalc + (stats[aminoAcids.index(i)] * hydro[i])
-            
+
             # Determine the number of tiny, small, etc etc amino acids.
             if i in tinyAAs:
                 tinySum += stats[aminoAcids.index(i)]
@@ -476,7 +476,7 @@ def calculate_sequence_stats(sequenceChangedDict, pepstatsExe, proteinFasta, pep
                 negativelyChargedSum += stats[aminoAcids.index(i)]
             if i in positivelyCharged:
                 positivelyChargedSum += stats[aminoAcids.index(i)]
-        
+
         # Calculate the mean hydrophobicity of the sequence.
         hydroCalc /= seqLen
         cursor = mysql.tableUPDATE(cursor, tableProteinInfo, 'Hydrophobicity=' + str(hydroCalc), 'UPAccession = \'' + UPAcc + '\'')

@@ -26,13 +26,13 @@ def main(goSchema, parsedGO):
     # Extract the information from the GO schema that is necessary to build up the paths.
     cursorGO = mysql.tableSELECT(cursorGO, 'id, name, term_type, acc', 'term')
     result = cursorGO.fetchall()
-    
+
     # Turn the information extracted from the GO schema into a dictionary indexed by the identifiers of the GO terms.
     resultsDict = dict([(x[0], x[1:]) for x in result])
-    
+
     # recordsToInsert will contain the information to insert into the GO path schema.
-    recordsToInsert = []    
-    
+    recordsToInsert = []
+
     # For every term work out the name of the term, which of the three types of GO term it is, all the paths from the
     # term to the root terms (which are the three types), all unique level 1 and level 2 terms along the path.
     # A level 1 term is a child term of the root. A level 2 term is a child of a level 1 term.
@@ -47,7 +47,7 @@ def main(goSchema, parsedGO):
             startType = entry[1]
             pathDict[startID] = ['#' + startName]
             toCheck = [startID]
-            
+
             while toCheck != []:
                 # In order to determine all of the paths from a term to the root nodes, we treat the set of GO terms
                 # as a directed graph. The direction of the edges is from parent to child. In the traversal we only go
@@ -88,27 +88,27 @@ def main(goSchema, parsedGO):
                         pathDict[uniqueID] = list(set(pathDict[uniqueID]))
                     # Add the superterm to the list of terms that need their superterms evaluating.
                     toCheck.append(uniqueID)
-            
+
             # The final paths of interest are those recorded in the root node entry in the dictionary.
             final = pathDict[rootNode]
             levelOne = []
             levelTwo = []
             path = []
-            
+
             for f in final:
                 # For every path from the initial term to the root term, find the level 1 and level 2 terms.
                 chunks = f.split('#')
-                
+
                 # Rather than setting the level 1 terms to be the 2nd and 3rd terms respectively, they are the 3rd and 4th.
                 # This is because the GO database defines a term 'all' which is a dummy root node.
                 if len(chunks) > 3:
                     levelOne.append(chunks[3])
                 if len(chunks) > 4:
                     levelTwo.append(chunks[4])
-                
+
                 # Create the path that will be recorded in the database. Ignore the 'all' dummy root.
                 path.append('#'.join(chunks[2:]))
-            
+
             # Ensure only unique level 1 and level 2 terms are recorded.
             levelOne = list(set(levelOne))
             if levelOne == []:
@@ -121,10 +121,10 @@ def main(goSchema, parsedGO):
             else:
                 level2 = ';'.join(levelTwo)
             path = ';'.join(path)
-            
+
             # Create the list of tuples to enter into the database.
             recordsToInsert.append((resultsDict[r][2][3:], startName, startType, path, level1, level2))
-    
+
     mysql.closeConnection(connGO, cursorGO)
-    
+
     utilities.list2file.main(recordsToInsert, parsedGO)

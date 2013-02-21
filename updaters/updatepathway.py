@@ -8,7 +8,7 @@ import utilities.MySQLaccess as mysql
 import utilities.file2list
 
 def main(pathwayElements, UPHumanNames, UPHumanAccessionMap, databasePassword, schemaProteins, tablePathways):
-    
+
     # Generate the human accession mapping:
     UPAccMap = utilities.file2list.main(UPHumanAccessionMap)
     # Make a dictionary where the index is the, possibly deprecated UniProt accession, and the entry is the
@@ -17,7 +17,7 @@ def main(pathwayElements, UPHumanNames, UPHumanAccessionMap, databasePassword, s
     for i in UPAccMap:
         chunks = i.split()
         allUPID[chunks[0]] = chunks[1]
-    
+
     # Extract the names of the valid proteins.
     validProteinNames = utilities.file2list.main(UPHumanNames)
 
@@ -44,13 +44,12 @@ def main(pathwayElements, UPHumanNames, UPHumanAccessionMap, databasePassword, s
             else:
                 proteinData[cpath] = {'Names' : set(name.split(',')), 'UPAccessions' : set(UPAccession.split(',')), 'Pathways' : set([pathway])}
     readIn.close()
-    
+
     # Consolidate the pathway element information extracted. This means combining records with UniProt accessions
     # that map to the same accession, and removing any proteins that can't be found to have a known accession or
     # a valid name.
     consolidatedProteinData = {}
     for i in proteinData.keys():
-#        names = proteinData[i]['Names']
         UPAccessions = proteinData[i]['UPAccessions']
         pathways = proteinData[i]['Pathways']
         for j in UPAccessions:
@@ -66,11 +65,11 @@ def main(pathwayElements, UPHumanNames, UPHumanAccessionMap, databasePassword, s
             else:
                 # Don't use the names for anything right now.
                 pass
-    
+
     proteinTuples = []
     for i in consolidatedProteinData.keys():
         proteinTuples.append(tuple([i, len(consolidatedProteinData[i]['Pathways'])]))
-    
+
     values = '(' + ('%s,' * len(proteinTuples[0]))
     values = values[:-1] + ')'
     conn, cursor = mysql.openConnection(databasePassword, schemaProteins)

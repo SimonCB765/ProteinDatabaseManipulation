@@ -20,9 +20,10 @@ def main(tableToUse, outputDirectory, predictionDirection, seqsPerFile, maxSeqLe
         if os.path.exists(outputDirectory):
             shutil.rmtree(outputDirectory)
         os.mkdir(outputDirectory)
-    
+
     conn, cursor = mysql.openConnection(databasePassword, schemaProteins)
     if predictionDirection == 'OUTA':
+        # Output all proteins, whether or not they have a prediction made for them.
         cursor = mysql.tableSELECT(cursor, 'UPAccession, Sequence', tableToUse)
         results = cursor.fetchall()
         results = ['>' + '\n'.join([j[0], j[1]]) for j in results if len(j[1]) <= maxSeqLength]
@@ -34,6 +35,7 @@ def main(tableToUse, outputDirectory, predictionDirection, seqsPerFile, maxSeqLe
         for i in range(len(fileOutput)):
             utilities.list2file.main(fileOutput[i], outputDirectory + '/' + str(i) + '.fasta')
     elif predictionDirection == 'OUTS':
+        # Output only those proteins that do not already have a prediction mae for them.
         cursor = mysql.tableSELECT(cursor, 'UPAccession, Sequence', tableToUse, columnWithPredictions + '="NA"')
         results = cursor.fetchall()
         results = ['>' + '\n'.join([j[0], j[1]]) for j in results if len(j[1]) <= maxSeqLength]
@@ -45,6 +47,7 @@ def main(tableToUse, outputDirectory, predictionDirection, seqsPerFile, maxSeqLe
         for i in range(len(fileOutput)):
             utilities.list2file.main(fileOutput[i], outputDirectory + '/' + str(i) + '.fasta')
     elif predictionDirection == 'IN':
+        # Reading in predictions from the user.
         predFolderFiles = os.listdir(outputDirectory)
         fastaFiles = [i for i in predFolderFiles if i.split('.')[1] == 'fasta']
         fastaFilesNoExtension = [i.split('.')[0] for i in fastaFiles]

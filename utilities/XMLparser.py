@@ -8,11 +8,11 @@ import re
 
 class Tag(object):
     """A class to record the tags in an xml file.
-    
+
     Each Tag object functions as a node in a tree. It contains information about the parent Tag, children Tags and
     information about the parameters found in the tag heading and the data potentially recorded in the tag.
     """
-    
+
     def __init__(self, tagName, parent, parameters=''):
         self.tagName = tagName
         self.parent = parent
@@ -82,7 +82,7 @@ class XMLParser(object):
         self.XMLFile = XMLFile
         self.parseTree = None
         self.accessTree = None
-    
+
     def match_replacement(self, matchobj):
         """Used to replace matches when parsing the XML tags."""
         return 'a' * len(matchobj.group(0))
@@ -100,7 +100,7 @@ class XMLParser(object):
         currentParent = None
         currentTag = self.parseTree
         data = ''
-        
+
         # The parsing works by going through each line of the xml file character by character. The names of tags in the current
         # path are recorded in a stack of tag names (i.e. if the file is:
         # <drugs>
@@ -113,8 +113,8 @@ class XMLParser(object):
         # access to the Tag objects in the parse tree. The access tree contains for each Tag object in the parse tree, the
         # path that can be followed from the root to reach it. In this example 'drugs.drug.name' can be reached by:
         # parseTree.children[0].children[0]
-        # Therefore, the entry in the eaccess tree for 'drugs.drug.name' is [0,0].  
-        
+        # Therefore, the entry in the eaccess tree for 'drugs.drug.name' is [0,0].
+
         for line in readXML:
             if line[:2] == '<?':
                 # Skip the definition tags that start with a <?
@@ -151,7 +151,7 @@ class XMLParser(object):
 
                         accessStackName.pop()
                         accessStackChildPos.pop()
-                        
+
                         currentPos += len(tagEnd)
                     else:
                         # Found the start of a tag, or an empty tag.
@@ -186,10 +186,10 @@ class XMLParser(object):
                         else:
                             currentTag = Tag(tagName, currentParent, parameters='')
                         tagStack.append(currentTag)
-                        
+
                         accessStackName.append(tagName)
                         accessStackChildPos.append(len(currentParent.children))  # Get the location that the newly found Tag
-                                                                                 # will take in the record of children of the 
+                                                                                 # will take in the record of children of the
                                                                                  # parent Tag.
                         if not self.accessTree.has_key('.'.join(accessStackName)):
                             # If the tree recording the structure of the parse tree does not have an entry for the current
@@ -210,7 +210,7 @@ class XMLParser(object):
 
     def retrieve(self, terms):
         """Retrieves the Tag objects associated with the terms desired.
-        
+
         Terms take the form X.Y.Z where X, Y and Z are tags in the XML file, and Z is a child of Y which is a child of X."""
 
         # Extract the access paths for the terms of interest.
@@ -234,14 +234,14 @@ class XMLParser(object):
 
     def retrieve_data(self, terms):
         """Retrieves the data associated with the tags corresponding to the terms desired.
-        
+
         Terms take the form X.Y.Z where X, Y and Z are tags in the XML file, and Z is a child of Y which is a child of X.
         If one of the terms has no data, then it is returned as ......."""
 
         tags = self.retrieve(terms)
-        
+
         dataToReturn = {}
-        
+
         for i in tags:
             dataToReturn[i] = {}
             for j in tags[i]:
@@ -254,7 +254,7 @@ class XMLParser(object):
 
     def retrieve_data_and_params(self, terms):
         """Retrieves the data and parameters associated with the tags corresponding to the terms desired.
-        
+
         Terms take the form X.Y.Z where X, Y and Z are tags in the XML file, and Z is a child of Y which is a child of X.
         If one of the terms has no data, then it is returned as .......
         If one of the terms has no parameters the value for its parameters is returned as an empty dictionary."""
@@ -262,7 +262,7 @@ class XMLParser(object):
         tags = self.retrieve(terms)
 
         dataToReturn = {}
-        
+
         for i in tags:
             dataToReturn[i] = {}
             for j in tags[i]:
@@ -277,14 +277,14 @@ class XMLParser(object):
 
     def retrieve_params(self, terms):
         """Retrieves the parameters associated with the tags corresponding to the terms desired.
-        
+
         Terms take the form X.Y.Z where X, Y and Z are tags in the XML file, and Z is a child of Y which is a child of X.
         If one of the terms has no parameters the value for its parameters is returned as an empty dictionary."""
 
         tags = self.retrieve(terms)
-        
+
         dataToReturn = {}
-        
+
         for i in tags:
             dataToReturn[i] = {}
             for j in tags[i]:

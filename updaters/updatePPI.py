@@ -8,14 +8,14 @@ import utilities.MySQLaccess as mysql
 import utilities.file2list
 
 def main(UPPPIData, schemaProteins, tablePPI, databasePassword):
-    
+
     #===========================================================================
     # Extract and format the parsed gene data.
     #===========================================================================
     ppiData = utilities.file2list.main(UPPPIData)
     ppiData = [eval(i) for i in ppiData]
     ppiDict = dict([(tuple([i[0], i[1]]), i) for i in ppiData])
-    
+
     #===========================================================================
     # Extract the gene information recorded in the database.
     #===========================================================================
@@ -23,7 +23,7 @@ def main(UPPPIData, schemaProteins, tablePPI, databasePassword):
     cursor = mysql.tableSELECT(cursor, '*', tablePPI)
     results = cursor.fetchall()
     mysql.closeConnection(conn, cursor)
-    
+
     #===========================================================================
     # Compare the parsed data with the data recorded in the table.
     #===========================================================================
@@ -33,7 +33,7 @@ def main(UPPPIData, schemaProteins, tablePPI, databasePassword):
     columns = cursor.fetchall()
     mysql.closeConnection(conn, cursor)
     columns = [i[0] for i in columns]
-    
+
     toRemove = []
     toUpdate = {}
     toAdd = ppiDict.keys()
@@ -55,7 +55,7 @@ def main(UPPPIData, schemaProteins, tablePPI, databasePassword):
             toRemove.append(dictKey)
     values = '(' + ('%s,' * len(ppiData[0]))
     values = values[:-1] + ')'
-    
+
     #===========================================================================
     # Remove rows from the table that are not in the parsed file.
     #===========================================================================
@@ -64,7 +64,7 @@ def main(UPPPIData, schemaProteins, tablePPI, databasePassword):
         cursor = mysql.rowDELETE(cursor, tablePPI, 'PPIProteinOne="' + i[0] + '" AND PPIProteinTwo="' + i[1] + '"')
         mysql.closeConnection(conn, cursor)
     print '\tEntries removed from the PPI table: ', len(toRemove)
-    
+
     #===========================================================================
     # Update rows that have different values in the parsed file and the table.
     #===========================================================================
@@ -78,7 +78,7 @@ def main(UPPPIData, schemaProteins, tablePPI, databasePassword):
         cursor = mysql.tableUPDATE(cursor, tablePPI, toSet, 'PPIProteinOne="' + i[0] + '" AND PPIProteinTwo="' + i[1] + '"')
         mysql.closeConnection(conn, cursor)
     print '\tEntries updated in the PPI table: ', len(toUpdate)
-    
+
     #===========================================================================
     # Add rows which are not in the table, but are in the parsed file.
     #===========================================================================

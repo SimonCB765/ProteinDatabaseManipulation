@@ -100,21 +100,21 @@ def main(args):
     bindingSDF = folderBindingDB + '/BindingDB2D.sdf'  # A file containing information about interactions between compounds and targets.
     binding2PubChem = folderBindingDB + '/BDB_cid.txt'  # A file containing mappings from BindingDb compound IDs to PubChem CIDs.
     bindingParsed = folderBindingDB + '/BindingDBParsed.txt'  # A tab separated file (tsv), with four elements on each line.
-															  # The first element is the UniProt accessions targeted by a compound.
-															  # The second element is the CID of the compound that targets the UniProt accessions in the first element.
-															  # The third element is the Ki for the interaction between the compound in element two and the proteins in element one.
-															  # The fourth element is the Kd for the interaction between the compound in element two and the proteins in element one.
+                                                              # The first element is the UniProt accessions targeted by a compound.
+                                                              # The second element is the CID of the compound that targets the UniProt accessions in the first element.
+                                                              # The third element is the Ki for the interaction between the compound in element two and the proteins in element one.
+                                                              # The fourth element is the Kd for the interaction between the compound in element two and the proteins in element one.
 
     # Biomart files used.
     biomartScript = folderBiomart + '/biomartquery.pl'  # The location of the script that submits queries to Biomart.
     biomartQuery = folderBiomart + '/BiomartQuery.xml'  # The location where all Biomart XML queries are stored before being submitted.
 
     # BLAST files used.
-    psiblastExe = folderBLAST + '/psiblast.exe'
-    makeBLASTDatabaseExe = folderBLAST + '/makeblastdb.exe'
+    psiblastExe = folderBLAST + '/psiblast.exe'  # Location of the PSI-BLAST executable.
+    makeBLASTDatabaseExe = folderBLAST + '/makeblastdb.exe'  # Location of the executable to make a BLAST database.
 
     # File of all known FDA approved cancer drug targets.
-    cancerTargets = folderCancerTargets + '/CancerDrugs.txt'
+    cancerTargets = folderCancerTargets + '/CancerDrugs.txt'  # Location of the file containing all the known FDA approved cancer targets.
 
     # Cancer Gene Census files used.
     CGCData = folderCGC + '/cancer_gene_census.tsv'  # A file containing the Cancer Gene Census data.
@@ -131,50 +131,50 @@ def main(args):
     # ChEMBL files used.
     completeChEMBLDatabase = folderChEMBL + '/ChEMBL.sql'  # The ChEMBL database.
     ChEMBLUPAccessions = folderChEMBL + '/UPAccessions.txt'  # A tab separated (tsv) file, with seven elements on each line. There is one line for each protein that an approved target targets.
-															 # The first element is the UniProt accession for the target protein.
-															 # The second element is ChEMBL ID of the compound.
-															 # The third element is the name of the protein in the first element.
-															 # The fourth element is the activity relation (=, <, <=, > or >=).
-															 # The fifth element is the value of the activity observed between the compound and the protein.
-															 # The sixth element is the units of the value in the fifth element.
-															 # The seventh element is the type of activity measured (Ki, Kd, EC50, etc.)
+                                                             # The first element is the UniProt accession for the target protein.
+                                                             # The second element is ChEMBL ID of the compound.
+                                                             # The third element is the name of the protein in the first element.
+                                                             # The fourth element is the activity relation (=, <, <=, > or >=).
+                                                             # The fifth element is the value of the activity observed between the compound and the protein.
+                                                             # The sixth element is the units of the value in the fifth element.
+                                                             # The seventh element is the type of activity measured (Ki, Kd, EC50, etc.)
     ChEMBLCID = folderChEMBL + '/PubChemCIDs.txt'  # A tab separated (tsv) file, with two elements on each line.
-												   # The first element is the ChEMBL compound ID.
-												   # The second element is the PubChem CID that corresponds to the ChEMBL compound ID in the first element.
+                                                   # The first element is the ChEMBL compound ID.
+                                                   # The second element is the PubChem CID that corresponds to the ChEMBL compound ID in the first element.
 
     # COSMIC files used.
     cosmicData = folderCOSMIC + '/CosmicCompleteExport_v59_220512.tsv'  # The file containing all the COSMIC data.
     cosmicParsedGene = folderCOSMIC + '/COSMICParsedGene.txt'  # A file of tuples with forty-nine elements, with on tuple on each line.
-															   # The first element is the gene ID.
-															   # The second element is the Ensembl transcript ID that corresponds to the gene ID in the first element.
-															   # The third element is the HGNC gene ID that corresponds to the gene ID in the first element.
-															   # Elements four through forty-nine indicate the number of times that the gene in the first element was observed in each of the forty-six primary sites.
-															   # 	The order of the primary sites in the tuple is the same as the list primarySites in the parseCOSMIC script.
+                                                               # The first element is the gene ID.
+                                                               # The second element is the Ensembl transcript ID that corresponds to the gene ID in the first element.
+                                                               # The third element is the HGNC gene ID that corresponds to the gene ID in the first element.
+                                                               # Elements four through forty-nine indicate the number of times that the gene in the first element was observed in each of the forty-six primary sites.
+                                                               #     The order of the primary sites in the tuple is the same as the list primarySites in the parseCOSMIC script.
     cosmicParsedGene2Mutation = folderCOSMIC + '/COSMICParsedGene2Mutation.txt'  # A file of tuples with two elements, with one tuple on each line.
-																				 # The first element is the gene ID.
-																				 # The second element is the mutation ID.
+                                                                                 # The first element is the gene ID.
+                                                                                 # The second element is the mutation ID.
     cosmicParsedMutation = folderCOSMIC + '/COSMICParsedMutation.txt'  # A file of tuples with sixty-five elements, with on tuple on each line.
-																	   # The first element is the mutation ID.
-																	   # The second element is the amino acid change.
-																	   # The third element is 'Somatic', 'Unknown' or 'Germline' depending on whether the mutation is somatic, unknown or germline respectively.
-																	   # Elements four through twenty indicate the type of the mutation in the first element. Only one of the sixteen options will be set to 1 (indicating the mutation is of that type), the rest will be set to 0.
-																	   # 	The order of the mutation types in the tuple is the same as the list mutationTypes in the parseCOSMIC script.
-																	   # Elements twenty-one through sixty-five indicate the number of times that the mutation in the first element was observed in each of the forty-six primary sites.
-																	   # 	The order of the primary sites in the tuple is the same as the list primarySites in the parseCOSMIC script.
+                                                                       # The first element is the mutation ID.
+                                                                       # The second element is the amino acid change.
+                                                                       # The third element is 'Somatic', 'Unknown' or 'Germline' depending on whether the mutation is somatic, unknown or germline respectively.
+                                                                       # Elements four through twenty indicate the type of the mutation in the first element. Only one of the sixteen options will be set to 1 (indicating the mutation is of that type), the rest will be set to 0.
+                                                                       #     The order of the mutation types in the tuple is the same as the list mutationTypes in the parseCOSMIC script.
+                                                                       # Elements twenty-one through sixty-five indicate the number of times that the mutation in the first element was observed in each of the forty-six primary sites.
+                                                                       #     The order of the primary sites in the tuple is the same as the list primarySites in the parseCOSMIC script.
 
     # DrugBank files used.
     DBTargetFasta = folderDB + '/DrugBankApprovedTargets.fasta'  # A FASTA format file containing all the approved protein drug targets in DrugBank.
     DBTargetExternalLinks = folderDB + '/ExternalTargetLinks.csv'  # A csv file containing the external database cross-references for the DrugBank targets.
-	DBXML = folderDB + '/DrugBank.xml'  # All the drugs in DrugBank, including their target information.
+    DBXML = folderDB + '/DrugBank.xml'  # All the drugs in DrugBank, including their target information.
     DBDrugIDs = folderDB + '/DBDrugs.txt'  # A tab separated (tsv) file, with five elements on each line.
-										   # The first element is the DrugBank ID of the drug.
-										   # The second element is the name of the drug as recorded by DrugBank.
-										   # The third element is a semi-colon separated list of all the DrugBank drug groups that the drug is a member of.
-										   # The fourth element is the CAS number of the drug as recorded by DrugBank.
-										   # The fifth element is a semi-colon separated list of PubChem CIDs that DrugBank has linked to the drugs.
+                                           # The first element is the DrugBank ID of the drug.
+                                           # The second element is the name of the drug as recorded by DrugBank.
+                                           # The third element is a semi-colon separated list of all the DrugBank drug groups that the drug is a member of.
+                                           # The fourth element is the CAS number of the drug as recorded by DrugBank.
+                                           # The fifth element is a semi-colon separated list of PubChem CIDs that DrugBank has linked to the drugs.
     DBTargetIDs = folderDB + '/DBTargets.txt'  # A tab separated (tsv) file, with two elements on each line.
-											   # The first element is a UniProt accession of an approved drug target.
-											   # The second element is a semi-colon separated list of all the drugs that are approved and target the protein in the first element.
+                                               # The first element is a UniProt accession of an approved drug target.
+                                               # The second element is a semi-colon separated list of all the drugs that are approved and target the protein in the first element.
 
     # Ensembl files used.
     ensemblGeneIDs = folderEnsembl + '/EnsemblGeneIDs.txt'  # A file with one Ensembl gene ID on each line.
@@ -182,48 +182,48 @@ def main(args):
     ensemblExternalIDsTwo = folderEnsembl + '/ExternalTwo.txt'  # Two external ID files are needed due to Ensembl Biomart limitations on the number of types of external ID that can be downloaded in one request.
     ensemblTranscripts = folderEnsembl + '/Transcript.txt'  # The file containing the results of extracting the transcript information from Ensembl using the Perl API.
     ensemblParsedTranscripts = folderEnsembl + '/ParsedTranscript.txt'  # A file of 6-tuples, with one on each line.
-																		# The first element is the Ensembl gene ID.
-																		# The second element is the number of different transcripts that the gene in the first element generates.
-																		# The third element is the number of transcripts the gene in the first element generates that are protein coding.
-																		# The fourth element is the number of transcripts the gene in the first element generates that are retain intron.
-																		# The fifth element is the number of transcripts the gene in the first element generates that are processed transcript.
-																		# The sixth element is the number of transcripts the gene in the first element generates that are nonsense mediated decay.
+                                                                        # The first element is the Ensembl gene ID.
+                                                                        # The second element is the number of different transcripts that the gene in the first element generates.
+                                                                        # The third element is the number of transcripts the gene in the first element generates that are protein coding.
+                                                                        # The fourth element is the number of transcripts the gene in the first element generates that are retain intron.
+                                                                        # The fifth element is the number of transcripts the gene in the first element generates that are processed transcript.
+                                                                        # The sixth element is the number of transcripts the gene in the first element generates that are nonsense mediated decay.
     ensemblGermSNPResults = folderEnsembl + '/GermSNPs.txt'  # The file containing the results of extracting the germline variants from Ensembl using the Perl API.
     ensemblParsedGermVariants = folderEnsembl + '/ParsedGermVariants.txt'  # A file of 25-tuples, with one on each line.
-																		   # The first element is the Ensembl transcript ID.
-																		   # The second element is mutation ID.
-																		   # The third element is the Ensembl gene ID that the transcript in the first element comes from.
-																		   # The fourth element is the amino acid change cause by the mutation ('NA' if no change is caused/known).
-																		   # Elements five through twenty-five indicate the consequence of the mutation identified in the second element on the transcript in the first element. A 1 for an element indicates that the consequence corresponding to the element occurs.
-																		   # 	The order of the primary sites in the tuple is the same as the dictionary consequenceDict in the code.
-	ensemblTaxonomyMap = folderEnsembl + '/EnsemblTaxonomyMap.txt'  # A tab separated (tsv) file, with two elements on each line.
-																	# The first element is the organism ID.
-																	# The second element is the name of the organism that corresponds to the ID in the first element.
+                                                                           # The first element is the Ensembl transcript ID.
+                                                                           # The second element is mutation ID.
+                                                                           # The third element is the Ensembl gene ID that the transcript in the first element comes from.
+                                                                           # The fourth element is the amino acid change cause by the mutation ('NA' if no change is caused/known).
+                                                                           # Elements five through twenty-five indicate the consequence of the mutation identified in the second element on the transcript in the first element. A 1 for an element indicates that the consequence corresponding to the element occurs.
+                                                                           #     The order of the primary sites in the tuple is the same as the dictionary consequenceDict in the code.
+    ensemblTaxonomyMap = folderEnsembl + '/EnsemblTaxonomyMap.txt'  # A tab separated (tsv) file, with two elements on each line.
+                                                                    # The first element is the organism ID.
+                                                                    # The second element is the name of the organism that corresponds to the ID in the first element.
     ensemblHomologData = folderEnsembl + '/EnsemblHomologs.txt'  # Homology data from the compara database using the standard mutli species set of species.
-	ensemblGenomesTaxonomyMap = folderEnsembl + '/EnsemblGenomesTaxonomyMap.txt'  # A tab separated (tsv) file, with two elements on each line.
-																				  # The first element is the organism ID.
-																				  # The second element is the name of the organism that corresponds to the ID in the first element.
+    ensemblGenomesTaxonomyMap = folderEnsembl + '/EnsemblGenomesTaxonomyMap.txt'  # A tab separated (tsv) file, with two elements on each line.
+                                                                                  # The first element is the organism ID.
+                                                                                  # The second element is the name of the organism that corresponds to the ID in the first element.
     ensemblGenomesHomologData = folderEnsembl + '/EnsemblGenomesHomologs.txt'  # Homology data from teh compara database using the pan_homology set of species.
     ensemblParsedHomology = folderEnsembl + '/EnsemblParsedHomologs.txt'  # A file containing 10-tuples, with one on each line.
-																		  # The first element is the human Ensembl gene ID.
-																		  # The second element is the ID of the gene that is homologus to the gene in the first element.
-																		  # The third element is the organism that the gene in the second element comes from.
-																		  # The fourth element is the type of homolog.
-																		  # The fifth element is the most recent common ancestor of the genes in the first two elements.
-																		  # The sixth element is a value for dN (non-synonymous substitutions per non-synonymous site) (-1.0 if a value is not present in Ensembl for this).
-																		  # The seventh element is a value for dS (synonymous substitutions per synonymous site) (-1.0 if a value is not present in Ensembl for this).
-																		  # The eighth element is the percentage of the peptide which has been aligned (-1.0 if a value is not present in Ensembl for this).
-																		  # The ninth element is the percentage of identity between both homologs (-1.0 if a value is not present in Ensembl for this).
-																		  # The tenth element is the percentage of positivity (similarity) between both homologs (-1.0 if a value is not present in Ensembl for this).
+                                                                          # The first element is the human Ensembl gene ID.
+                                                                          # The second element is the ID of the gene that is homologus to the gene in the first element.
+                                                                          # The third element is the organism that the gene in the second element comes from.
+                                                                          # The fourth element is the type of homolog.
+                                                                          # The fifth element is the most recent common ancestor of the genes in the first two elements.
+                                                                          # The sixth element is a value for dN (non-synonymous substitutions per non-synonymous site) (-1.0 if a value is not present in Ensembl for this).
+                                                                          # The seventh element is a value for dS (synonymous substitutions per synonymous site) (-1.0 if a value is not present in Ensembl for this).
+                                                                          # The eighth element is the percentage of the peptide which has been aligned (-1.0 if a value is not present in Ensembl for this).
+                                                                          # The ninth element is the percentage of identity between both homologs (-1.0 if a value is not present in Ensembl for this).
+                                                                          # The tenth element is the percentage of positivity (similarity) between both homologs (-1.0 if a value is not present in Ensembl for this).
 
     # Ensembl Perl API files used.
     ensemblVariationScript = folderEnsemblPerlAPI + '/EnsemblVariant.pl'  # The perl script used to extract the variant information from Ensembl.
     ensemblHomologScript = folderEnsemblPerlAPI + '/EnsemblHomologs.pl'  # The perl script used to extract the standard multi species homology data from Ensembl Compara.
     ensemblGenomesHomologScript = folderEnsemblPerlAPI + '/EnsemblGenomesHomologs.pl'  # The perl script used to extract the pan_homology homology data from Ensembl Compara.
-    
+
 
     # epestfind files used.
-    epestfindExe = folderEpestfind + '/epestfind.exe'
+    epestfindExe = folderEpestfind + '/epestfind.exe'  # The location of the epestfind executable.
 
     # Gene Ontology files used.
     completeGODatabase = folderGO + '/go_daily-termdb-data'  # The GO database.
@@ -239,10 +239,10 @@ def main(args):
     pathwayElements = folderPathwayCommons + '/PathwayElements.txt'  # The file containing all the pathways in PathwayCommons, and their elements.
 
     # pepstats files used.
-    pepstatsExe = folderPepstats + '/pepstats.exe'
+    pepstatsExe = folderPepstats + '/pepstats.exe'  # The location of the pepstats executable.
 
     # SEG files used.
-    SEGExe = folderSEG + '/segmasker.exe'
+    SEGExe = folderSEG + '/segmasker.exe'  # The location of the SEG executable.
 
     # TTD files used.
     TTDTargets = folderTTD + '/TTDTargetDataset.txt'  # The TTD drug target database in the raw format.
@@ -310,25 +310,25 @@ def main(args):
     schemaProteins = 'proteindatabase'  # The schema used to hold the human protein information tables.
 
     # Names for the MySQL tables used to store information about the human proteome.
-    tableEnsemblGene = schemaProteins + '.ensemblgene'  # The table used to store information about Ensembl genes.
-    tableCancerGene = schemaProteins + '.cancergene'  # The table used to store information from Entrez Gene.
-    tableGOInfo = schemaProteins + '.goinfo'  # The table used to store information from the GO.
-    tableProteinInfo = schemaProteins + '.proteininfo'  # The table used to store information from UniProt.
-    tableBLASTResults = schemaProteins + '.blastresults'  # The table used to store the information about the protein similarity.
-    tableNonRedundant = schemaProteins + '.nonredundant'  # The table used to store the information about the non-redundant sets of proteins.
-    tablePPI = schemaProteins + '.ppi'  # The table used to store the information about the protein protin interactions.
-    tableGermVariants = schemaProteins + '.germvariants'  # The table used to store Ensembl information about germ line variants.
-    tableHomologs = schemaProteins + '.homologs'  # The table used to store the information about the protein homologs.
-    tableUniGene = schemaProteins + '.unigene'  # The table used to store information from UniGene.
-    tableUniGeneTotals = schemaProteins + '.unigenetotals'  # The table used to store the totals of the different expression options.
-    tableUniProt2Ensembl = schemaProteins + '.uniprot2ensembl'  # The table used to xref UniProt accessions and Ensembl Gene IDs.
-    tableUniProt2GO = schemaProteins + '.uniprot2go'  # The table used to xref UniProt accessions and GO term IDs.
-    tableUniProt2HGNC = schemaProteins + '.uniprot2hgnc'  # The table used to xref UniProt accessions and HGNC IDs.
-    tableUniProt2UniGene = schemaProteins + '.uniprot2unigene'  # The table used to xref UniProt accessions and UniGene IDs.
-    tableDrugs = schemaProteins + '.drugs'  # The table used to store the information about the approved drugs.
-    tablePathways = schemaProteins + '.pathways'  # The table used to store the information about the pathways.
-    tableStability = schemaProteins + '.stability'  # The table used to store the information about the protein stability.
-    tableCOSMICGene = schemaProteins + '.cosmicgene'  # The table used to store the COSMIC data.
+    tableEnsemblGene = schemaProteins + '.ensemblgene'  # Table recording the information about Ensembl genes.
+    tableCancerGene = schemaProteins + '.cancergene'  # A table containing information on the cancer implication status of the proteins.
+    tableGOInfo = schemaProteins + '.goinfo'  # A table containing information about GO terms.
+    tableProteinInfo = schemaProteins + '.proteininfo'  # A table containing the information about the proteins.
+    tableBLASTResults = schemaProteins + '.blastresults'  # A table recording the results of an all-against-all BLASTing of the proteins.
+    tableNonRedundant = schemaProteins + '.nonredundant'  # A table indicating the redundancy of proteins in different datasets.
+    tablePPI = schemaProteins + '.ppi'  # A table containing information about the binary PPIs.
+    tableGermVariants = schemaProteins + '.germvariants'  # A table containing information about germline mutations.
+    tableHomologs = schemaProteins + '.homologs'  # Table recording the homologs of human proteins.
+    tableUniGene = schemaProteins + '.unigene'  # Table recording the UniGene expression clusters.
+    tableUniGeneTotals = schemaProteins + '.unigenetotals'  # Table recording the totals for each UniGene expression possibility.
+    tableUniProt2Ensembl = schemaProteins + '.uniprot2ensembl'  # Table cross-referencing UniProt accessions with Ensembl gene, transcript and protein IDs.
+    tableUniProt2GO = schemaProteins + '.uniprot2go'  # Table cross-referencing UniProt accessions and GO term IDs.
+    tableUniProt2HGNC = schemaProteins + '.uniprot2hgnc'  # Table cross-referencing UniProt accessions and HGNC gene IDs.
+    tableUniProt2UniGene = schemaProteins + '.uniprot2unigene'  # Table cross-referencing UniProt accessions and UniGene cluster IDs.
+    tableDrugs = schemaProteins + '.drugs'  # A table containing information on the FDA approved drugs.
+    tablePathways = schemaProteins + '.pathways'  # A table containing pathway information about the proteins.
+    tableStability = schemaProteins + '.stability'  # A table containing stability information about the proteins.
+    tableCOSMICGene = schemaProteins + '.cosmicgene'
     tableCOSMICGene2Mutation = schemaProteins + '.cosmicgene2mutation'
     tableCOSMICMutation = schemaProteins + '.cosmicmutation'
 
@@ -420,7 +420,7 @@ def main(args):
 
     # Records whether the genetic algorithm data should be generated.
     doGADataGenerate = False  # doGADataGenerate is True if the user selects to generate the GA data.
-    viewToGenerateFrom = ''  # The view from which the GA data should be generated from. If you want to get the data about all proteins then you would do all_all_targ
+    viewToGenerateFrom = ''  # The view from which the GA data should be generated from. If you want to get the data about all proteins then you would do all_all_targ.
     viewEndings = ['nr_n', 'nr_p']  # These are the endings on the view (i.e. the characters that come after the final '_'. Supplied in the same order as the classification.
     GAClassifications = ['Unlabelled', 'Positive']  # The names for the two classifications.
 
@@ -604,7 +604,7 @@ def main(args):
             parsers.parseEnsembl.main(ensemblTranscripts, ensemblParsedTranscripts, ensemblGermSNPResults, ensemblParsedGermVariants)
 
             # Extract and parse the homolog information from Ensembl.
-			parsers.parseHomologs.main(ensemblHomologScript, ensemblTaxonomyMap, ensemblHomologData,
+            parsers.parseHomologs.main(ensemblHomologScript, ensemblTaxonomyMap, ensemblHomologData,
                                        ensemblGenomesHomologScript, ensemblGenomesTaxonomyMap,
                                        ensemblGenomesHomologData, ensemblParsedHomology, ensemblGeneIDs)
         if 'COSMIC' in toParse:
@@ -725,6 +725,7 @@ def main(args):
     #===========================================================================
     if doGADataGenerate:
         # Assumes that the columns are identical for both tables/views.
+        # Generate the output files for the dataset generation.
         print '\nGenerating GA Data File.'
         outputDirectory = folderGAData + '/' + viewToGenerateFrom.upper()
         if os.path.isdir(outputDirectory):
@@ -739,6 +740,7 @@ def main(args):
         bodySiteLocation = outputDirectory + '/BodySite.txt'
         developmentalStageLocation = outputDirectory + '/DevelopmentalStage.txt'
 
+        # Create a dictionary containing a mapping from every dataset view to the name of the column in tableNonRedundant that corresponds to it.
         viewDict = {viewAllAllTargNRN : 'AllTargetNegative', viewAllAllTargNRP : 'AllTargetPositive',
                     viewTypeGPCRTargNRN : 'GPCRTargetNegative', viewTypeGPCRTargNRP : 'GPCRTargetPositive',
                     viewTypeIonTargNRN : 'IonChannelTargetNegative', viewTypeIonTargNRP : 'IonChannelTargetPositive',
@@ -749,76 +751,96 @@ def main(args):
                     viewIllCancerTypeNRN : 'CancerTypeNegative', viewIllCancerTypeNRP : 'CancerTypePositive',
                     viewIllCancerProtNRN : 'CancerProteinNegative', viewIllCancerProtNRP : 'CancerProteinPositive'
                     }
-        positiveColumn = viewDict[schemaProteins + '.' + viewToGenerateFrom + '_' + viewEndings[1]]
-        negativeColumn = viewDict[schemaProteins + '.' + viewToGenerateFrom + '_' + viewEndings[0]]
+        positiveColumn = viewDict[schemaProteins + '.' + viewToGenerateFrom + '_' + viewEndings[1]]  # Get the name of the positive observation column in tableNonRedundant.
+        unlabelledColumn = viewDict[schemaProteins + '.' + viewToGenerateFrom + '_' + viewEndings[0]]  # Get the name of the unlabelled observation column in tableNonRedundant.
 
+        # Ideally you would just SELECT * FROM viewToGenerateFrom. However, the view is so complex to generate that it is substantially quicker to
+        # extract the data from the the tables themselves, and then generate the view's data manually. (At least for me it is)
         conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)
+        # Get the column names from the view that the dataset is being generated from.
         cursor.execute('SHOW COLUMNS FROM ' + viewToGenerateFrom + '_' + viewEndings[1])
         columns = cursor.fetchall()
         columns = [i[0] for i in columns]
 
+        # Get the name of all the column in the non-redundant dataset table.
         nonredColumns = cursor.execute('SHOW COLUMNS FROM ' + tableNonRedundant)
         nonredColumns = cursor.fetchall()
         nonredColumns = [i[0] for i in nonredColumns]
+        # Get the data from the non-redundant dataset table.
         nonredundantProteins = cursor.execute('SELECT * FROM ' + tableNonRedundant)
         nonredundantProteins = cursor.fetchall()
-        positiveProteinAccs = [i[0] for i in nonredundantProteins if i[nonredColumns.index(positiveColumn)] == 'Y']
-        negativeProteinAccs = [i[0] for i in nonredundantProteins if i[nonredColumns.index(negativeColumn)] == 'Y']
+        positiveProteinAccs = [i[0] for i in nonredundantProteins if i[nonredColumns.index(positiveColumn)] == 'Y']  # Determine the UniProt accessions of the proteins in the positive dataset.
+        unlabelledProteinAccs = [i[0] for i in nonredundantProteins if i[nonredColumns.index(unlabelledColumn)] == 'Y']  # Determine the UniProt accessions of the proteins in the unlabelled dataset.
 
+        # Get the names of the columns in the UniProt protein information table.
         protColumns = cursor.execute('SHOW COLUMNS FROM ' + tableProteinInfo)
         protColumns = cursor.fetchall()
         protColumns = [i[0] for i in protColumns]
+        # Get the data in the UniProt protien information table.
         proteins = cursor.execute('SELECT * FROM ' + tableProteinInfo)
         proteins = cursor.fetchall()
-        positiveProteins = dict([(i[0], i) for i in proteins if i[0] in positiveProteinAccs])
-        negativeProteins = dict([(i[0], i) for i in proteins if i[0] in negativeProteinAccs])
+        positiveProteins = dict([(i[0], i) for i in proteins if i[0] in positiveProteinAccs])  # Get the UniProt protein information for the proteins in the positive dataset.
+        unlabelledProteins = dict([(i[0], i) for i in proteins if i[0] in unlabelledProteinAccs])  # Get the UniProt protein information for the proteins in the unlabelled dataset.
 
+        # Get the names of the columns from the stability information table.
         stabilityColumns = cursor.execute('SHOW COLUMNS FROM ' + tableStability)
         stabilityColumns = cursor.fetchall()
         stabilityColumns = [i[0] for i in stabilityColumns]
+        # Get the data from teh stability information table.
         stability = cursor.execute('SELECT * FROM ' + tableStability)
         stability = cursor.fetchall()
-        positiveStability = dict([(i[0], i) for i in stability if i[0] in positiveProteinAccs])
-        negativeStability = dict([(i[0], i) for i in stability if i[0] in negativeProteinAccs])
+        positiveStability = dict([(i[0], i) for i in stability if i[0] in positiveProteinAccs])  # Get the stability information for the proteins in the positive dataset.
+        unlabelledStability = dict([(i[0], i) for i in stability if i[0] in unlabelledProteinAccs])  # Get the stability information for the proteins int he unlabelled dataset.
 
+        # Get the data from the PPI information views.
         ppi = cursor.execute('SELECT * FROM ' + schemaProteins + '.upacc_ppi')
         ppi = cursor.fetchall()
-        positivePPI = dict([(i[0], i) for i in ppi if i[0] in positiveProteinAccs])
-        negativePPI = dict([(i[0], i) for i in ppi if i[0] in negativeProteinAccs])
+        positivePPI = dict([(i[0], i) for i in ppi if i[0] in positiveProteinAccs])  # Get the PPI information for the proteins in the positive dataset.
+        unlabelledPPI = dict([(i[0], i) for i in ppi if i[0] in unlabelledProteinAccs])  # Get the PPI information for the proteins in the positive dataset.
 
+        # Get the names of the columns in the expression information view.
         expressionColumns = cursor.execute('SHOW COLUMNS FROM ' + schemaProteins + '.upacc_expression')
         expressionColumns = cursor.fetchall()
         expressionColumns = [i[0] for i in expressionColumns]
+        # Get the data from teh expression information view.
         expression = cursor.execute('SELECT * FROM ' + schemaProteins + '.upacc_expression')
         expression = cursor.fetchall()
-        positiveExpression = dict([(i[0], i) for i in expression if i[0] in positiveProteinAccs])
-        negativeExpression = dict([(i[0], i) for i in expression if i[0] in negativeProteinAccs])
+        positiveExpression = dict([(i[0], i) for i in expression if i[0] in positiveProteinAccs])  # Get the expression information for the proteins in the positive dataset.
+        unlabelledExpression = dict([(i[0], i) for i in expression if i[0] in unlabelledProteinAccs])  # Get the expression information for the proteins in the positive dataset.
 
+        # Get the names of the columns from the paralogs view.
         paralogColumns = cursor.execute('SHOW COLUMNS FROM ' + schemaProteins + '.upacc_paralogs')
         paralogColumns = cursor.fetchall()
         paralogColumns = [i[0] for i in paralogColumns]
+        # Get the data from the paralogs view.
         paralog = cursor.execute('SELECT * FROM ' + schemaProteins + '.upacc_paralogs')
         paralog = cursor.fetchall()
-        positiveParalog = dict([(i[0], i) for i in paralog if i[0] in positiveProteinAccs])
-        negativeParalog = dict([(i[0], i) for i in paralog if i[0] in negativeProteinAccs])
+        positiveParalog = dict([(i[0], i) for i in paralog if i[0] in positiveProteinAccs])  # Get the paralog information for the proteins in the positive dataset.
+        unlabelledParalog = dict([(i[0], i) for i in paralog if i[0] in unlabelledProteinAccs])  # Get the paralog information for the proteins in the positive dataset.
 
+        # Get the column names from the transcript view.
         transcriptColumns = cursor.execute('SHOW COLUMNS FROM ' + schemaProteins + '.upacc_transcripts')
         transcriptColumns = cursor.fetchall()
         transcriptColumns = [i[0] for i in transcriptColumns]
+        # Get the data from the transcript view.
         transcript = cursor.execute('SELECT * FROM ' + schemaProteins + '.upacc_transcripts')
         transcript = cursor.fetchall()
-        positiveTranscript = dict([(i[0], i) for i in transcript if i[0] in positiveProteinAccs])
-        negativeTranscript = dict([(i[0], i) for i in transcript if i[0] in negativeProteinAccs])
+        positiveTranscript = dict([(i[0], i) for i in transcript if i[0] in positiveProteinAccs])  # Get the transcript information for the proteins in the positive dataset.
+        unlabelledTranscript = dict([(i[0], i) for i in transcript if i[0] in unlabelledProteinAccs])  # Get the transcript information for the proteins in the positive dataset.
 
+        # Get the column names from the germline mutations view.
         variantColumns = cursor.execute('SHOW COLUMNS FROM ' + schemaProteins + '.upacc_germvariants')
         variantColumns = cursor.fetchall()
         variantColumns = [i[0] for i in paralogColumns]
+        # Get the data from the germline mutations view.
         variant = cursor.execute('SELECT * FROM ' + schemaProteins + '.upacc_germvariants')
         variant = cursor.fetchall()
         positiveVariant = {}
-        negativeVariant = {}
+        unlabelledVariant = {}
         for i in variant:
+            # For every mutation.
             if i[0] in positiveProteinAccs:
+                # Get the germline mutation information for the proteins in the positive dataset.
                 if positiveVariant.has_key(i[0]):
                     positiveVariant[i[0]]['3untrans'] += i[2]
                     positiveVariant[i[0]]['5untrans'] += i[3]
@@ -826,24 +848,25 @@ def main(args):
                     positiveVariant[i[0]]['synon'] += i[5]
                 else:
                     positiveVariant[i[0]] = {'3untrans' : i[2], '5untrans' : i[3], 'nonsynon' : i[4], 'synon' : i[5]}
-            elif i[0] in negativeProteinAccs:
-                if negativeVariant.has_key(i[0]):
-                    negativeVariant[i[0]]['3untrans'] += i[2]
-                    negativeVariant[i[0]]['5untrans'] += i[3]
-                    negativeVariant[i[0]]['nonsynon'] += i[4]
-                    negativeVariant[i[0]]['synon'] += i[5]
+            elif i[0] in unlabelledProteinAccs:
+                # Get the germline mutation information for the proteins in the positive dataset.
+                if unlabelledVariant.has_key(i[0]):
+                    unlabelledVariant[i[0]]['3untrans'] += i[2]
+                    unlabelledVariant[i[0]]['5untrans'] += i[3]
+                    unlabelledVariant[i[0]]['nonsynon'] += i[4]
+                    unlabelledVariant[i[0]]['synon'] += i[5]
                 else:
-                    negativeVariant[i[0]] = {'3untrans' : i[2], '5untrans' : i[3], 'nonsynon' : i[4], 'synon' : i[5]}
+                    unlabelledVariant[i[0]] = {'3untrans' : i[2], '5untrans' : i[3], 'nonsynon' : i[4], 'synon' : i[5]}
 
         mysql.closeConnection(conn, cursor)
 
-        resultsTarget = []
-        resultsNonTarget = []
-        for i in [[positiveProteinAccs, 'positive'], [negativeProteinAccs, 'negative']]:
+        resultsPositive = []  # Holds the data tuples for the positive observations.
+        resultsUnlabelled = []  # Holds the data tuples for the unlabelled observations.
+        for i in [[positiveProteinAccs, 'positive'], [unlabelledProteinAccs, 'unlabelled']]:
             for j in i[0]:
-                currentRecord = []
+                currentRecord = []  # Hold the current protein's data tuple.
 
-                # Protein properties.
+                # Put the protein properties into the current protein's data tuple.
                 if i[1] == 'positive':
                     for k in ['UPAccession', 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'P', 'N', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y',
                               'NegativelyCharged', 'PositivelyCharged', 'Basic', 'Charged', 'Polar', 'NonPolar', 'Aromatic', 'Aliphatic', 'Small', 'Tiny',
@@ -857,9 +880,9 @@ def main(args):
                               'PESTMotif', 'LowComplexity', 'Hydrophobicity', 'Isoelectric', 'ECNumber', 'OGlycosylation', 'NGlycosylation', 'Phosphoserine',
                               'Phosphothreonine', 'Phosphotyrosine', 'SubcellularLocation', 'TopologicalDomain', 'PredictedSubcellularLocation',
                               'SignalPeptide', 'TransmembraneHelices', 'AlphaHelices', 'BetaStrands', 'PredictedAlphaHelices', 'PredictedBetaSheets', 'Sequence']:
-                        currentRecord.append(negativeProteins[j][protColumns.index(k)])
+                        currentRecord.append(unlabelledProteins[j][protColumns.index(k)])
 
-                # Expression properties.
+                # Put the expression information into the current protein's data tuple.
                 if i[1] == 'positive':
                     for k in ['DS_Embryoid_Body', 'DS_Blastocyst', 'DS_Fetus', 'DS_Neonate', 'DS_Infant', 'DS_Juvenile', 'DS_Adult', 'HS_Adrenal_Tumor',
                               'HS_Bladder_Carcinoma', 'HS_Breast_Mammary_Gland_Tumor', 'HS_Cervical_Tumor', 'HS_Chondrosarcoma', 'HS_Colorectal_Tumor',
@@ -887,9 +910,9 @@ def main(args):
                               'BS_Ovary', 'BS_Pancreas', 'BS_Parathyroid', 'BS_Pharynx', 'BS_Pituitary_Gland', 'BS_Placenta', 'BS_Prostate',
                               'BS_Salivary_Gland', 'BS_Skin', 'BS_Spleen', 'BS_Stomach', 'BS_Testis', 'BS_Thymus', 'BS_Thyroid', 'BS_Tonsil', 'BS_Trachea',
                               'BS_Umbilical_Cord', 'BS_Uterus', 'BS_Vascular']:
-                        currentRecord.append(int(negativeExpression[j][expressionColumns.index(k)]))
+                        currentRecord.append(int(unlabelledExpression[j][expressionColumns.index(k)]))
 
-                # SNPs.
+                # Put the germline mutation information into the current protein's data tuple.
                 if i[1] == 'positive':
                     if positiveVariant.has_key(j):
                         currentRecord.append(positiveVariant[j]['3untrans'])
@@ -902,77 +925,76 @@ def main(args):
                         currentRecord.append(0)
                         currentRecord.append(0)
                 else:
-                    if negativeVariant.has_key(j):
-                        currentRecord.append(negativeVariant[j]['3untrans'])
-                        currentRecord.append(negativeVariant[j]['5untrans'])
-                        currentRecord.append(negativeVariant[j]['nonsynon'])
-                        currentRecord.append(negativeVariant[j]['synon'])
+                    if unlabelledVariant.has_key(j):
+                        currentRecord.append(unlabelledVariant[j]['3untrans'])
+                        currentRecord.append(unlabelledVariant[j]['5untrans'])
+                        currentRecord.append(unlabelledVariant[j]['nonsynon'])
+                        currentRecord.append(unlabelledVariant[j]['synon'])
                     else:
                         currentRecord.append(0)
                         currentRecord.append(0)
                         currentRecord.append(0)
                         currentRecord.append(0)
 
-                # Paralogs.
+                # Put the paralog information into the current protein's data tuple.
                 if i[1] == 'positive':
                     if positiveParalog.has_key(j):
                         currentRecord.append(int(positiveParalog[j][-1]))
                     else:
                         currentRecord.append(0)
                 else:
-                    if negativeParalog.has_key(j):
-                        currentRecord.append(int(negativeParalog[j][-1]))
+                    if unlabelledParalog.has_key(j):
+                        currentRecord.append(int(unlabelledParalog[j][-1]))
                     else:
                         currentRecord.append(0)
 
-                # PPI.
+                # Put the PPI information into the current protein's data tuple.
                 if i[1] == 'positive':
                     if positivePPI.has_key(j):
                         currentRecord.append(int(positivePPI[j][-1]))
                     else:
                         currentRecord.append(0)
                 else:
-                    if negativePPI.has_key(j):
-                        currentRecord.append(int(negativePPI[j][-1]))
+                    if unlabelledPPI.has_key(j):
+                        currentRecord.append(int(unlabelledPPI[j][-1]))
                     else:
                         currentRecord.append(0)
 
-                # Transcripts.
+                # Put the transcript information into the current protein's data tuple.
                 if i[1] == 'positive':
                     if positiveTranscript.has_key(j):
                         currentRecord.append(int(positiveTranscript[j][transcriptColumns.index('ProteinCodingTranscripts')]))
                     else:
                         currentRecord.append(1)
                 else:
-                    if negativeTranscript.has_key(j):
-                        currentRecord.append(int(negativeTranscript[j][transcriptColumns.index('ProteinCodingTranscripts')]))
+                    if unlabelledTranscript.has_key(j):
+                        currentRecord.append(int(unlabelledTranscript[j][transcriptColumns.index('ProteinCodingTranscripts')]))
                     else:
                         currentRecord.append(1)
 
-                # Stability properties.
+                # Put the stability information into the current protein's data tuple.
                 if i[1] == 'positive':
                     for k in ['HalfLife', 'InstabilityIndex']:
                         currentRecord.append(positiveStability[j][stabilityColumns.index(k)])
                 else:
                     for k in ['HalfLife', 'InstabilityIndex']:
-                        currentRecord.append(negativeStability[j][stabilityColumns.index(k)])
+                        currentRecord.append(unlabelledStability[j][stabilityColumns.index(k)])
 
                 if i[1] == 'positive':
-                    resultsTarget.append(tuple(currentRecord))
+                    resultsPositive.append(tuple(currentRecord))
                 else:
-                    resultsNonTarget.append(tuple(currentRecord))
+                    resultsUnlabelled.append(tuple(currentRecord))
 
-#        utilities.gadatageneration.fortran(resultsTarget, resultsNonTarget, columns, geneticAlgorithmProcessedData, columnDataLocation, ECDataLocation,
-#                                           subcellLocation, healthStateLocation, bodySiteLocation, developmentalStageLocation)
-#        utilities.gadatageneration.fortran_split(geneticAlgorithmProcessedData, classes=[1, 2], splits=5, outputLocation=outputDirectory)
-        utilities.gadatageneration.pulearning(resultsTarget, resultsNonTarget, columns, geneticAlgorithmProcessedData, categoricalMappingDataLocation,
+        # Generate the dataset and any additional information about the proteins in it (expression information, EC numbers, etc.).
+        utilities.gadatageneration.pulearning(resultsPositive, resultsUnlabelled, columns, geneticAlgorithmProcessedData, categoricalMappingDataLocation,
                                            columnDataLocation, ECDataLocation, subcellLocation, healthStateLocation, bodySiteLocation,
                                            developmentalStageLocation)
 
+        # Determine the GO term information for the proteins in the dataset.
         conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)
-        # Get the GO term data for the target proteins.
-        targetProteinAccs = [i[0] for i in resultsTarget]
-        cursor = mysql.tableSELECT(cursor, '*', tableUniProt2GO, 'UPAccession IN ("' + '","'.join(targetProteinAccs) + '")')
+        # Get the GO term data for the positive proteins.
+        positiveProteinAccs = [i[0] for i in resultsPositive]
+        cursor = mysql.tableSELECT(cursor, '*', tableUniProt2GO, 'UPAccession IN ("' + '","'.join(positiveProteinAccs) + '")')
         results = cursor.fetchall()
         targetGOIDs = {}
         for i in results:
@@ -1002,9 +1024,9 @@ def main(args):
                 if levelTwo != ['NA']:
                     targetGOTerms[UPAccession][GOType]['LevelTwo'].update(levelTwo)
 
-        # Get the GO term data for the non-target proteins.
-        nonTargetProteinAccs = [i[0] for i in resultsNonTarget]
-        cursor = mysql.tableSELECT(cursor, '*', tableUniProt2GO, 'UPAccession IN ("' + '","'.join(nonTargetProteinAccs) + '")')
+        # Get the GO term data for the unlabelled proteins.
+        unlabelledProteinAccs = [i[0] for i in resultsUnlabelled]
+        cursor = mysql.tableSELECT(cursor, '*', tableUniProt2GO, 'UPAccession IN ("' + '","'.join(unlabelledProteinAccs) + '")')
         results = cursor.fetchall()
         nonTargetGOIDs = {}
         for i in results:
@@ -1036,8 +1058,10 @@ def main(args):
 
         mysql.closeConnection(conn, cursor)
 
+        # Generate the summary GO term information for the positive and negative observations in the dataset.
         utilities.generateGOsummarydata.main(targetGOTerms, nonTargetGOTerms, outputDirectory)
 
+        # Perform the statistical analysis of the dataset and its supporting information (GO terms, EC numbers, etc.).
         subprocess.call(['Rscript.exe', folderGAData + '/StatisticalTests.R', outputDirectory, GAClassifications[0], GAClassifications[1]])
 
 if __name__ == '__main__':

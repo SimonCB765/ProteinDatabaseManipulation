@@ -8,7 +8,8 @@ import utilities.MySQLaccess as mysql
 
 def main(UPExternalLinks, tableUniProt2Ensembl, tableUniProt2GO, tableUniProt2UniGene, tableUniProt2HGNC,
          tableDict, schemaProteins, databasePassword):
-    
+
+    # Determine all the external database links for each represetnative UniProt accession.
     proteinLinks = {}
     readIn = open(UPExternalLinks, 'r')
     for line in readIn:
@@ -23,18 +24,23 @@ def main(UPExternalLinks, tableUniProt2Ensembl, tableUniProt2GO, tableUniProt2Un
                                    'HGNC' : hgncLinks, 'Ensembl' : ensemblLinks
                                    }
     readIn.close()
-    
+
     conn, cursor = mysql.openConnection(databasePassword, schemaProteins)
-    
+
     validXrefIDs = {'EnsemblGeneID' : set([]), 'GeneID' : set([]), 'GOTermID' : set([]), 'UPAccession' : set([]),
                     'UniGeneID' : set([]), 'EnsemblTranscriptID' : set([])}
     for i in tableDict.keys():
         for j in tableDict[i]:
+            # For each of the external databases with its own table in the database (e.g. Ensembl genes, UniGene, GO terms), determine which of the cross-references recorded
+            # are actually referencing a valid ID in the respective database.
+            # For example, if the file of cross-references says that UniProt accession U is linked to GO term 123, then make sure that 123 is in fact a valid Go term ID (i.e. that
+            # it is in the table that contains all the GO term IDs).
             cursor = mysql.tableSELECT(cursor, i, j)
             results = [k[0] for k in cursor.fetchall()]
             results = set(results)
             validXrefIDs[i] = validXrefIDs[i].union(results)
-    
+
+    # Determine all the UniProt accession cross-references that are referencing a valid external database identifier.
     entrezInsert = []
     unigeneInsert = []
     goInsert = []
@@ -57,12 +63,6 @@ def main(UPExternalLinks, tableUniProt2Ensembl, tableUniProt2GO, tableUniProt2Un
         for j in proteinLinks[i]['Ensembl']:
             if j[0] in validXrefIDs['EnsemblGeneID']:# and j[1] in validXrefIDs['EnsemblTranscriptID']:
                 ensemblInsert.append(tuple([i] + j))
-
-##    print '\tNow Recording Entrez Crossreferences.'    
-##    cursor.execute('TRUNCATE TABLE ' + tableUniProt2Entrez)
-##    values = '(' + ('%s,' * len(entrezInsert[0]))
-##    values = values[:-1] + ')'
-##    mysql.tableINSERT(cursor, tableUniProt2Entrez, values, entrezInsert)
 
     print '\tNow Recording UniGene Crossreferences.'
     cursor.execute('TRUNCATE TABLE ' + tableUniProt2UniGene)
@@ -87,5 +87,5 @@ def main(UPExternalLinks, tableUniProt2Ensembl, tableUniProt2GO, tableUniProt2Un
     values = '(' + ('%s,' * len(ensemblInsert[0]))
     values = values[:-1] + ')'
     mysql.tableINSERT(cursor, tableUniProt2Ensembl, values, ensemblInsert)
-    
+
     mysql.closeConnection(conn, cursor)

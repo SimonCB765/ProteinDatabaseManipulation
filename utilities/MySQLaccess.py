@@ -21,7 +21,7 @@ def openConnection(inputPass = 'root', database = '-----'):
     return @type - a MySQLdb cursor
     return @use  - the cursor corresponding to the returned connection
     """
-    
+
     if inputPass == '-----':
         inputPass = raw_input('Please input your root user MySQL password followed by the the enter key: ')
     if database == '-----':
@@ -44,7 +44,7 @@ def closeConnection(conn, cursor):
     cursor @type - a MySQLdb cursor
     cursor @use  - a MySQLdb cursor you want to close
     """
-    
+
     cursor.close()
     conn.commit()
     conn.close()
@@ -130,7 +130,7 @@ def tableALTER(cursor, table, alteration, column, location = 'NA'):
     """
 
     query = 'ALTER TABLE ' + table + ' ' + alteration + ' ' + column
-    
+
     if location != 'NA':
         query += ' '
         query += location
@@ -141,7 +141,7 @@ def tableALTER(cursor, table, alteration, column, location = 'NA'):
 def tableEXISTS(cursor, table):
     """Assumes that cursor is connected to the database from which you want to check if a table exists.
     CAN NOT give a table that has a '.' in front of it to this function"""
-    
+
     cursor.execute('SHOW TABLES LIKE \'' + table + '\'')
     return cursor
 
@@ -166,7 +166,7 @@ def schemaCreate(cursor, query):
     query @type - string with no leading or trailing whitespace
     query @use  - the portion of the MySQL query that comes after 'CREATE SCHEMA '
     """
-    
+
     cursor.execute('CREATE SCHEMA ' + query)
 
 def schemaDrop(cursor, query):
@@ -178,7 +178,7 @@ def schemaDrop(cursor, query):
     query @type - string with no leading or trailing whitespace
     query @use  - the portion of the MySQL query that comes after 'DROP SCHEMA '
     """
-    
+
     cursor.execute('DROP SCHEMA ' + query)
 
 def tableCreate(cursor, query):
@@ -190,7 +190,7 @@ def tableCreate(cursor, query):
     query @type - string with no leading or trailing whitespace
     query @use  - the portion of the MySQL query that comes after 'CREATE TABLE '
     """
-    
+
     cursor.execute('CREATE TABLE ' + query)
 
 def tableDrop(cursor, query):
@@ -202,5 +202,5 @@ def tableDrop(cursor, query):
     query @type - string with no leading or trailing whitespace
     query @use  - the portion of the MySQL query that comes after 'DROP TABLE '
     """
-    
+
     cursor.execute('DROP TABLE ' + query)

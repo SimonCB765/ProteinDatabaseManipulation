@@ -8,7 +8,7 @@ def main(inputFile):
     """Used to convert a file of elements into a list.
 
     Note: the file should have one element of the list on each line.
-    
+
     inputFile @type - string
     inputFile @use  - location of the file to convert to a list
     return @type - list

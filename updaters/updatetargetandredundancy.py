@@ -14,7 +14,7 @@ import utilities.MySQLaccess as mysql
 def main(DBDrugIDs, DBTargetIDs, TTDUPAccessions, ChEMBLUPAccessions, UPHumanAccessionMap,
          UPDrugIDs, pharmGKBDrugTargets, folderCulling, schemaProteins, tableProteinInfo, tableNonRedundant, tableBLASTResults,
          databasePassword, viewsDict):
-    
+
     allTargetsChEMBL = xref_chembl_uniprot(ChEMBLUPAccessions, UPHumanAccessionMap)
     allTargetsDB = xref_drugbank_uniprot(DBTargetIDs, UPHumanAccessionMap)
     allTargetsTTD = xref_TTD_uniprot(TTDUPAccessions, UPHumanAccessionMap)
@@ -23,7 +23,7 @@ def main(DBDrugIDs, DBTargetIDs, TTDUPAccessions, ChEMBLUPAccessions, UPHumanAcc
     print '\tTargets of approved drugs recorded by PharmGKB: ', len(allTargetPharmGKB)
     allTargets = list(set(allTargetsChEMBL) | set(allTargetsDB) | set(allTargetsTTD) | set(allTargetsUP) | set(allTargetPharmGKB))
     print '\tTotal number of unique targets found: ', len(allTargets)
-    
+
     # Extract mode of action and clear the target information.
     conn, cursor = mysql.openConnection(databasePassword, schemaProteins)
     cursor = mysql.tableSELECT(cursor, 'UPAccession, ModeOfAction', tableProteinInfo)
@@ -31,10 +31,9 @@ def main(DBDrugIDs, DBTargetIDs, TTDUPAccessions, ChEMBLUPAccessions, UPHumanAcc
     for i in resultsModeOfAction:
         upid = i[0]
         mysql.tableUPDATE(cursor, tableProteinInfo, 'Target="N"', 'UPAccession="' + upid + '"')
-##    cursor = mysql.tableSELECT(cursor, 'UPAccession, Target', tableProteinInfo)
-##    resultsTargets = cursor.fetchall()
     mysql.closeConnection(conn, cursor)
-    
+
+    # Generate the sets of proteins that are GPCRs, kinases, ion channels and proteases.
     gpcr = []
     kinases = []
     ionChannels = []
@@ -49,28 +48,17 @@ def main(DBDrugIDs, DBTargetIDs, TTDUPAccessions, ChEMBLUPAccessions, UPHumanAcc
         elif i[1] == 'Protease':
             proteases.append(i[0])
 
-##    proteinTargets = {}
-##    storedTargets = []
-##    for i in resultsTargets:
-##        target = False
-##        if i[1] == 'Y':
-##            target = True
-##            storedTargets.append(i[0])
-##        proteinTargets[i[0]] = target
-##    allProteins = proteinTargets.keys()
     noLongerTargets = []
     newTargets = allTargets
-##    storedNonTargets = [i for i in allProteins if i not in storedTargets]
-##    noLongerTargets = list(set(storedTargets) - set(allTargets))
-##    newTargets = list(set(allTargets) - set(storedTargets))
-    
+
+    # Update the table to indicate which proteins are targets.
     conn, cursor = mysql.openConnection(databasePassword, schemaProteins)
     for i in noLongerTargets:
         mysql.tableUPDATE(cursor, tableProteinInfo, 'Target="N"', 'UPAccession="' + i + '"')
     for i in newTargets:
         mysql.tableUPDATE(cursor, tableProteinInfo, 'Target="Y"', 'UPAccession="' + i + '"')
     mysql.closeConnection(conn, cursor)
-    
+
     # Check if the redundancy removal should be performed.
     if newTargets != [] or noLongerTargets != []:
         print '\tPerforming redundancy removal.'
@@ -80,7 +68,7 @@ def main(DBDrugIDs, DBTargetIDs, TTDUPAccessions, ChEMBLUPAccessions, UPHumanAcc
         cursor.execute('SHOW COLUMNS FROM ' + tableNonRedundant)
         numberColumns = len(cursor.fetchall())
         # Select all the proteins recorded in the database. The number of columns has one subtracted from it as the
-        # UP accession column does not take the default 'NA' value.
+        # UP accession column does not take the default value.
         cursor = mysql.tableSELECT(cursor, 'UPAccession', tableProteinInfo)
         allProteins = [tuple([i[0]] + (['N'] * (numberColumns - 1))) for i in cursor.fetchall()]
         # Wipe and refill the nonredundant table.
@@ -122,8 +110,8 @@ def main(DBDrugIDs, DBTargetIDs, TTDUPAccessions, ChEMBLUPAccessions, UPHumanAcc
 def xref_chembl_uniprot(ChEMBLUPAccessions, UPHumanAccessionMap):
     ChEMBlNonRepAccs = set([i.split('\t')[0] for i in utilities.file2list.main(ChEMBLUPAccessions)])
     UPAccMap = utilities.file2list.main(UPHumanAccessionMap)
-    
-    # Make a dictionary where the index is the, possibly deprecated UniProt accession, and the entry is the
+
+    # Make a dictionary where the index is the, possibly deprecated, UniProt accession and the entry is the
     # representative accession.
     allUPID = {}
     for i in UPAccMap:
@@ -134,22 +122,22 @@ def xref_chembl_uniprot(ChEMBLUPAccessions, UPHumanAccessionMap):
     validUPLinks = [allUPID[i] for i in ChEMBlNonRepAccs if allUPID.has_key(i)]
     validUPLinks = list(set(validUPLinks))
     validUPLinks.sort()
-    
+
     print '\tTargets of approved drugs recorded by ChEMBL: ', len(validUPLinks)
-    
+
     return validUPLinks
 
 def xref_drugbank_uniprot(DBTargetIDs, UPHumanAccessionMap):
     DBTargets = utilities.file2list.main(DBTargetIDs)
     UPAccMap = utilities.file2list.main(UPHumanAccessionMap)
-    
-    # Make a dictionary where the index is the, possibly deprecated UniProt accession, and the entry is the
+
+    # Make a dictionary where the index is the, possibly deprecated, UniProt accession and the entry is the
     # representative accession.
     allUPID = {}
     for i in UPAccMap:
         chunks = i.split()
         allUPID[chunks[0]] = chunks[1]
-    
+
     # Extract the UniProt accessions of the DrugBank targets.
     targetWithUPLink = [i.split('\t')[0] for i in DBTargets]
     # Determine which of the UniProt accessions from the DrugBank targets are for human proteins, and then convert all UniProt IDs
@@ -157,16 +145,16 @@ def xref_drugbank_uniprot(DBTargetIDs, UPHumanAccessionMap):
     validUPLinks = [allUPID[i] for i in targetWithUPLink if allUPID.has_key(i)]
     validUPLinks = list(set(validUPLinks))
     validUPLinks.sort()
-    
+
     print '\tTargets of approved drugs recorded by DrugBank: ', len(validUPLinks)
-    
+
     return validUPLinks
 
 def xref_TTD_uniprot(TTDUPAccessions, UPHumanAccessionMap):
     TTDNonRepAccs = utilities.file2list.main(TTDUPAccessions)
     UPAccMap = utilities.file2list.main(UPHumanAccessionMap)
-    
-    # Make a dictionary where the index is the, possibly deprecated UniProt accession, and the entry is the
+
+    # Make a dictionary where the index is the, possibly deprecated, UniProt accession and the entry is the
     # representative accession.
     allUPID = {}
     for i in UPAccMap:
@@ -177,16 +165,16 @@ def xref_TTD_uniprot(TTDUPAccessions, UPHumanAccessionMap):
     validUPLinks = [allUPID[i] for i in TTDNonRepAccs if allUPID.has_key(i)]
     validUPLinks = list(set(validUPLinks))
     validUPLinks.sort()
-    
+
     print '\tTargets of approved drugs recorded by the TTD: ', len(validUPLinks)
-    
+
     return validUPLinks
 
 def xref_uniprot_drugbank(UPDrugIDs, DBDrugIDs):
     accsDrugsUP = utilities.file2list.main(UPDrugIDs)
     drugIDsDB = [(i.split('\t')) for i in utilities.file2list.main(DBDrugIDs)]
     drugIDsDB = set([i[0] for i in drugIDsDB if 'approved' in i[2]])
-    
+
     approvedTargets = []
     for up in accsDrugsUP:
         chunks = up.split('\t')
@@ -202,5 +190,5 @@ def xref_uniprot_drugbank(UPDrugIDs, DBDrugIDs):
     approvedTargets.sort()
 
     print '\tTargets of approved drugs recorded by UniProt: ', str(len(approvedTargets))
-    
+
     return approvedTargets

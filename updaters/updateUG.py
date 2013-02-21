@@ -8,17 +8,17 @@ import utilities.file2list
 import utilities.MySQLaccess as mysql
 
 def main(unigeneParsedOutput, unigeneParsedTotals, schemaProteins, tableUniGene, tableUniGeneTotals, databasePassword):
-    
+
     #===========================================================================
     # Extract and format the parsed UniGene data, and the UniGene expression totals.
     #===========================================================================
     UGData = utilities.file2list.main(unigeneParsedOutput)
     UGData = [tuple([int(j) for j in eval(i)]) for i in UGData]
     UGDict = dict([(i[0], i) for i in UGData])
-    
+
     UGTotalsData = utilities.file2list.main(unigeneParsedTotals)
     UGTotalsData = [tuple([j[0], eval(j[1])]) for j in [eval(i) for i in UGTotalsData]]
-    
+
     #===========================================================================
     # Extract the UniGene information recorded in the database.
     #===========================================================================
@@ -26,7 +26,7 @@ def main(unigeneParsedOutput, unigeneParsedTotals, schemaProteins, tableUniGene,
     cursor = mysql.tableSELECT(cursor, '*', tableUniGene)
     results = cursor.fetchall()
     mysql.closeConnection(conn, cursor)
-    
+
     #===========================================================================
     # Compare the parsed data with the data recorded in the expression table.
     #===========================================================================
@@ -36,7 +36,7 @@ def main(unigeneParsedOutput, unigeneParsedTotals, schemaProteins, tableUniGene,
     columns = cursor.fetchall()
     mysql.closeConnection(conn, cursor)
     columns = [i[0] for i in columns]
-    
+
     toRemove = []
     toUpdate = {}
     toAdd = UGDict.keys()
@@ -56,7 +56,7 @@ def main(unigeneParsedOutput, unigeneParsedTotals, schemaProteins, tableUniGene,
             toRemove.append(i[0])
     values = '(' + ('%s,' * len(UGData[0]))
     values = values[:-1] + ')'
-    
+
     #===========================================================================
     # Remove rows from the expression table that are not in the parsed file.
     #===========================================================================
@@ -65,7 +65,7 @@ def main(unigeneParsedOutput, unigeneParsedTotals, schemaProteins, tableUniGene,
         cursor = mysql.rowDELETE(cursor, tableUniGene, 'UniGeneID="' + i + '"')
         mysql.closeConnection(conn, cursor)
     print '\tEntries removed from the UniGene table: ', len(toRemove)
-    
+
     #===========================================================================
     # Update rows that have different values in the parsed file and the expression table.
     #===========================================================================
@@ -79,7 +79,7 @@ def main(unigeneParsedOutput, unigeneParsedTotals, schemaProteins, tableUniGene,
         cursor = mysql.tableUPDATE(cursor, tableUniGene, toSet, 'UniGeneID="' + i + '"')
         mysql.closeConnection(conn, cursor)
     print '\tEntries updated in the UniGene table: ', len(toUpdate)
-    
+
     #===========================================================================
     # Add rows which are not in the expression table, but are in the parsed file.
     #===========================================================================
@@ -88,7 +88,7 @@ def main(unigeneParsedOutput, unigeneParsedTotals, schemaProteins, tableUniGene,
     cursor = mysql.tableINSERT(cursor, tableUniGene, values, rowsToAdd)
     mysql.closeConnection(conn, cursor)
     print '\tEntries added to the UniGene table: ', len(toAdd)
-    
+
     #===========================================================================
     # Enter the expression totals in the totals table.
     #===========================================================================

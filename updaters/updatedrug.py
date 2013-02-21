@@ -9,7 +9,7 @@ import utilities.MySQLaccess as mysql
 
 def main(UPDrugIDs, DBDrugIDs, DBTargetIDs, TTDTarget2Drug, ChEMBLUPAccessions, ChEMBLCID, bindingParsed,
          UPHumanAccessionMap, databasePassword, schemaProteins, tableDrugs):
-    
+
     # Generate the human accession mapping:
     UPAccMap = utilities.file2list.main(UPHumanAccessionMap)
     # Make a dictionary where the index is the, possibly deprecated UniProt accession, and the entry is the
@@ -18,7 +18,7 @@ def main(UPDrugIDs, DBDrugIDs, DBTargetIDs, TTDTarget2Drug, ChEMBLUPAccessions, 
     for i in UPAccMap:
         chunks = i.split()
         allUPID[chunks[0]] = chunks[1]
-    
+
     # Extract the DrugBank drug IDs, the CAS number and the CID for every approved DrugBank drug.
     approvedDrugBankDrugs = {}
     approvedDrugTuples = set([])
@@ -34,16 +34,14 @@ def main(UPDrugIDs, DBDrugIDs, DBTargetIDs, TTDTarget2Drug, ChEMBLUPAccessions, 
         approvedDrugTuples.add(tuple([name, CAS, CID]))
     readDrugs.close()
     approvedDrugs = approvedDrugBankDrugs.keys()
-    
-#    print len(approvedDrugs)
-    
+
     # Extract the information about which DrugBank drugs target UniProt proteins, as recorded by UniProt.
     targetsUP = utilities.file2list.main(UPDrugIDs)
     targetDrugLinks = {}
     for i in targetsUP:
         chunks = i.split('\t')
         targetDrugLinks[chunks[0]] = set([i for i in chunks[1].split(';') if i in approvedDrugs])
-    
+
     # Extract the information about which DrugBank drugs target UniProt proteins, as recorded by DrugBank.
     targetsDB = utilities.file2list.main(DBTargetIDs)
     for i in targetsDB:
@@ -57,15 +55,11 @@ def main(UPDrugIDs, DBDrugIDs, DBTargetIDs, TTDTarget2Drug, ChEMBLUPAccessions, 
             #targetDrugLinks[proteinAcc].intersection([i for i in chunks[1].split(';') if i in approvedDrugs])
         else:
             targetDrugLinks[proteinAcc] = [i for i in chunks[1].split(';') if i in approvedDrugs]
-    
+
     # Convert DrugBank drug IDs to CIDs where possible.
     for i in targetDrugLinks.keys():
         targetDrugLinks[i] = [approvedDrugBankDrugs[j] for j in targetDrugLinks[i]]
-    
-#    for i in targetDrugLinks.keys()[:50]:
-#        print i, len(targetDrugLinks[i])
-#    print len(targetDrugLinks.keys()), sorted(targetDrugLinks.keys())
-    
+
     # Extract the TTD target-drug relationship information.
     targetsTTD = utilities.file2list.main(TTDTarget2Drug)
     for i in targetsTTD:
@@ -104,11 +98,7 @@ def main(UPDrugIDs, DBDrugIDs, DBTargetIDs, TTDTarget2Drug, ChEMBLUPAccessions, 
                     # the protein and should not be added.
                         continue
                     targetDrugLinks[j].append(k)
-    
-#    for i in targetDrugLinks.keys()[:50]:
-#        print i, len(targetDrugLinks[i])
-#    print len(targetDrugLinks.keys()), sorted(targetDrugLinks.keys())
-    
+
     # Extract the ChEMBL drug-target relationship information, along with the binding information.
     molregno2CID = {}
     readCIDs = open(ChEMBLCID, 'r')
@@ -129,7 +119,7 @@ def main(UPDrugIDs, DBDrugIDs, DBTargetIDs, TTDTarget2Drug, ChEMBLUPAccessions, 
         molregno = chunks[1]
         drugID = molregno2CID[molregno] if molregno2CID.has_key(molregno) else 'm' + molregno
         name = chunks[2]
-        
+
         # Update the drug-target relationship information.
         drugInfo = tuple([name, '', drugID])
         if not targetDrugLinks.has_key(UPAccession):
@@ -159,7 +149,7 @@ def main(UPDrugIDs, DBDrugIDs, DBTargetIDs, TTDTarget2Drug, ChEMBLUPAccessions, 
                 pass
             else:
                 targetDrugLinks[UPAccession].append(drugInfo)
-        
+
         # Record drug binding information.
         if chunks[4] == 'None' or chunks[5] == 'None':
             continue
@@ -187,10 +177,6 @@ def main(UPDrugIDs, DBDrugIDs, DBTargetIDs, TTDTarget2Drug, ChEMBLUPAccessions, 
             else:
                 targetDrugBinding[bindingKey]['Kd'] = min(targetDrugBinding[bindingKey]['Kd'], value)
 
-#    for i in targetDrugLinks.keys()[:50]:
-#        print i, len(targetDrugLinks[i]), targetDrugLinks[i]
-#    print len(targetDrugLinks.keys()), sorted(targetDrugLinks.keys())
-    
     # Extract binding information from BindingDB.
     bindingData = utilities.file2list.main(bindingParsed)
     for i in bindingData:
@@ -232,7 +218,7 @@ def main(UPDrugIDs, DBDrugIDs, DBTargetIDs, TTDTarget2Drug, ChEMBLUPAccessions, 
                 targetDrugBinding[bindingKey] = {'Ki' : float('Inf'), 'Kd' : Kd}
             else:
                 targetDrugBinding[bindingKey]['Kd'] = min(targetDrugBinding[bindingKey]['Kd'], Kd)
-    
+
     # Generate the tuples to insert into the database.
     tuplesToInsert = []
     for i in targetDrugLinks:
@@ -252,23 +238,15 @@ def main(UPDrugIDs, DBDrugIDs, DBTargetIDs, TTDTarget2Drug, ChEMBLUPAccessions, 
                 Ki = -1
                 Kd = -1
             tuplesToInsert.append(tuple([i, drugID, drugName, Ki, Kd]))
-    
+
     # Remove potential duplicates caused by the names of the drugs having different capital letters, and mysql
     # ignoring the capitalisation of the names.
     tuplesToInsert = [tuple([i[0], i[1], i[2].upper(), i[3], i[4]]) for i in tuplesToInsert]
     tuplesToInsert = list(set(tuplesToInsert))
-    
-#    f = open('C:\Users\Simonial\Desktop\DRUGINFO.txt', 'w')
-#    for i in tuplesToInsert:
-#        f.write(str(i) + '\n')
-#    f.close()
-    
+
     # Insert the tuples into the database.
     values = '(' + ('%s,' * len(tuplesToInsert[0]))
     values = values[:-1] + ')'
     conn, cursor = mysql.openConnection(databasePassword, schemaProteins)
     mysql.tableINSERT(cursor, tableDrugs, values, tuplesToInsert)
     mysql.closeConnection(conn, cursor)
-    
-#    for i in targetDrugBinding.keys()[:10]:
-#        print i, targetDrugBinding[i]

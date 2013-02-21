@@ -133,6 +133,7 @@ parseEnsembl
 				Example : ENSG00000143627-ENST00000342741-ENSP00000339933;ENSG00000143627-ENST00000271946-ENSP00000271946
 		EnsemblGeneIDs (ensemblGeneIDs) - A file with one Ensembl gene ID on each line.
 parseepestfind
+	Takes in a file containing the default format for epestfind output, and returns the number of PEST motifs found that are considered to be a 'Potential PEST motif'.
 parseGO
 	Returns a file containing the parsed GO data.
 	GOParsed (parsedGOOutput) - A file of 6-tuples, one on each line.
@@ -163,8 +164,17 @@ parseHomologs
 		The ninth element is the percentage of identity between both homologs (-1.0 if a value is not present in Ensembl for this).
 		The tenth element is the percentage of positivity (similarity) between both homologs (-1.0 if a value is not present in Ensembl for this).
 parsePepstats
+	Takes a file containing Pepstats output in the default format, and returns a dictionary mapping each protein in the file to its isoelectric point.
 parsePSIBLAST
+	Takes a file containing PSI-BLAST output generated using the flag '-outfmt "7 qseqid sseqid pident length evalue"', and returns a file containing the protein similarity information.
+	The returned file is a tab separated (tsv) file, with five elements on each line.
+		The first element is the UniProt accession of the query protein.
+		The second element is the UniProt accession of the hit protein.
+		The thrid element is percentage similarity between the two proteins.
+		The fourth element is the length of the alignment.
+		The fifth element is the E-value of the alignment.
 parseSEG
+	Takes a file containing the ouput of running segmasker on a protein, and returns the number of low complexity regions found.
 parseTTD
 	Takes the TTD target database data and the TTD drug data, and returns one file of the UniProt accessions of the approved target proteins and one containing a mapping of approved targets to approved drugs.
 	UPAccessions (TTDUPAccessions) - A file of UniProt accessions, one on each line.
@@ -290,27 +300,48 @@ parseUP
 Updaters
 #################################################################
 updateCancer
+	Used to record which proteins are implicated in cancer, and which of those proteins are the target of anti-neoplastic drugs.
 updateCOSMIC
+	Enters the COSMIC data into the database.
 updatedrug
+	Used to update the information recorded about the approved drugs.
 updateEnsembl
+	Enters the Ensembl gene information, homolog information and germline mutation iformation into the gene, homolg and germline mutation tables respectively.
 updateGO
+	Updates the GO path information in the database.
 updatepathway
+	Enters the Pathway Commons data into the database.
 updatePPI
+	Updates the binary PPI information stored in the database.
 updatestability
+	Calculates and enters the protein instability and half life information into the database.
 updatetargetandredundancy
+	Used to determined the set of proteins that are the targets of approved drugs, and to determine the non-redundant datasets.
 updateUG
+	Updates the UniGene information in the database.
 updateUP
+	Calculates low complexity regions, PEST motifs, sequence composition statistics, calculates pairwise sequence similarities and updates the blast and UniProt (proteininfo) tables.
 updatexref
+	Enters the UniProt accession external database cross-reference information into the database.
 
 #################################################################
 Utilities
 #################################################################
 biomartquery
+	Used to generate correctly formatted XML queries to BioMart.
 createfasta
+	Used to create FASTA format files.
 file2list
+	Used to read a file intoa Python list (one line of the file per list element).
 gadatageneration
+	Used to generate data in the format required for the Java random forest package.
 generateGOsummarydata
+	Used to generate summary data about the levle one and level two GO terms for the positive and unlabelled subsets of a given dataset.
 list2file
+	Used to convert a Python list into a file (one list element per line of the file).
 MySQLaccess
+	Provides convenience functions for accessing a MySQL database.
 predictions
+	Used to handle the input of subcellular location predictions into the database, and the output of proteins that need subcellular locations predicted.
 XMLparser
+	Used to parse XML files.

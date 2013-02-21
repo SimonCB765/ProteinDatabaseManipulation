@@ -11,7 +11,7 @@ import utilities.MySQLaccess as mysql
 
 def main(databasePassword, schemaPharmGKB, pharmGKBDiseases, pharmGKBDrugs, pharmGKBGenes, pharmGKBRelationships,
          pharmGKBInitialisation, MYSQLBIN):
-    
+
     # Define the tables needed.
     tableDisease = schemaPharmGKB + '.disease'
     tableDrug = schemaPharmGKB + '.drug'
@@ -27,11 +27,11 @@ def main(databasePassword, schemaPharmGKB, pharmGKBDiseases, pharmGKBDrugs, phar
     tableDisease2MeSH = schemaPharmGKB + '.disease2mesh'
     tableDisease2SnoMED = schemaPharmGKB + '.disease2snomed'
     tableDisease2UMLS = schemaPharmGKB + '.disease2umls'
-    
+
     # Create the schema and the tables.
     subprocess.call('mysql.exe -u root -p' + databasePassword + ' mysql < ' + pharmGKBInitialisation, shell=True, cwd=MYSQLBIN)
-    
-    # Parse the files that contain the data to enter into the database.    
+
+    # Parse the files that contain the data to enter into the database.
     diseaseTuples = []
     meshTuples = []
     snomedTuples = []
@@ -51,7 +51,7 @@ def main(databasePassword, schemaPharmGKB, pharmGKBDiseases, pharmGKBDrugs, phar
         umls = re.findall('(?<=UMLS:)C[0-9]+', externalVocab)
         umlsTuples.extend([tuple([diseaseID, i]) for i in umls])
     readIn.close()
-    
+
     drugTuples = []
     readIn = open(pharmGKBDrugs, 'r')
     readIn.readline()  # Strip off the header of the file.
@@ -69,7 +69,7 @@ def main(databasePassword, schemaPharmGKB, pharmGKBDiseases, pharmGKBDrugs, phar
         pubchemCID = pubchemCID[0] if pubchemCID != [] else 'NA'
         drugTuples.append(tuple([drugID, drugName, compoundType, drugBank, pubchemCID]))
     readIn.close()
-    
+
     geneTuples = []
     readIn = open(pharmGKBGenes, 'r')
     readIn.readline()  # Strip off the header of the file.
@@ -81,7 +81,7 @@ def main(databasePassword, schemaPharmGKB, pharmGKBDiseases, pharmGKBDrugs, phar
             entrezID = '0'
         geneTuples.append(tuple([geneID, entrezID]))
     readIn.close()
-    
+
     drug2drugTuples = []
     drug2drugClassTuples = {}
     drug2diseaseTuples = []
@@ -196,30 +196,30 @@ def main(databasePassword, schemaPharmGKB, pharmGKBDiseases, pharmGKBDrugs, phar
                 else:
                     drugClass2geneTuples[key] = tuple([key[0], key[1], pathway, publication, variant])
     readIn.close()
-    
+
     # Enter the data into the database.
     conn, cursor = mysql.openConnection(databasePassword, schemaPharmGKB)
-    
+
     values = '(' + ('%s,' * len(diseaseTuples[0]))
     values = values[:-1] + ')'
     mysql.tableINSERT(cursor, tableDisease, values, diseaseTuples)
-    
+
     values = '(' + ('%s,' * len(meshTuples[0]))
     values = values[:-1] + ')'
     mysql.tableINSERT(cursor, tableDisease2MeSH, values, meshTuples)
-    
+
     values = '(' + ('%s,' * len(snomedTuples[0]))
     values = values[:-1] + ')'
     mysql.tableINSERT(cursor, tableDisease2SnoMED, values, snomedTuples)
-    
+
     values = '(' + ('%s,' * len(umlsTuples[0]))
     values = values[:-1] + ')'
-    mysql.tableINSERT(cursor, tableDisease2UMLS, values, umlsTuples)    
-    
+    mysql.tableINSERT(cursor, tableDisease2UMLS, values, umlsTuples)
+
     values = '(' + ('%s,' * len(drugTuples[0]))
     values = values[:-1] + ')'
     mysql.tableINSERT(cursor, tableDrug, values, drugTuples)
-    
+
     values = '(' + ('%s,' * len(geneTuples[0]))
     values = values[:-1] + ')'
     mysql.tableINSERT(cursor, tableGene, values, geneTuples)

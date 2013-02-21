@@ -9,11 +9,11 @@ import os
 
 def single_filter(martName, datasetName, filterName, filterValue, attributeNames, biomartQueryScript, bioMartXMLQuery,
                   outputFile):
-    
+
     # Delete the file if it exists.
     if os.path.isfile(outputFile):
         os.remove(outputFile)
-    
+
 
     query = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
@@ -21,7 +21,7 @@ def single_filter(martName, datasetName, filterName, filterValue, attributeNames
 \t<Dataset name=\"%s\" config=\"%s\">
 \t\t<Filter name=\"%s\" value=\"%s\" />
 """ % (datasetName, martName, filterName, filterValue)
-    
+
     for i in attributeNames:
         query += '\t\t<Attribute name=\"%s\" />\n' % (i)
 
@@ -37,11 +37,11 @@ def single_filter(martName, datasetName, filterName, filterValue, attributeNames
     subprocess.call('perl ' + biomartQueryScript + ' ' + bioMartXMLQuery + ' ' + outputFile)
 
 def multi_filter(martName, datasetName, filters, attributeNames, biomartQueryScript, bioMartXMLQuery, outputFile):
-    
+
     # Delete the file if it exists.
     if os.path.isfile(outputFile):
         os.remove(outputFile)
-    
+
 
     query = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
@@ -51,7 +51,7 @@ def multi_filter(martName, datasetName, filters, attributeNames, biomartQueryScr
 
     for i in filters.keys():
         query += '\t\t<Filter name=\"%s\" value=\"%s\" />\n' % (i, filters[i])
-    
+
     for i in attributeNames:
         query += '\t\t<Attribute name=\"%s\" />\n' % (i)
 

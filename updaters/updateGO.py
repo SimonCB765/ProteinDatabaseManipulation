@@ -8,14 +8,14 @@ import utilities.file2list
 import utilities.MySQLaccess as mysql
 
 def main(parsedGOOutput, schemaProteins, tableGOInfo, databasePassword):
-    
+
     #===========================================================================
     # Extract and format the parsed GO data.
     #===========================================================================
     GOData = utilities.file2list.main(parsedGOOutput)
     GOData = [eval(i) for i in GOData]
     GODict = dict([(i[0], i) for i in GOData])
-    
+
     #===========================================================================
     # Extract the GO information recorded in the database.
     #===========================================================================
@@ -23,7 +23,7 @@ def main(parsedGOOutput, schemaProteins, tableGOInfo, databasePassword):
     cursor = mysql.tableSELECT(cursor, '*', tableGOInfo)
     results = cursor.fetchall()
     mysql.closeConnection(conn, cursor)
-    
+
     #===========================================================================
     # Compare the parsed data with the data recorded in the table.
     #===========================================================================
@@ -33,7 +33,7 @@ def main(parsedGOOutput, schemaProteins, tableGOInfo, databasePassword):
     columns = cursor.fetchall()
     mysql.closeConnection(conn, cursor)
     columns = [i[0] for i in columns]
-    
+
     toRemove = []
     toUpdate = {}
     toAdd = GODict.keys()
@@ -53,7 +53,7 @@ def main(parsedGOOutput, schemaProteins, tableGOInfo, databasePassword):
             toRemove.append(i[0])
     values = '(' + ('%s,' * len(GOData[0]))
     values = values[:-1] + ')'
-    
+
     #===========================================================================
     # Remove rows from the table that are not in the parsed file.
     #===========================================================================
@@ -62,7 +62,7 @@ def main(parsedGOOutput, schemaProteins, tableGOInfo, databasePassword):
         cursor = mysql.rowDELETE(cursor, tableGOInfo, 'GOTermID="' + str(i) + '"')
         mysql.closeConnection(conn, cursor)
     print '\tEntries removed from the GO table: ', len(toRemove)
-    
+
     #===========================================================================
     # Update rows that have different values in the parsed file and the table.
     #===========================================================================
@@ -76,7 +76,7 @@ def main(parsedGOOutput, schemaProteins, tableGOInfo, databasePassword):
         cursor = mysql.tableUPDATE(cursor, tableGOInfo, toSet, 'GOTermID="' + str(i) + '"')
         mysql.closeConnection(conn, cursor)
     print '\tEntries updated in the GO table: ', len(toUpdate)
-    
+
     #===========================================================================
     # Add rows which are not in the table, but are in the parsed file.
     #===========================================================================

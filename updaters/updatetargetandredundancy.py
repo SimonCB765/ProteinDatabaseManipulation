@@ -48,64 +48,58 @@ def main(DBDrugIDs, DBTargetIDs, TTDUPAccessions, ChEMBLUPAccessions, UPHumanAcc
         elif i[1] == 'Protease':
             proteases.append(i[0])
 
-    noLongerTargets = []
-    newTargets = allTargets
-
     # Update the table to indicate which proteins are targets.
     conn, cursor = mysql.openConnection(databasePassword, schemaProteins)
-    for i in noLongerTargets:
-        mysql.tableUPDATE(cursor, tableProteinInfo, 'Target="N"', 'UPAccession="' + i + '"')
-    for i in newTargets:
+    for i in allTargets:
         mysql.tableUPDATE(cursor, tableProteinInfo, 'Target="Y"', 'UPAccession="' + i + '"')
     mysql.closeConnection(conn, cursor)
 
-    # Check if the redundancy removal should be performed.
-    if newTargets != [] or noLongerTargets != []:
-        print '\tPerforming redundancy removal.'
-        # Proteins have had their target status changed, so the redundancy needs to be recalculated.
-        conn, cursor = mysql.openConnection(databasePassword, schemaProteins)
-        # Set the number of columns in the nonredundant table.
-        cursor.execute('SHOW COLUMNS FROM ' + tableNonRedundant)
-        numberColumns = len(cursor.fetchall())
-        # Select all the proteins recorded in the database. The number of columns has one subtracted from it as the
-        # UP accession column does not take the default value.
-        cursor = mysql.tableSELECT(cursor, 'UPAccession', tableProteinInfo)
-        allProteins = [tuple([i[0]] + (['N'] * (numberColumns - 1))) for i in cursor.fetchall()]
-        # Wipe and refill the nonredundant table.
-        cursor.execute('TRUNCATE TABLE ' + tableNonRedundant)
-        values = '(' + ('%s,' * numberColumns)
-        values = values[:-1] + ')'
-        mysql.tableINSERT(cursor, tableNonRedundant, values, allProteins)
-        for column in sorted(viewsDict.keys()):
-            print '\t\tRunning redundancy removal on ', column
-            # For each set of proteins, run the Leaf program.
-            inputLocation = folderCulling + '/' + column + '.txt'
-            cursor = mysql.tableSELECT(cursor, '*', viewsDict[column])
-            results = cursor.fetchall()
-            # Determine the accessions of the proteins in the current set.
-            proteinSet = [i[0] for i in results]
-            print '\t\t\tSize of Redundant Dataset: ', len(proteinSet)
-            proteinSetString = '\',\''.join(proteinSet)
-            # Select all the BLAST results where both the hit and query protein are in the set to cull.
-            cursor = mysql.tableSELECT(cursor, '*', tableBLASTResults, 'ProteinA IN (\'' + proteinSetString + '\') AND ProteinB IN (\'' + proteinSetString + '\')')
-            protResults = cursor.fetchall()
-            # Generate the file that is going to be used to perform the culling.
-            writeTo = open(inputLocation, 'w')
-            for i in protResults:
-                writeTo.write('\t'.join([str(j) for j in i]) + '\n')
-            writeTo.close()
-            # Perform the culling.
-            adjMatrix, proteinNames = culling.adjlistcreation.main(inputLocation, cutoffPercent=20, maxEValue=1, minAlignLength=20)
-            print '\t\t\tNumber of Proteins in Similarity Graph: ', len(proteinNames)
-            proteinsToCull = culling.Leafcull.main(adjMatrix, proteinNames)
-            print '\t\t\tNumber of Proteins to Cull: ', len(proteinsToCull)
-            for i in proteinsToCull:
-                mysql.tableUPDATE(cursor, tableNonRedundant, column + '="N"', 'UPAccession="' + str(i) + '"')
-            proteinsToKeep = [i for i in proteinSet if i not in proteinsToCull]
-            print '\t\t\tNumber of Proteins to Keep: ', len(proteinsToKeep)
-            for i in proteinsToKeep:
-                mysql.tableUPDATE(cursor, tableNonRedundant, column + '="Y"', 'UPAccession="' + str(i) + '"')
-        mysql.closeConnection(conn, cursor)
+    # Perform redundancy removal using Leaf.
+	print '\tPerforming redundancy removal.'
+	# Proteins have had their target status changed, so the redundancy needs to be recalculated.
+	conn, cursor = mysql.openConnection(databasePassword, schemaProteins)
+	# Set the number of columns in the nonredundant table.
+	cursor.execute('SHOW COLUMNS FROM ' + tableNonRedundant)
+	numberColumns = len(cursor.fetchall())
+	# Select all the proteins recorded in the database. The number of columns has one subtracted from it as the
+	# UP accession column does not take the default value.
+	cursor = mysql.tableSELECT(cursor, 'UPAccession', tableProteinInfo)
+	allProteins = [tuple([i[0]] + (['N'] * (numberColumns - 1))) for i in cursor.fetchall()]
+	# Wipe and refill the nonredundant table.
+	cursor.execute('TRUNCATE TABLE ' + tableNonRedundant)
+	values = '(' + ('%s,' * numberColumns)
+	values = values[:-1] + ')'
+	mysql.tableINSERT(cursor, tableNonRedundant, values, allProteins)
+	for column in sorted(viewsDict.keys()):
+		print '\t\tRunning redundancy removal on ', column
+		# For each set of proteins, run the Leaf program.
+		inputLocation = folderCulling + '/' + column + '.txt'
+		cursor = mysql.tableSELECT(cursor, '*', viewsDict[column])
+		results = cursor.fetchall()
+		# Determine the accessions of the proteins in the current set.
+		proteinSet = [i[0] for i in results]
+		print '\t\t\tSize of Redundant Dataset: ', len(proteinSet)
+		proteinSetString = '\',\''.join(proteinSet)
+		# Select all the BLAST results where both the hit and query protein are in the set to cull.
+		cursor = mysql.tableSELECT(cursor, '*', tableBLASTResults, 'ProteinA IN (\'' + proteinSetString + '\') AND ProteinB IN (\'' + proteinSetString + '\')')
+		protResults = cursor.fetchall()
+		# Generate the file that is going to be used to perform the culling.
+		writeTo = open(inputLocation, 'w')
+		for i in protResults:
+			writeTo.write('\t'.join([str(j) for j in i]) + '\n')
+		writeTo.close()
+		# Perform the culling.
+		adjMatrix, proteinNames = culling.adjlistcreation.main(inputLocation, cutoffPercent=20, maxEValue=1, minAlignLength=20)
+		print '\t\t\tNumber of Proteins in Similarity Graph: ', len(proteinNames)
+		proteinsToCull = culling.Leafcull.main(adjMatrix, proteinNames)
+		print '\t\t\tNumber of Proteins to Cull: ', len(proteinsToCull)
+		for i in proteinsToCull:
+			mysql.tableUPDATE(cursor, tableNonRedundant, column + '="N"', 'UPAccession="' + str(i) + '"')
+		proteinsToKeep = [i for i in proteinSet if i not in proteinsToCull]
+		print '\t\t\tNumber of Proteins to Keep: ', len(proteinsToKeep)
+		for i in proteinsToKeep:
+			mysql.tableUPDATE(cursor, tableNonRedundant, column + '="Y"', 'UPAccession="' + str(i) + '"')
+	mysql.closeConnection(conn, cursor)
 
 def xref_chembl_uniprot(ChEMBLUPAccessions, UPHumanAccessionMap):
     ChEMBlNonRepAccs = set([i.split('\t')[0] for i in utilities.file2list.main(ChEMBLUPAccessions)])

@@ -52,7 +52,8 @@ def main(ChEMBLTargets, ChEMBLCID, databasePassword, ChEMBLSchema):
         and md.molregno = act.molregno
         and act.assay_id = a.assay_id
         and a.assay_id = a2t.assay_id
-        and a2t.confidence_score >= '4'
+        and a2t.confidence_score = '9'
+		and a2t.relationship_type = 'D'
         and a2t.tid = td.tid
         and td.target_type = 'PROTEIN'
         and td.db_source = 'SWISS-PROT'

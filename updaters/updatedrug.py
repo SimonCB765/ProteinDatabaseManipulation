@@ -248,5 +248,6 @@ def main(UPDrugIDs, DBDrugIDs, DBTargetIDs, TTDTarget2Drug, ChEMBLUPAccessions, 
     values = '(' + ('%s,' * len(tuplesToInsert[0]))
     values = values[:-1] + ')'
     conn, cursor = mysql.openConnection(databasePassword, schemaProteins)
+    cursor.execute('TRUNCATE TABLE ' + tableDrugs)  # Remove the old data in the table first.
     mysql.tableINSERT(cursor, tableDrugs, values, tuplesToInsert)
     mysql.closeConnection(conn, cursor)

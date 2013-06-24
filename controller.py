@@ -74,7 +74,6 @@ def main(args):
     #===========================================================================
     # Folders containing the data.
     folderBindingDB = DATA + '/BindingDB'
-    folderBiomart = folderEnsembl + '/Biomart'
     folderBLAST = DATA + '/BLAST'
     folderCancerTargets = DATA + '/CancerTargets'
     folderCGC = DATA + '/CancerGeneCensus'
@@ -85,6 +84,7 @@ def main(args):
     folderDB = DATA + '/DrugBank'
     folderEnsembl = DATA + '/Ensembl'
     folderEnsemblPerlAPI = folderEnsembl + '/PerlAPI'
+    folderBiomart = folderEnsembl + '/Biomart'
     folderEpestfind = DATA + '/Epestfind'
     folderGAData = DATA + '/GeneticAlgorithmData'
     folderGO = DATA + '/GeneOntology'
@@ -420,8 +420,8 @@ def main(args):
 
     # Records whether the genetic algorithm data should be generated.
     doGADataGenerate = False  # doGADataGenerate is True if the user selects to generate the GA data.
-    viewToGenerateFrom = ''  # The view from which the GA data should be generated from. If you want to get the data about all proteins then you would do all_all_targ.
-    viewEndings = ['nr_n', 'nr_p']  # These are the endings on the view (i.e. the characters that come after the final '_'. Supplied in the same order as the classification.
+    gaDatasetToGenerate = ''  # The dataset that you want to generate. Must be one of:
+                              # IonChannel, GPCR, Kinase, Protease, All, CancerTarg, CancerType, CancerProt, CancerCTNCNT
     GAClassifications = ['Unlabelled', 'Positive']  # The names for the two classifications.
 
     #===========================================================================
@@ -499,10 +499,7 @@ def main(args):
         elif opt in ['-g', '--gadata']:
             doGADataGenerate = True
             chunks = arg.split('-')
-            viewToGenerateFrom = chunks[0]
-            if len(chunks) > 1:
-                viewEndings = [chunks[1], chunks[2]]
-                GAClassifications = [chunks[3], chunks[4]]
+            gaDatasetToGenerate = chunks[0]
 
     #===========================================================================
     # Initialising the Database
@@ -628,9 +625,8 @@ def main(args):
                                        DATABASEPASSWORD, schemaProteins, tableCOSMICGene, tableCOSMICGene2Mutation, tableCOSMICMutation)
         if 'Cancer' in toUpdate:
             print '\nNow Updating Cancer Information'
-            updaters.updateCancer.main(CGCParsed, cancerTargets, CGIHGNCIDs, CGIUPAccessions, UPExternalLinks, UPHumanAccessionMap,
-                                       schemaProteins, tableCancerGene, tableCOSMICGene, tableCOSMICGene2Mutation, tableCOSMICMutation,
-                                       DATABASEPASSWORD)
+            updaters.updateCancer.main(CGCParsed, cancerTargets, UPExternalLinks, UPHumanAccessionMap, TTDTarget2Drug, DBTargetIDs,
+                                       schemaProteins, tableCancerGene, DATABASEPASSWORD)
         if 'GO' in toUpdate:
             print '\nNow Updating GO'
             updaters.updateGO.main(parsedGOOutput, schemaProteins, tableGOInfo, DATABASEPASSWORD)
@@ -672,7 +668,7 @@ def main(args):
                          'CancerProteinNegative' : viewIllCancerProtRN, 'CancerProteinPositive' : viewIllCancerProtRP
                          }
             updaters.updatetargetandredundancy.main(DBDrugIDs, DBTargetIDs, TTDUPAccessions,
-                                                    ChEMBLUPAccessions, UPHumanAccessionMap, UPDrugIDs, pharmGKBDrugTargets, folderCulling,
+                                                    ChEMBLUPAccessions, UPHumanAccessionMap, UPDrugIDs, folderCulling,
                                                     schemaProteins, tableProteinInfo, tableNonRedundant,
                                                     tableBLASTResults, DATABASEPASSWORD, viewsDict)
         if 'Drug' in toUpdate:
@@ -724,53 +720,133 @@ def main(args):
     # Generate the Data File Needed for the Running of the Genetic Algorithm
     #===========================================================================
     if doGADataGenerate:
-        # Assumes that the columns are identical for both tables/views.
         # Generate the output files for the dataset generation.
+        # Assumes that the columns are identical for both tables/views.
         print '\nGenerating GA Data File.'
-        outputDirectory = folderGAData + '/' + viewToGenerateFrom.upper()
+        outputDirectory = folderGAData + '/' + gaDatasetToGenerate
         if os.path.isdir(outputDirectory):
             shutil.rmtree(outputDirectory)
         os.mkdir(outputDirectory)
-        geneticAlgorithmProcessedData = outputDirectory + '/' + viewToGenerateFrom.upper() + '.txt'
-        categoricalMappingDataLocation = outputDirectory + '/CategoricalMapping.txt'
-        columnDataLocation = outputDirectory + '/Columns.txt'
-        ECDataLocation = outputDirectory + '/ECNumbers.txt'
-        subcellLocation = outputDirectory + '/SubcellularLocation.txt'
-        healthStateLocation = outputDirectory + '/HealthState.txt'
-        bodySiteLocation = outputDirectory + '/BodySite.txt'
-        developmentalStageLocation = outputDirectory + '/DevelopmentalStage.txt'
+        nonRedundantGOOutputDirectory = outputDirectory + '/GO-NonRedundant'
+        if os.path.isdir(nonRedundantGOOutputDirectory):
+            shutil.rmtree(nonRedundantGOOutputDirectory)
+        os.mkdir(nonRedundantGOOutputDirectory)
+        datasetFastaFile = outputDirectory + '/' + gaDatasetToGenerate + '.fasta'
+        gaNonRedundantData = outputDirectory + '/' + gaDatasetToGenerate + '-NonRedundant.txt'
+        categoricalMappingNRDataLocation = outputDirectory + '/CategoricalMapping-NonRedundant.txt'
+        columnNRDataLocation = outputDirectory + '/Columns-NonRedundant.txt'
+        ECNRDataLocation = outputDirectory + '/ECNumbers-NonRedundant.txt'
+        subcellNRLocation = outputDirectory + '/SubcellularLocation-NonRedundant.txt'
+        healthStateNRLocation = outputDirectory + '/HealthState-NonRedundant.txt'
+        bodySiteNRLocation = outputDirectory + '/BodySite-NonRedundant.txt'
+        developmentalStageNRLocation = outputDirectory + '/DevelopmentalStage-NonRedundant.txt'
+        gaAllData = outputDirectory + '/' + gaDatasetToGenerate + '-All.txt'
+        categoricalMappingAllDataLocation = outputDirectory + '/CategoricalMapping-All.txt'
+        columnAllDataLocation = outputDirectory + '/Columns-All.txt'
+        ECAllDataLocation = outputDirectory + '/ECNumbers-All.txt'
+        subcellAllLocation = outputDirectory + '/SubcellularLocation-All.txt'
+        healthStateAllLocation = outputDirectory + '/HealthState-All.txt'
+        bodySiteAllLocation = outputDirectory + '/BodySite-All.txt'
+        developmentalStageAllLocation = outputDirectory + '/DevelopmentalStage-All.txt'
+        blastOutput = outputDirectory + '/BlastData.txt'
+        gaRedundantData = outputDirectory + '/' + gaDatasetToGenerate + '-Redundant.txt'
+        
+        positiveNRViewDict = {'All' : viewAllAllTargNRP,
+                            'GPCR' : viewTypeGPCRTargNRP,
+                            'IonChannel' : viewTypeIonTargNRP,
+                            'Kinase' : viewTypeKinaseTargNRP,
+                            'Protease' : viewTypeProteaseTargNRP,
+                            'CancerTarg' : viewIllCancerTargNRP,
+                            'CancerType' : viewIllCancerTypeNRP,
+                            'CancerProt' : viewIllCancerProtNRP,
+                            'CancerCTNCNT' : viewIllCancerCTNCNTNRP}
+        unlabelledNRViewDict = {'All' : viewAllAllTargNRN,
+                            'GPCR' : viewTypeGPCRTargNRN,
+                            'IonChannel' : viewTypeIonTargNRN,
+                            'Kinase' : viewTypeKinaseTargNRN,
+                            'Protease' : viewTypeProteaseTargNRN,
+                            'CancerTarg' : viewIllCancerTargNRN,
+                            'CancerType' : viewIllCancerTypeNRN,
+                            'CancerProt' : viewIllCancerProtNRN,
+                            'CancerCTNCNT' : viewIllCancerCTNCNTNRN}
+        positiveRedundantViewDict = {'All' : viewAllAllTargNRP,
+                            'GPCR' : viewTypeGPCRTargRP,
+                            'IonChannel' : viewTypeIonTargRP,
+                            'Kinase' : viewTypeKinaseTargRP,
+                            'Protease' : viewTypeProteaseTargRP,
+                            'CancerTarg' : viewIllCancerTargRP,
+                            'CancerType' : viewIllCancerTypeRP,
+                            'CancerProt' : viewIllCancerProtRP,
+                            'CancerCTNCNT' : viewIllCancerCTNCNTRP}
+        unlabelledRedundantViewDict = {'All' : viewAllAllTargRN,
+                            'GPCR' : viewTypeGPCRTargRN,
+                            'IonChannel' : viewTypeIonTargRN,
+                            'Kinase' : viewTypeKinaseTargRN,
+                            'Protease' : viewTypeProteaseTargRN,
+                            'CancerTarg' : viewIllCancerTargRN,
+                            'CancerType' : viewIllCancerTypeRN,
+                            'CancerProt' : viewIllCancerProtRN,
+                            'CancerCTNCNT' : viewIllCancerCTNCNTRN}
+        positiveColumnNameDict = {'All' : 'AllTargetPositive',
+                            'GPCR' : 'GPCRTargetPositive',
+                            'IonChannel' : 'IonChannelTargetPositive',
+                            'Kinase' : 'KinaseTargetPositive',
+                            'Protease' : 'ProteaseTargetPositive',
+                            'CancerTarg' : 'CancerTargetPositive',
+                            'CancerType' : 'CancerTypePositive',
+                            'CancerProt' : 'CancerProteinPositive',
+                            'CancerCTNCNT' : 'CancerCTNCNTPositive'}
+        unlabelledColumnNameDict = {'All' : 'AllTargetNegative',
+                            'GPCR' : 'GPCRTargetNegative',
+                            'IonChannel' : 'IonChannelTargetNegative',
+                            'Kinase' : 'KinaseTargetNegative',
+                            'Protease' : 'ProteaseTargetNegative',
+                            'CancerTarg' : 'CancerTargetNegative',
+                            'CancerType' : 'CancerTypeNegative',
+                            'CancerProt' : 'CancerProteinNegative',
+                            'CancerCTNCNT' : 'CancerCTNCNTNegative'}
+        positiveColumn = positiveColumnNameDict[gaDatasetToGenerate]  # Get the name of the positive observation column in tableNonRedundant.
+        unlabelledColumn = unlabelledColumnNameDict[gaDatasetToGenerate]  # Get the name of the unlabelled observation column in tableNonRedundant.
+        positiveNRView = positiveNRViewDict[gaDatasetToGenerate]  # Get the name of the positive non-redundant observation view.
+        unlabelledNRView = unlabelledNRViewDict[gaDatasetToGenerate]  # Get the name of the unlabelled non-redundant observation view.
+        positiveRedundantView = positiveRedundantViewDict[gaDatasetToGenerate]  # Get the name of the positive redundant observation view.
+        unlabelledRedundantView = unlabelledRedundantViewDict[gaDatasetToGenerate]  # Get the name of the unlabelled redundant observation view.
 
-        # Create a dictionary containing a mapping from every dataset view to the name of the column in tableNonRedundant that corresponds to it.
-        viewDict = {viewAllAllTargNRN : 'AllTargetNegative', viewAllAllTargNRP : 'AllTargetPositive',
-                    viewTypeGPCRTargNRN : 'GPCRTargetNegative', viewTypeGPCRTargNRP : 'GPCRTargetPositive',
-                    viewTypeIonTargNRN : 'IonChannelTargetNegative', viewTypeIonTargNRP : 'IonChannelTargetPositive',
-                    viewTypeKinaseTargNRN : 'KinaseTargetNegative', viewTypeKinaseTargNRP : 'KinaseTargetPositive',
-                    viewTypeProteaseTargNRN : 'ProteaseTargetNegative', viewTypeProteaseTargNRP : 'ProteaseTargetPositive',
-                    viewIllCancerCTNCNTNRN : 'CancerCTNCNTNegative', viewIllCancerCTNCNTNRP : 'CancerCTNCNTPositive',
-                    viewIllCancerTargNRN : 'CancerTargetNegative', viewIllCancerTargNRP : 'CancerTargetPositive',
-                    viewIllCancerTypeNRN : 'CancerTypeNegative', viewIllCancerTypeNRP : 'CancerTypePositive',
-                    viewIllCancerProtNRN : 'CancerProteinNegative', viewIllCancerProtNRP : 'CancerProteinPositive'
-                    }
-        positiveColumn = viewDict[schemaProteins + '.' + viewToGenerateFrom + '_' + viewEndings[1]]  # Get the name of the positive observation column in tableNonRedundant.
-        unlabelledColumn = viewDict[schemaProteins + '.' + viewToGenerateFrom + '_' + viewEndings[0]]  # Get the name of the unlabelled observation column in tableNonRedundant.
+        # Generate a FASTA format file of all the proteins in the dataset.
+        conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)
+        positiveProteins = cursor.execute('SELECT * FROM ' + positiveRedundantView)
+        positiveProteins = cursor.fetchall()
+        unlabelledProteins = cursor.execute('SELECT * FROM ' + unlabelledRedundantView)
+        unlabelledProteins = cursor.fetchall()
+        results = positiveProteins + unlabelledProteins
+        utilities.list2file.main(['>' + '\n'.join([j[0], j[1]]) for j in results], datasetFastaFile)
+        mysql.closeConnection(conn, cursor)
 
         # Ideally you would just SELECT * FROM viewToGenerateFrom. However, the view is so complex to generate that it is substantially quicker to
         # extract the data from the the tables themselves, and then generate the view's data manually. (At least for me it is)
         conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)
-        # Get the column names from the view that the dataset is being generated from.
-        cursor.execute('SHOW COLUMNS FROM ' + viewToGenerateFrom + '_' + viewEndings[1])
+        # Get the names of all the columns in the view of the non-redundant dataset, and therefore the names of the features in the dataset.
+        cursor.execute('SHOW COLUMNS FROM ' + positiveNRView)
         columns = cursor.fetchall()
         columns = [i[0] for i in columns]
 
-        # Get the name of all the column in the non-redundant dataset table.
+        # Get the name of all the columns in the non-redundant dataset table.
         nonredColumns = cursor.execute('SHOW COLUMNS FROM ' + tableNonRedundant)
         nonredColumns = cursor.fetchall()
         nonredColumns = [i[0] for i in nonredColumns]
         # Get the data from the non-redundant dataset table.
-        nonredundantProteins = cursor.execute('SELECT * FROM ' + tableNonRedundant)
-        nonredundantProteins = cursor.fetchall()
-        positiveProteinAccs = [i[0] for i in nonredundantProteins if i[nonredColumns.index(positiveColumn)] == 'Y']  # Determine the UniProt accessions of the proteins in the positive dataset.
-        unlabelledProteinAccs = [i[0] for i in nonredundantProteins if i[nonredColumns.index(unlabelledColumn)] == 'Y']  # Determine the UniProt accessions of the proteins in the unlabelled dataset.
+        nonredundantPositiveProteins = cursor.execute('SELECT UPAccession FROM ' + tableNonRedundant + ' WHERE ' + positiveColumn + '="Y"')
+        nonredundantPositiveProteins = cursor.fetchall()
+        positiveNonRedundantProteinAccs = [i[0] for i in nonredundantPositiveProteins]  # Determine the UniProt accessions of the proteins in the positive non-redundant dataset.
+        nonredundantUnlabelledProteins = cursor.execute('SELECT UPAccession FROM ' + tableNonRedundant + ' WHERE ' + unlabelledColumn + '="Y"')
+        nonredundantUnlabelledProteins = cursor.fetchall()
+        unlabelledNonRedundantProteinAccs = [i[0] for i in nonredundantUnlabelledProteins]  # Determine the UniProt accessions of the proteins in the unlabelled non-redundant dataset.
+        redundantPositiveProteins = cursor.execute('SELECT UPAccession FROM ' + positiveRedundantView)
+        redundantPositiveProteins = cursor.fetchall()
+        positiveRedundantProteinAccs = [i[0] for i in redundantPositiveProteins]  # Determine the UniProt accessions of the proteins in the positive non-redundant dataset.
+        redundantUnlabelledProteins = cursor.execute('SELECT UPAccession FROM ' + unlabelledRedundantView)
+        redundantUnlabelledProteins = cursor.fetchall()
+        unlabelledRedundantProteinAccs = [i[0] for i in redundantUnlabelledProteins]  # Determine the UniProt accessions of the proteins in the unlabelled non-redundant dataset.
 
         # Get the names of the columns in the UniProt protein information table.
         protColumns = cursor.execute('SHOW COLUMNS FROM ' + tableProteinInfo)
@@ -779,8 +855,10 @@ def main(args):
         # Get the data in the UniProt protien information table.
         proteins = cursor.execute('SELECT * FROM ' + tableProteinInfo)
         proteins = cursor.fetchall()
-        positiveProteins = dict([(i[0], i) for i in proteins if i[0] in positiveProteinAccs])  # Get the UniProt protein information for the proteins in the positive dataset.
-        unlabelledProteins = dict([(i[0], i) for i in proteins if i[0] in unlabelledProteinAccs])  # Get the UniProt protein information for the proteins in the unlabelled dataset.
+        positiveNonRedundantProteins = dict([(i[0], i) for i in proteins if i[0] in positiveNonRedundantProteinAccs])  # Get the UniProt protein information for the proteins in the non-redundant positive dataset.
+        unlabelledNonRedundantProteins = dict([(i[0], i) for i in proteins if i[0] in unlabelledNonRedundantProteinAccs])  # Get the UniProt protein information for the proteins in the non-redundant unlabelled dataset.
+        positiveRedundantProteins = dict([(i[0], i) for i in proteins if i[0] in positiveRedundantProteinAccs])  # Get the UniProt protein information for the proteins in the redundant positive dataset.
+        unlabelledRedundantProteins = dict([(i[0], i) for i in proteins if i[0] in unlabelledRedundantProteinAccs])  # Get the UniProt protein information for the proteins in the redundant unlabelled dataset.
 
         # Get the names of the columns from the stability information table.
         stabilityColumns = cursor.execute('SHOW COLUMNS FROM ' + tableStability)
@@ -789,14 +867,18 @@ def main(args):
         # Get the data from teh stability information table.
         stability = cursor.execute('SELECT * FROM ' + tableStability)
         stability = cursor.fetchall()
-        positiveStability = dict([(i[0], i) for i in stability if i[0] in positiveProteinAccs])  # Get the stability information for the proteins in the positive dataset.
-        unlabelledStability = dict([(i[0], i) for i in stability if i[0] in unlabelledProteinAccs])  # Get the stability information for the proteins int he unlabelled dataset.
+        positiveNonRedundantStability = dict([(i[0], i) for i in stability if i[0] in positiveNonRedundantProteinAccs])  # Get the stability information for the proteins in the positive dataset.
+        unlabelledNonRedundantStability = dict([(i[0], i) for i in stability if i[0] in unlabelledNonRedundantProteinAccs])  # Get the stability information for the proteins int he unlabelled dataset.
+        positiveRedundantStability = dict([(i[0], i) for i in stability if i[0] in positiveRedundantProteinAccs])  # Get the stability information for the proteins in the positive dataset.
+        unlabelledRedundantStability = dict([(i[0], i) for i in stability if i[0] in unlabelledRedundantProteinAccs])  # Get the stability information for the proteins int he unlabelled dataset.
 
         # Get the data from the PPI information views.
         ppi = cursor.execute('SELECT * FROM ' + schemaProteins + '.upacc_ppi')
         ppi = cursor.fetchall()
-        positivePPI = dict([(i[0], i) for i in ppi if i[0] in positiveProteinAccs])  # Get the PPI information for the proteins in the positive dataset.
-        unlabelledPPI = dict([(i[0], i) for i in ppi if i[0] in unlabelledProteinAccs])  # Get the PPI information for the proteins in the positive dataset.
+        positiveNonRedundantPPI = dict([(i[0], i) for i in ppi if i[0] in positiveNonRedundantProteinAccs])  # Get the PPI information for the proteins in the non-redundant positive dataset.
+        unlabelledNonRedundantPPI = dict([(i[0], i) for i in ppi if i[0] in unlabelledNonRedundantProteinAccs])  # Get the PPI information for the proteins in the non-redundant positive dataset.
+        positiveRedundantPPI = dict([(i[0], i) for i in ppi if i[0] in positiveRedundantProteinAccs])  # Get the PPI information for the proteins in the redundant positive dataset.
+        unlabelledRedundantPPI = dict([(i[0], i) for i in ppi if i[0] in unlabelledRedundantProteinAccs])  # Get the PPI information for the proteins in the redundant positive dataset.
 
         # Get the names of the columns in the expression information view.
         expressionColumns = cursor.execute('SHOW COLUMNS FROM ' + schemaProteins + '.upacc_expression')
@@ -805,8 +887,10 @@ def main(args):
         # Get the data from teh expression information view.
         expression = cursor.execute('SELECT * FROM ' + schemaProteins + '.upacc_expression')
         expression = cursor.fetchall()
-        positiveExpression = dict([(i[0], i) for i in expression if i[0] in positiveProteinAccs])  # Get the expression information for the proteins in the positive dataset.
-        unlabelledExpression = dict([(i[0], i) for i in expression if i[0] in unlabelledProteinAccs])  # Get the expression information for the proteins in the positive dataset.
+        positiveNonRedundantExpression = dict([(i[0], i) for i in expression if i[0] in positiveNonRedundantProteinAccs])  # Get the expression information for the proteins in the non-redundant positive dataset.
+        unlabelledNonRedundantExpression = dict([(i[0], i) for i in expression if i[0] in unlabelledNonRedundantProteinAccs])  # Get the expression information for the proteins in the non-redundant positive dataset.
+        positiveRedundantExpression = dict([(i[0], i) for i in expression if i[0] in positiveRedundantProteinAccs])  # Get the expression information for the proteins in the redundant positive dataset.
+        unlabelledRedundantExpression = dict([(i[0], i) for i in expression if i[0] in unlabelledRedundantProteinAccs])  # Get the expression information for the proteins in the redundant positive dataset.
 
         # Get the names of the columns from the paralogs view.
         paralogColumns = cursor.execute('SHOW COLUMNS FROM ' + schemaProteins + '.upacc_paralogs')
@@ -815,8 +899,10 @@ def main(args):
         # Get the data from the paralogs view.
         paralog = cursor.execute('SELECT * FROM ' + schemaProteins + '.upacc_paralogs')
         paralog = cursor.fetchall()
-        positiveParalog = dict([(i[0], i) for i in paralog if i[0] in positiveProteinAccs])  # Get the paralog information for the proteins in the positive dataset.
-        unlabelledParalog = dict([(i[0], i) for i in paralog if i[0] in unlabelledProteinAccs])  # Get the paralog information for the proteins in the positive dataset.
+        positiveNonRedundantParalog = dict([(i[0], i) for i in paralog if i[0] in positiveNonRedundantProteinAccs])  # Get the paralog information for the proteins in the non-redundant positive dataset.
+        unlabelledNonRedundantParalog = dict([(i[0], i) for i in paralog if i[0] in unlabelledNonRedundantProteinAccs])  # Get the paralog information for the proteins in the non-redundant positive dataset.
+        positiveRedundantParalog = dict([(i[0], i) for i in paralog if i[0] in positiveRedundantProteinAccs])  # Get the paralog information for the proteins in the redundant positive dataset.
+        unlabelledRedundantParalog = dict([(i[0], i) for i in paralog if i[0] in unlabelledRedundantProteinAccs])  # Get the paralog information for the proteins in the redundant positive dataset.
 
         # Get the column names from the transcript view.
         transcriptColumns = cursor.execute('SHOW COLUMNS FROM ' + schemaProteins + '.upacc_transcripts')
@@ -825,8 +911,10 @@ def main(args):
         # Get the data from the transcript view.
         transcript = cursor.execute('SELECT * FROM ' + schemaProteins + '.upacc_transcripts')
         transcript = cursor.fetchall()
-        positiveTranscript = dict([(i[0], i) for i in transcript if i[0] in positiveProteinAccs])  # Get the transcript information for the proteins in the positive dataset.
-        unlabelledTranscript = dict([(i[0], i) for i in transcript if i[0] in unlabelledProteinAccs])  # Get the transcript information for the proteins in the positive dataset.
+        positiveNonRedundantTranscript = dict([(i[0], i) for i in transcript if i[0] in positiveNonRedundantProteinAccs])  # Get the transcript information for the proteins in the non-redundant positive dataset.
+        unlabelledNonRedundantTranscript = dict([(i[0], i) for i in transcript if i[0] in unlabelledNonRedundantProteinAccs])  # Get the transcript information for the proteins in the non-redundant positive dataset.
+        positiveRedundantTranscript = dict([(i[0], i) for i in transcript if i[0] in positiveRedundantProteinAccs])  # Get the transcript information for the proteins in the redundant positive dataset.
+        unlabelledRedundantTranscript = dict([(i[0], i) for i in transcript if i[0] in unlabelledRedundantProteinAccs])  # Get the transcript information for the proteins in the redundant positive dataset.
 
         # Get the column names from the germline mutations view.
         variantColumns = cursor.execute('SHOW COLUMNS FROM ' + schemaProteins + '.upacc_germvariants')
@@ -835,56 +923,77 @@ def main(args):
         # Get the data from the germline mutations view.
         variant = cursor.execute('SELECT * FROM ' + schemaProteins + '.upacc_germvariants')
         variant = cursor.fetchall()
-        positiveVariant = {}
-        unlabelledVariant = {}
+        positiveNonRedundantVariant = {}
+        unlabelledNonRedundantVariant = {}
+        positiveRedundantVariant = {}
+        unlabelledRedundantVariant = {}
         for i in variant:
             # For every mutation.
-            if i[0] in positiveProteinAccs:
-                # Get the germline mutation information for the proteins in the positive dataset.
-                if positiveVariant.has_key(i[0]):
-                    positiveVariant[i[0]]['3untrans'] += i[2]
-                    positiveVariant[i[0]]['5untrans'] += i[3]
-                    positiveVariant[i[0]]['nonsynon'] += i[4]
-                    positiveVariant[i[0]]['synon'] += i[5]
+            if i[0] in positiveNonRedundantProteinAccs:
+                # Get the germline mutation information for the proteins in the non-redundant positive dataset.
+                if positiveNonRedundantVariant.has_key(i[0]):
+                    positiveNonRedundantVariant[i[0]]['3untrans'] += i[2]
+                    positiveNonRedundantVariant[i[0]]['5untrans'] += i[3]
+                    positiveNonRedundantVariant[i[0]]['nonsynon'] += i[4]
+                    positiveNonRedundantVariant[i[0]]['synon'] += i[5]
                 else:
-                    positiveVariant[i[0]] = {'3untrans' : i[2], '5untrans' : i[3], 'nonsynon' : i[4], 'synon' : i[5]}
-            elif i[0] in unlabelledProteinAccs:
-                # Get the germline mutation information for the proteins in the positive dataset.
-                if unlabelledVariant.has_key(i[0]):
-                    unlabelledVariant[i[0]]['3untrans'] += i[2]
-                    unlabelledVariant[i[0]]['5untrans'] += i[3]
-                    unlabelledVariant[i[0]]['nonsynon'] += i[4]
-                    unlabelledVariant[i[0]]['synon'] += i[5]
+                    positiveNonRedundantVariant[i[0]] = {'3untrans' : i[2], '5untrans' : i[3], 'nonsynon' : i[4], 'synon' : i[5]}
+            elif i[0] in unlabelledNonRedundantProteinAccs:
+                # Get the germline mutation information for the proteins in the non-redundant positive dataset.
+                if unlabelledNonRedundantVariant.has_key(i[0]):
+                    unlabelledNonRedundantVariant[i[0]]['3untrans'] += i[2]
+                    unlabelledNonRedundantVariant[i[0]]['5untrans'] += i[3]
+                    unlabelledNonRedundantVariant[i[0]]['nonsynon'] += i[4]
+                    unlabelledNonRedundantVariant[i[0]]['synon'] += i[5]
                 else:
-                    unlabelledVariant[i[0]] = {'3untrans' : i[2], '5untrans' : i[3], 'nonsynon' : i[4], 'synon' : i[5]}
+                    unlabelledNonRedundantVariant[i[0]] = {'3untrans' : i[2], '5untrans' : i[3], 'nonsynon' : i[4], 'synon' : i[5]}
 
+            if i[0] in positiveRedundantProteinAccs:
+                # Get the germline mutation information for the proteins in the non-redundant positive dataset.
+                if positiveRedundantVariant.has_key(i[0]):
+                    positiveRedundantVariant[i[0]]['3untrans'] += i[2]
+                    positiveRedundantVariant[i[0]]['5untrans'] += i[3]
+                    positiveRedundantVariant[i[0]]['nonsynon'] += i[4]
+                    positiveRedundantVariant[i[0]]['synon'] += i[5]
+                else:
+                    positiveRedundantVariant[i[0]] = {'3untrans' : i[2], '5untrans' : i[3], 'nonsynon' : i[4], 'synon' : i[5]}
+            elif i[0] in unlabelledRedundantProteinAccs:
+                # Get the germline mutation information for the proteins in the non-redundant positive dataset.
+                if unlabelledRedundantVariant.has_key(i[0]):
+                    unlabelledRedundantVariant[i[0]]['3untrans'] += i[2]
+                    unlabelledRedundantVariant[i[0]]['5untrans'] += i[3]
+                    unlabelledRedundantVariant[i[0]]['nonsynon'] += i[4]
+                    unlabelledRedundantVariant[i[0]]['synon'] += i[5]
+                else:
+                    unlabelledRedundantVariant[i[0]] = {'3untrans' : i[2], '5untrans' : i[3], 'nonsynon' : i[4], 'synon' : i[5]}
         mysql.closeConnection(conn, cursor)
 
-        resultsPositive = []  # Holds the data tuples for the positive observations.
-        resultsUnlabelled = []  # Holds the data tuples for the unlabelled observations.
-        for i in [[positiveProteinAccs, 'positive'], [unlabelledProteinAccs, 'unlabelled']]:
+        resultsNonRedundantPositive = []  # Holds the data tuples for the non-redundant positive observations.
+        resultsNonRedundantUnlabelled = []  # Holds the data tuples for the non-redudnant unlabelled observations.
+        resultsRedundantPositive = []  # Holds the data tuples for the redundant positive observations.
+        resultsRedundantUnlabelled = []  # Holds the data tuples for the redudnant unlabelled observations.
+        for i in [[positiveNonRedundantProteinAccs, 'NRP'], [positiveRedundantProteinAccs, 'RP'], [unlabelledNonRedundantProteinAccs, 'NRU'],
+                  [unlabelledRedundantProteinAccs, 'RU']]:
             for j in i[0]:
                 currentRecord = []  # Hold the current protein's data tuple.
 
                 # Put the protein properties into the current protein's data tuple.
-                if i[1] == 'positive':
-                    for k in ['UPAccession', 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'P', 'N', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y',
+                for k in ['UPAccession', 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'P', 'N', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y',
                               'NegativelyCharged', 'PositivelyCharged', 'Basic', 'Charged', 'Polar', 'NonPolar', 'Aromatic', 'Aliphatic', 'Small', 'Tiny',
                               'PESTMotif', 'LowComplexity', 'Hydrophobicity', 'Isoelectric', 'ECNumber', 'OGlycosylation', 'NGlycosylation', 'Phosphoserine',
                               'Phosphothreonine', 'Phosphotyrosine', 'SubcellularLocation', 'TopologicalDomain', 'PredictedSubcellularLocation',
-                              'SignalPeptide', 'TransmembraneHelices', 'AlphaHelices', 'BetaStrands', 'PredictedAlphaHelices', 'PredictedBetaSheets', 'Sequence']:
-                        currentRecord.append(positiveProteins[j][protColumns.index(k)])
-                else:
-                    for k in ['UPAccession', 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'P', 'N', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y',
-                              'NegativelyCharged', 'PositivelyCharged', 'Basic', 'Charged', 'Polar', 'NonPolar', 'Aromatic', 'Aliphatic', 'Small', 'Tiny',
-                              'PESTMotif', 'LowComplexity', 'Hydrophobicity', 'Isoelectric', 'ECNumber', 'OGlycosylation', 'NGlycosylation', 'Phosphoserine',
-                              'Phosphothreonine', 'Phosphotyrosine', 'SubcellularLocation', 'TopologicalDomain', 'PredictedSubcellularLocation',
-                              'SignalPeptide', 'TransmembraneHelices', 'AlphaHelices', 'BetaStrands', 'PredictedAlphaHelices', 'PredictedBetaSheets', 'Sequence']:
-                        currentRecord.append(unlabelledProteins[j][protColumns.index(k)])
+                              'SignalPeptide', 'TransmembraneHelices', 'Turns', 'AlphaHelices', 'BetaStrands', 'PredictedAlphaHelices', 'PredictedBetaSheets', 'Sequence']:
+                    if i[1] == 'NRP':
+                        currentRecord.append(positiveNonRedundantProteins[j][protColumns.index(k)])
+                    elif i[1] == 'NRU':
+                        currentRecord.append(unlabelledNonRedundantProteins[j][protColumns.index(k)])
+                    elif i[1] == 'RP':
+                        currentRecord.append(positiveRedundantProteins[j][protColumns.index(k)])
+                    elif i[1] == 'RU':
+                        currentRecord.append(unlabelledRedundantProteins[j][protColumns.index(k)])
 
                 # Put the expression information into the current protein's data tuple.
-                if i[1] == 'positive':
-                    for k in ['DS_Embryoid_Body', 'DS_Blastocyst', 'DS_Fetus', 'DS_Neonate', 'DS_Infant', 'DS_Juvenile', 'DS_Adult', 'HS_Adrenal_Tumor',
+                for k in ['DS_Embryoid_Body', 'DS_Blastocyst', 'DS_Fetus', 'DS_Neonate', 'DS_Infant', 'DS_Juvenile', 'DS_Adult', 'HS_Adrenal_Tumor',
                               'HS_Bladder_Carcinoma', 'HS_Breast_Mammary_Gland_Tumor', 'HS_Cervical_Tumor', 'HS_Chondrosarcoma', 'HS_Colorectal_Tumor',
                               'HS_Esophageal_Tumor', 'HS_Gastrointestinal_Tumor', 'HS_Germ_Cell_Tumor', 'HS_Glioma', 'HS_Head_And_Neck_Tumor',
                               'HS_Kidney_Tumor', 'HS_Leukemia_Tumor', 'HS_Liver_Tumor', 'HS_Lung_Tumor', 'HS_Lymphoma', 'HS_Non_neoplasia', 'HS_Normal',
@@ -896,40 +1005,55 @@ def main(args):
                               'BS_Ovary', 'BS_Pancreas', 'BS_Parathyroid', 'BS_Pharynx', 'BS_Pituitary_Gland', 'BS_Placenta', 'BS_Prostate',
                               'BS_Salivary_Gland', 'BS_Skin', 'BS_Spleen', 'BS_Stomach', 'BS_Testis', 'BS_Thymus', 'BS_Thyroid', 'BS_Tonsil', 'BS_Trachea',
                               'BS_Umbilical_Cord', 'BS_Uterus', 'BS_Vascular']:
-                        currentRecord.append(int(positiveExpression[j][expressionColumns.index(k)]))
-                else:
-                    for k in ['DS_Embryoid_Body', 'DS_Blastocyst', 'DS_Fetus', 'DS_Neonate', 'DS_Infant', 'DS_Juvenile', 'DS_Adult', 'HS_Adrenal_Tumor',
-                              'HS_Bladder_Carcinoma', 'HS_Breast_Mammary_Gland_Tumor', 'HS_Cervical_Tumor', 'HS_Chondrosarcoma', 'HS_Colorectal_Tumor',
-                              'HS_Esophageal_Tumor', 'HS_Gastrointestinal_Tumor', 'HS_Germ_Cell_Tumor', 'HS_Glioma', 'HS_Head_And_Neck_Tumor',
-                              'HS_Kidney_Tumor', 'HS_Leukemia_Tumor', 'HS_Liver_Tumor', 'HS_Lung_Tumor', 'HS_Lymphoma', 'HS_Non_neoplasia', 'HS_Normal',
-                              'HS_Ovarian_Tumor', 'HS_Pancreatic_Tumor', 'HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS', 'HS_Prostate_Cancer',
-                              'HS_Retinoblastoma', 'HS_Skin_Tumor', 'HS_Soft_Tissue_Muscle_Tissue_Tumor', 'HS_Uterine_Tumor', 'BS_Adipose_Tissue',
-                              'BS_Adrenal_Gland', 'BS_Ascites', 'BS_Bladder', 'BS_Blood', 'BS_Bone', 'BS_Bone_Marrow', 'BS_Brain', 'BS_Cervix',
-                              'BS_Connective_Tissue', 'BS_Ear', 'BS_Embryonic_Tissue', 'BS_Esophagus', 'BS_Eye', 'BS_Heart', 'BS_Intestine', 'BS_Kidney',
-                              'BS_Larynx', 'BS_Liver', 'BS_Lung', 'BS_Lymph', 'BS_Lymph_Node', 'BS_Mammary_Gland', 'BS_Mouth', 'BS_Muscle', 'BS_Nerve',
-                              'BS_Ovary', 'BS_Pancreas', 'BS_Parathyroid', 'BS_Pharynx', 'BS_Pituitary_Gland', 'BS_Placenta', 'BS_Prostate',
-                              'BS_Salivary_Gland', 'BS_Skin', 'BS_Spleen', 'BS_Stomach', 'BS_Testis', 'BS_Thymus', 'BS_Thyroid', 'BS_Tonsil', 'BS_Trachea',
-                              'BS_Umbilical_Cord', 'BS_Uterus', 'BS_Vascular']:
-                        currentRecord.append(int(unlabelledExpression[j][expressionColumns.index(k)]))
+                    if i[1] == 'NRP':
+                        currentRecord.append(int(positiveNonRedundantExpression[j][expressionColumns.index(k)]))
+                    elif i[1] == 'NRU':
+                        currentRecord.append(int(unlabelledNonRedundantExpression[j][expressionColumns.index(k)]))
+                    elif i[1] == 'RP':
+                        currentRecord.append(int(positiveRedundantExpression[j][expressionColumns.index(k)]))
+                    elif i[1] == 'RU':
+                        currentRecord.append(int(unlabelledRedundantExpression[j][expressionColumns.index(k)]))
 
                 # Put the germline mutation information into the current protein's data tuple.
-                if i[1] == 'positive':
-                    if positiveVariant.has_key(j):
-                        currentRecord.append(positiveVariant[j]['3untrans'])
-                        currentRecord.append(positiveVariant[j]['5untrans'])
-                        currentRecord.append(positiveVariant[j]['nonsynon'])
-                        currentRecord.append(positiveVariant[j]['synon'])
+                if i[1] == 'NRP':
+                    if positiveNonRedundantVariant.has_key(j):
+                        currentRecord.append(positiveNonRedundantVariant[j]['3untrans'])
+                        currentRecord.append(positiveNonRedundantVariant[j]['5untrans'])
+                        currentRecord.append(positiveNonRedundantVariant[j]['nonsynon'])
+                        currentRecord.append(positiveNonRedundantVariant[j]['synon'])
                     else:
                         currentRecord.append(0)
                         currentRecord.append(0)
                         currentRecord.append(0)
                         currentRecord.append(0)
-                else:
-                    if unlabelledVariant.has_key(j):
-                        currentRecord.append(unlabelledVariant[j]['3untrans'])
-                        currentRecord.append(unlabelledVariant[j]['5untrans'])
-                        currentRecord.append(unlabelledVariant[j]['nonsynon'])
-                        currentRecord.append(unlabelledVariant[j]['synon'])
+                elif i[1] == 'NRU':
+                    if unlabelledNonRedundantVariant.has_key(j):
+                        currentRecord.append(unlabelledNonRedundantVariant[j]['3untrans'])
+                        currentRecord.append(unlabelledNonRedundantVariant[j]['5untrans'])
+                        currentRecord.append(unlabelledNonRedundantVariant[j]['nonsynon'])
+                        currentRecord.append(unlabelledNonRedundantVariant[j]['synon'])
+                    else:
+                        currentRecord.append(0)
+                        currentRecord.append(0)
+                        currentRecord.append(0)
+                        currentRecord.append(0)
+                elif i[1] == 'RP':
+                    if positiveRedundantVariant.has_key(j):
+                        currentRecord.append(positiveRedundantVariant[j]['3untrans'])
+                        currentRecord.append(positiveRedundantVariant[j]['5untrans'])
+                        currentRecord.append(positiveRedundantVariant[j]['nonsynon'])
+                        currentRecord.append(positiveRedundantVariant[j]['synon'])
+                    else:
+                        currentRecord.append(0)
+                        currentRecord.append(0)
+                        currentRecord.append(0)
+                        currentRecord.append(0)
+                elif i[1] == 'RU':
+                    if unlabelledRedundantVariant.has_key(j):
+                        currentRecord.append(unlabelledRedundantVariant[j]['3untrans'])
+                        currentRecord.append(unlabelledRedundantVariant[j]['5untrans'])
+                        currentRecord.append(unlabelledRedundantVariant[j]['nonsynon'])
+                        currentRecord.append(unlabelledRedundantVariant[j]['synon'])
                     else:
                         currentRecord.append(0)
                         currentRecord.append(0)
@@ -937,81 +1061,182 @@ def main(args):
                         currentRecord.append(0)
 
                 # Put the paralog information into the current protein's data tuple.
-                if i[1] == 'positive':
-                    if positiveParalog.has_key(j):
-                        currentRecord.append(int(positiveParalog[j][-1]))
+                if i[1] == 'NRP':
+                    if positiveNonRedundantParalog.has_key(j):
+                        currentRecord.append(int(positiveNonRedundantParalog[j][-1]))
                     else:
                         currentRecord.append(0)
-                else:
-                    if unlabelledParalog.has_key(j):
-                        currentRecord.append(int(unlabelledParalog[j][-1]))
+                elif i[1] == 'NRU':
+                    if unlabelledNonRedundantParalog.has_key(j):
+                        currentRecord.append(int(unlabelledNonRedundantParalog[j][-1]))
+                    else:
+                        currentRecord.append(0)
+                elif i[1] == 'RP':
+                    if positiveRedundantParalog.has_key(j):
+                        currentRecord.append(int(positiveRedundantParalog[j][-1]))
+                    else:
+                        currentRecord.append(0)
+                elif i[1] == 'RU':
+                    if unlabelledRedundantParalog.has_key(j):
+                        currentRecord.append(int(unlabelledRedundantParalog[j][-1]))
                     else:
                         currentRecord.append(0)
 
                 # Put the PPI information into the current protein's data tuple.
-                if i[1] == 'positive':
-                    if positivePPI.has_key(j):
-                        currentRecord.append(int(positivePPI[j][-1]))
+                if i[1] == 'NRP':
+                    if positiveNonRedundantPPI.has_key(j):
+                        currentRecord.append(int(positiveNonRedundantPPI[j][-1]))
                     else:
                         currentRecord.append(0)
-                else:
-                    if unlabelledPPI.has_key(j):
-                        currentRecord.append(int(unlabelledPPI[j][-1]))
+                elif i[1] == 'NRU':
+                    if unlabelledNonRedundantPPI.has_key(j):
+                        currentRecord.append(int(unlabelledNonRedundantPPI[j][-1]))
+                    else:
+                        currentRecord.append(0)
+                elif i[1] == 'RP':
+                    if positiveRedundantPPI.has_key(j):
+                        currentRecord.append(int(positiveRedundantPPI[j][-1]))
+                    else:
+                        currentRecord.append(0)
+                elif i[1] == 'RU':
+                    if unlabelledRedundantPPI.has_key(j):
+                        currentRecord.append(int(unlabelledRedundantPPI[j][-1]))
                     else:
                         currentRecord.append(0)
 
                 # Put the transcript information into the current protein's data tuple.
-                if i[1] == 'positive':
-                    if positiveTranscript.has_key(j):
-                        currentRecord.append(int(positiveTranscript[j][transcriptColumns.index('ProteinCodingTranscripts')]))
+                if i[1] == 'NRP':
+                    if positiveNonRedundantTranscript.has_key(j):
+                        currentRecord.append(int(positiveNonRedundantTranscript[j][transcriptColumns.index('ProteinCodingTranscripts')]))
                     else:
                         currentRecord.append(1)
-                else:
-                    if unlabelledTranscript.has_key(j):
-                        currentRecord.append(int(unlabelledTranscript[j][transcriptColumns.index('ProteinCodingTranscripts')]))
+                elif i[1] == 'NRU':
+                    if unlabelledNonRedundantTranscript.has_key(j):
+                        currentRecord.append(int(unlabelledNonRedundantTranscript[j][transcriptColumns.index('ProteinCodingTranscripts')]))
+                    else:
+                        currentRecord.append(1)
+                elif i[1] == 'RP':
+                    if positiveRedundantTranscript.has_key(j):
+                        currentRecord.append(int(positiveRedundantTranscript[j][transcriptColumns.index('ProteinCodingTranscripts')]))
+                    else:
+                        currentRecord.append(1)
+                elif i[1] == 'RU':
+                    if unlabelledRedundantTranscript.has_key(j):
+                        currentRecord.append(int(unlabelledRedundantTranscript[j][transcriptColumns.index('ProteinCodingTranscripts')]))
                     else:
                         currentRecord.append(1)
 
                 # Put the stability information into the current protein's data tuple.
-                if i[1] == 'positive':
+                if i[1] == 'NRP':
                     for k in ['HalfLife', 'InstabilityIndex']:
-                        currentRecord.append(positiveStability[j][stabilityColumns.index(k)])
-                else:
+                        currentRecord.append(positiveNonRedundantStability[j][stabilityColumns.index(k)])
+                elif i[1] == 'NRU':
                     for k in ['HalfLife', 'InstabilityIndex']:
-                        currentRecord.append(unlabelledStability[j][stabilityColumns.index(k)])
+                        currentRecord.append(unlabelledNonRedundantStability[j][stabilityColumns.index(k)])
+                elif i[1] == 'RP':
+                    for k in ['HalfLife', 'InstabilityIndex']:
+                        currentRecord.append(positiveRedundantStability[j][stabilityColumns.index(k)])
+                elif i[1] == 'RU':
+                    for k in ['HalfLife', 'InstabilityIndex']:
+                        currentRecord.append(unlabelledRedundantStability[j][stabilityColumns.index(k)])
 
-                if i[1] == 'positive':
-                    resultsPositive.append(tuple(currentRecord))
-                else:
-                    resultsUnlabelled.append(tuple(currentRecord))
+                if i[1] == 'NRP':
+                    resultsNonRedundantPositive.append(tuple(currentRecord))
+                elif i[1] == 'NRU':
+                    resultsNonRedundantUnlabelled.append(tuple(currentRecord))
+                elif i[1] == 'RP':
+                    resultsRedundantPositive.append(tuple(currentRecord))
+                elif i[1] == 'RU':
+                    resultsRedundantUnlabelled.append(tuple(currentRecord))
 
         # Generate the dataset and any additional information about the proteins in it (expression information, EC numbers, etc.).
-        utilities.gadatageneration.pulearning(resultsPositive, resultsUnlabelled, columns, geneticAlgorithmProcessedData, categoricalMappingDataLocation,
-                                           columnDataLocation, ECDataLocation, subcellLocation, healthStateLocation, bodySiteLocation,
-                                           developmentalStageLocation)
+        utilities.gadatageneration.pulearning(resultsNonRedundantPositive, resultsNonRedundantUnlabelled, columns, gaNonRedundantData,
+                                              categoricalMappingNRDataLocation, columnNRDataLocation, ECNRDataLocation, subcellNRLocation,
+                                              healthStateNRLocation, bodySiteNRLocation, developmentalStageNRLocation)
+        utilities.gadatageneration.pulearning(resultsRedundantPositive, resultsRedundantUnlabelled, columns, gaAllData,
+                                              categoricalMappingAllDataLocation, columnAllDataLocation, ECAllDataLocation, subcellAllLocation,
+                                              healthStateAllLocation, bodySiteAllLocation, developmentalStageAllLocation)
+
+        # Generate the redundant dataset.
+        nonRedundantData = set([])
+        readNonRedundant = open(gaNonRedundantData, 'r')
+        headerOne = readNonRedundant.readline()
+        headerTwo = readNonRedundant.readline()
+        headerThree = readNonRedundant.readline()
+        for line in readNonRedundant:
+            nonRedundantData.add(line)
+        readNonRedundant.close()
+        allData = set([])
+        readAll = open(gaAllData, 'r')
+        headerOne = readAll.readline()
+        headerTwo = readAll.readline()
+        headerThree = readAll.readline()
+        for line in readAll:
+            allData.add(line)
+        readAll.close()
+        redundantData = allData - nonRedundantData
+        writeRedundant = open(gaRedundantData, 'w')
+        writeRedundant.write(headerOne)
+        writeRedundant.write(headerTwo)
+        writeRedundant.write(headerThree)
+        for i in redundantData:
+            writeRedundant.write(i)
+        writeRedundant.close()
+
+        # Determine the BLAST similarity info for the proteins in the non-redundant dataset.
+        conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)
+        allRedundantProteinAccs = positiveRedundantProteinAccs + unlabelledRedundantProteinAccs
+        blastTableQuery = cursor.execute('SELECT * FROM ' + tableBLASTResults + ' WHERE ProteinA IN (' + ','.join(['\'' + i + '\'' for i in allRedundantProteinAccs]) + ') AND ProteinB IN (' + ','.join(['\'' + i + '\'' for i in allRedundantProteinAccs]) + ')')
+        blastTableQuery = cursor.fetchall()
+        blastSimilarities = dict([(i, {'Protein' : [], 'Similarity' : []}) for i in allRedundantProteinAccs])
+        for i in blastTableQuery:
+            protA = i[0]
+            protB = i[1]
+            similarity = i[2]
+            if similarity <= 20:
+                # If the similarity of the proteins is below the 20% threshold, then ignore the similarity.
+                continue
+            blastSimilarities[protB]['Protein'].append(protA)
+            blastSimilarities[protB]['Similarity'].append(similarity)
+            blastSimilarities[protA]['Protein'].append(protB)
+            blastSimilarities[protA]['Similarity'].append(similarity)
+        mysql.closeConnection(conn, cursor)
+        writeOut = open(blastOutput, 'w')
+        for i in blastSimilarities:
+            if blastSimilarities[i]['Protein']:
+                similarities, proteins = zip(*sorted(zip(blastSimilarities[i]['Similarity'], blastSimilarities[i]['Protein']), reverse=True))
+            else:
+                similarities = []
+                proteins = []
+            writeOut.write(i)
+            writeOut.write('\t')
+            writeOut.write(','.join(proteins))
+            writeOut.write('\t')
+            writeOut.write(','.join([str(i) for i in similarities]))
+            writeOut.write('\n')
+        writeOut.close()
 
         # Determine the GO term information for the proteins in the dataset.
         conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)
         # Get the GO term data for the positive proteins.
-        positiveProteinAccs = [i[0] for i in resultsPositive]
-        cursor = mysql.tableSELECT(cursor, '*', tableUniProt2GO, 'UPAccession IN ("' + '","'.join(positiveProteinAccs) + '")')
+        cursor = mysql.tableSELECT(cursor, '*', tableUniProt2GO, 'UPAccession IN ("' + '","'.join(positiveNonRedundantProteinAccs) + '")')
         results = cursor.fetchall()
-        targetGOIDs = {}
+        positiveNonRedundantGOIDs = {}
         for i in results:
             UPAccession = i[0]
             GOTermID = i[1]
-            if targetGOIDs.has_key(UPAccession):
-                targetGOIDs[UPAccession].add(GOTermID)
+            if positiveNonRedundantGOIDs.has_key(UPAccession):
+                positiveNonRedundantGOIDs[UPAccession].add(GOTermID)
             else:
-                targetGOIDs[UPAccession] = set([GOTermID])
-        targetGOTerms = {}
-        for i in targetGOIDs.keys():
+                positiveNonRedundantGOIDs[UPAccession] = set([GOTermID])
+        positiveNonRedundantGOTerms = {}
+        for i in positiveNonRedundantGOIDs.keys():
             UPAccession = i
-            targetGOTerms[UPAccession] = {'biological_process' : {'LevelOne' : set([]), 'LevelTwo' : set([])},
+            positiveNonRedundantGOTerms[UPAccession] = {'biological_process' : {'LevelOne' : set([]), 'LevelTwo' : set([])},
                                           'cellular_component' : {'LevelOne' : set([]), 'LevelTwo' : set([])},
                                           'molecular_function' : {'LevelOne' : set([]), 'LevelTwo' : set([])}
                                           }
-            GOIDs = [str(i) for i in targetGOIDs[i]]
+            GOIDs = [str(i) for i in positiveNonRedundantGOIDs[i]]
             cursor = mysql.tableSELECT(cursor, 'GOType, LevelOne, LevelTwo', tableGOInfo, 'GOTermID IN ("' + '","'.join(GOIDs) + '")')
             results = cursor.fetchall()
             for j in results:
@@ -1020,30 +1245,29 @@ def main(args):
                 levelTwo = j[2].split(';')
 
                 if levelOne != ['NA']:
-                    targetGOTerms[UPAccession][GOType]['LevelOne'].update(levelOne)
+                    positiveNonRedundantGOTerms[UPAccession][GOType]['LevelOne'].update(levelOne)
                 if levelTwo != ['NA']:
-                    targetGOTerms[UPAccession][GOType]['LevelTwo'].update(levelTwo)
+                    positiveNonRedundantGOTerms[UPAccession][GOType]['LevelTwo'].update(levelTwo)
 
         # Get the GO term data for the unlabelled proteins.
-        unlabelledProteinAccs = [i[0] for i in resultsUnlabelled]
-        cursor = mysql.tableSELECT(cursor, '*', tableUniProt2GO, 'UPAccession IN ("' + '","'.join(unlabelledProteinAccs) + '")')
+        cursor = mysql.tableSELECT(cursor, '*', tableUniProt2GO, 'UPAccession IN ("' + '","'.join(unlabelledNonRedundantProteinAccs) + '")')
         results = cursor.fetchall()
-        nonTargetGOIDs = {}
+        unlabelledNonRedundantGOID = {}
         for i in results:
             UPAccession = i[0]
             GOTermID = i[1]
-            if nonTargetGOIDs.has_key(UPAccession):
-                nonTargetGOIDs[UPAccession].add(GOTermID)
+            if unlabelledNonRedundantGOID.has_key(UPAccession):
+                unlabelledNonRedundantGOID[UPAccession].add(GOTermID)
             else:
-                nonTargetGOIDs[UPAccession] = set([GOTermID])
-        nonTargetGOTerms = {}
-        for i in nonTargetGOIDs.keys():
+                unlabelledNonRedundantGOID[UPAccession] = set([GOTermID])
+        unlabelledNonRedundantGOTerms = {}
+        for i in unlabelledNonRedundantGOID.keys():
             UPAccession = i
-            nonTargetGOTerms[UPAccession] = {'biological_process' : {'LevelOne' : set([]), 'LevelTwo' : set([])},
+            unlabelledNonRedundantGOTerms[UPAccession] = {'biological_process' : {'LevelOne' : set([]), 'LevelTwo' : set([])},
                                              'cellular_component' : {'LevelOne' : set([]), 'LevelTwo' : set([])},
                                              'molecular_function' : {'LevelOne' : set([]), 'LevelTwo' : set([])}
                                              }
-            GOIDs = [str(i) for i in nonTargetGOIDs[i]]
+            GOIDs = [str(i) for i in unlabelledNonRedundantGOID[i]]
             cursor = mysql.tableSELECT(cursor, 'GOType, LevelOne, LevelTwo', tableGOInfo, 'GOTermID IN ("' + '","'.join(GOIDs) + '")')
             results = cursor.fetchall()
             for j in results:
@@ -1052,17 +1276,13 @@ def main(args):
                 levelTwo = j[2].split(';')
 
                 if levelOne != ['NA']:
-                    nonTargetGOTerms[UPAccession][GOType]['LevelOne'].update(levelOne)
+                    unlabelledNonRedundantGOTerms[UPAccession][GOType]['LevelOne'].update(levelOne)
                 if levelTwo != ['NA']:
-                    nonTargetGOTerms[UPAccession][GOType]['LevelTwo'].update(levelTwo)
-
+                    unlabelledNonRedundantGOTerms[UPAccession][GOType]['LevelTwo'].update(levelTwo)
         mysql.closeConnection(conn, cursor)
 
         # Generate the summary GO term information for the positive and negative observations in the dataset.
-        utilities.generateGOsummarydata.main(targetGOTerms, nonTargetGOTerms, outputDirectory)
-
-        # Perform the statistical analysis of the dataset and its supporting information (GO terms, EC numbers, etc.).
-        subprocess.call(['Rscript.exe', folderGAData + '/StatisticalTests.R', outputDirectory, GAClassifications[0], GAClassifications[1]])
+        utilities.generateGOsummarydata.main(positiveNonRedundantGOTerms, unlabelledNonRedundantGOTerms, nonRedundantGOOutputDirectory)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

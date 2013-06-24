@@ -41,15 +41,14 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
     columnIndices = dict([(columnHeadings[i], i) for i in range(len(columnHeadings))])
 
     # Determine the columns that will not be used when training the random forest.
-    unneededColumns = ['UPAccession', 'ECNumber', 'SubcellularLocation', 'TopologicalDomain',
-                       'PredictedSubcellularLocation', 'AlphaHelices', 'BetaStrands', 'PredictedBetaSheets', 'PredictedAlphaHelices']
+    unneededColumns = ['ECNumber', 'SubcellularLocation', 'TopologicalDomain', 'PredictedSubcellularLocation', 'PredictedBetaSheets', 'PredictedAlphaHelices']
     # Define the categorical/discrete columns.
     discreteColumns = []
     #discreteColumns = ['PESTMotif', 'LowComplexity', 'OGlycosylation', 'NGlycosylation', 'Phosphoserine', 'Phosphothreonine', 'Phosphotyrosine',
     #                   'SignalPeptide', 'TransmembraneHelices', '3Untranslated', '5Untranslated', 'SynonymousCoding', 'Paralogs', 'BinaryPPI',
     #                   'HalfLife', 'InstabilityIndex']
     # Define the dependant variables that will be present in the training dataset, but are not to be used (do it this way so that they can be re-introduced easily).
-    markedOutColumns = ['HalfLife', 'InstabilityIndex']
+    markedOutColumns = ['UPAccession', 'HalfLife', 'InstabilityIndex']
     # Define the name of the response column.
     responseColumn = ['Classification']
     # Define the continuous valued columns.
@@ -88,7 +87,9 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
                     protein = j[columnIndices[k]]
                     dataDict[protein] = {}
                     dataDict[protein]['Classification'] = 'Positive' if i == sqlPositiveQueryResults else 'Unlabelled'
-                elif k == 'ECNumber':
+
+                # Determine how to handle the current column.
+                if k == 'ECNumber':
                     classifiedAs = dataDict[protein]['Classification']
                     ECValue = j[columnIndices[k]]
                     if ECValue == 'NA':
@@ -123,7 +124,8 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
                     # http://orange.biolab.si/doc/reference/Orange.data.formats/
                     dataDict[protein][k] = str(j[columnIndices[k]]) if j[columnIndices[k]] != -1 else missingValueCode
                 elif k in ['OGlycosylation', 'NGlycosylation', 'Phosphoserine', 'Phosphothreonine', 'Phosphotyrosine',
-                           'SignalPeptide', 'TransmembraneHelices', 'PredictedAlphaHelices', 'PredictedBetaSheets']:
+                           'SignalPeptide', 'TransmembraneHelices', 'PredictedAlphaHelices', 'PredictedBetaSheets', 'Turns',
+                           'AlphaHelices', 'BetaStrands']:
                     # All of these columns are either NA, or are a set of entries split up by ';'.
                     dataDict[protein][k] = '0' if j[columnIndices[k]] == 'NA' else str(j[columnIndices[k]].count(';') + 1)
                 elif k == 'Sequence':

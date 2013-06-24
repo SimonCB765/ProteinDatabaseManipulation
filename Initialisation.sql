@@ -2,15 +2,12 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 
-DROP SCHEMA IF EXISTS `proteindatabase` ;
 CREATE SCHEMA IF NOT EXISTS `proteindatabase` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci ;
 USE `proteindatabase` ;
 
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`goinfo`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`goinfo` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`goinfo` (
   `GOTermID` INT NOT NULL ,
   `GOName` LONGTEXT NULL ,
@@ -25,8 +22,6 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`proteininfo` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`proteininfo` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `ProteinName` VARCHAR(45) NULL ,
@@ -89,39 +84,27 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `proteindatabase`.`entrezgene`
+-- Table `proteindatabase`.`cancergene`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`entrezgene` ;
-
-CREATE  TABLE IF NOT EXISTS `proteindatabase`.`entrezgene` (
-  `GeneID` VARCHAR(45) NOT NULL ,
-  `Cancer_Ovarian` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Melanoma` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Breast` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Lung` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Pancreatic` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Liver` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Colon` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Prostate` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Testicular` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Oesophageal` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Stomach` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Heart` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Oral_Cavity` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Leukaemia` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Lymphoma` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Intestinal` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_Brain` VARCHAR(1) NULL DEFAULT 'N' ,
-  `Cancer_All` VARCHAR(1) NULL DEFAULT 'N' ,
-  PRIMARY KEY (`GeneID`) )
+CREATE  TABLE IF NOT EXISTS `proteindatabase`.`cancergene` (
+  `UPAccession` VARCHAR(10) NOT NULL ,
+  `Cancer` VARCHAR(1) NULL DEFAULT 'N' ,
+  `Target` VARCHAR(1) NULL DEFAULT 'N' ,
+  `Somatic` VARCHAR(1) NULL DEFAULT 'U' ,
+  `Germline` VARCHAR(1) NULL DEFAULT 'U' ,
+  PRIMARY KEY (`UPAccession`) ,
+  INDEX `UP2UP` (`UPAccession` ASC) ,
+  CONSTRAINT `UP2UP`
+    FOREIGN KEY (`UPAccession` )
+    REFERENCES `proteindatabase`.`proteininfo` (`UPAccession` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`ensemblgene`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`ensemblgene` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`ensemblgene` (
   `EnsemblGeneID` VARCHAR(45) NOT NULL ,
   `NumberTranscripts` INT NULL DEFAULT 0 ,
@@ -136,16 +119,11 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`germvariants`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`germvariants` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`germvariants` (
   `EnsemblTranscriptID` VARCHAR(45) NOT NULL ,
   `VariantID` VARCHAR(45) NOT NULL ,
   `EnsemblGeneID` VARCHAR(45) NOT NULL ,
-  `InitialAminoAcid` VARCHAR(45) NULL DEFAULT 'NA' ,
-  `FinalAminoAcid` VARCHAR(45) NULL DEFAULT 'NA' ,
-  `CDSStart` INT NULL DEFAULT -1 ,
-  `CDSEnd` INT NULL DEFAULT -1 ,
+  `AminoAcidChange` LONGTEXT NULL DEFAULT 'NA' ,
   `3Untranslated` INT NULL DEFAULT 0 ,
   `5Untranslated` INT NULL DEFAULT 0 ,
   `CodingUnknown` INT NULL DEFAULT 0 ,
@@ -180,8 +158,6 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`unigene`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`unigene` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`unigene` (
   `UniGeneID` INT NOT NULL ,
   `DS_Embryoid_Body` INT NULL DEFAULT 0 ,
@@ -269,8 +245,6 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`uniprot2go`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`uniprot2go` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`uniprot2go` (
   `UPAccession` VARCHAR(45) NOT NULL ,
   `GOTermID` INT NOT NULL ,
@@ -291,34 +265,8 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `proteindatabase`.`uniprot2entrez`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`uniprot2entrez` ;
-
-CREATE  TABLE IF NOT EXISTS `proteindatabase`.`uniprot2entrez` (
-  `UPAccession` VARCHAR(45) NOT NULL ,
-  `GeneID` VARCHAR(45) NOT NULL ,
-  PRIMARY KEY (`UPAccession`, `GeneID`) ,
-  INDEX `UPAccessionEntrez` (`UPAccession` ASC) ,
-  INDEX `GeneIDUP` (`GeneID` ASC) ,
-  CONSTRAINT `UPAccessionEntrez`
-    FOREIGN KEY (`UPAccession` )
-    REFERENCES `proteindatabase`.`proteininfo` (`UPAccession` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `GeneIDUP`
-    FOREIGN KEY (`GeneID` )
-    REFERENCES `proteindatabase`.`entrezgene` (`GeneID` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `proteindatabase`.`uniprot2unigene`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`uniprot2unigene` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`uniprot2unigene` (
   `UPAccession` VARCHAR(45) NOT NULL ,
   `UniGeneID` INT NOT NULL ,
@@ -341,8 +289,6 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`uniprot2ensembl`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`uniprot2ensembl` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`uniprot2ensembl` (
   `UPAccession` VARCHAR(45) NOT NULL ,
   `EnsemblGeneID` VARCHAR(45) NOT NULL ,
@@ -367,8 +313,6 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`unigenetotals`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`unigenetotals` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`unigenetotals` (
   `StageStateSite` VARCHAR(100) NOT NULL ,
   `Total` INT NULL DEFAULT 0 ,
@@ -379,8 +323,6 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`blastresults`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`blastresults` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`blastresults` (
   `ProteinA` VARCHAR(10) NOT NULL ,
   `ProteinB` VARCHAR(10) NOT NULL ,
@@ -406,8 +348,6 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`nonredundant`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`nonredundant` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`nonredundant` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `AllTargetPositive` VARCHAR(1) NULL DEFAULT 'N' ,
@@ -420,6 +360,8 @@ CREATE  TABLE IF NOT EXISTS `proteindatabase`.`nonredundant` (
   `KinaseTargetNegative` VARCHAR(1) NULL DEFAULT 'N' ,
   `ProteaseTargetPositive` VARCHAR(1) NULL DEFAULT 'N' ,
   `ProteaseTargetNegative` VARCHAR(1) NULL DEFAULT 'N' ,
+  `CancerCTNCNTPositive` VARCHAR(1) NULL DEFAULT 'N' ,
+  `CancerCTNCNTNegative` VARCHAR(1) NULL DEFAULT 'N' ,
   `CancerTargetPositive` VARCHAR(1) NULL DEFAULT 'N' ,
   `CancerTargetNegative` VARCHAR(1) NULL DEFAULT 'N' ,
   `CancerTypePositive` VARCHAR(1) NULL DEFAULT 'N' ,
@@ -437,54 +379,8 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `proteindatabase`.`cosmicvariants`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`cosmicvariants` ;
-
-CREATE  TABLE IF NOT EXISTS `proteindatabase`.`cosmicvariants` (
-  `EnsemblTranscriptID` VARCHAR(45) NOT NULL ,
-  `VariantID` VARCHAR(45) NOT NULL ,
-  `EnsemblGeneID` VARCHAR(45) NOT NULL ,
-  `InitialAminoAcid` VARCHAR(45) NULL DEFAULT 'NA' ,
-  `FinalAminoAcid` VARCHAR(45) NULL DEFAULT 'NA' ,
-  `CDSStart` INT NULL DEFAULT -1 ,
-  `CDSEnd` INT NULL DEFAULT -1 ,
-  `3Untranslated` INT NULL DEFAULT 0 ,
-  `5Untranslated` INT NULL DEFAULT 0 ,
-  `CodingUnknown` INT NULL DEFAULT 0 ,
-  `ComplexInDel` INT NULL DEFAULT 0 ,
-  `Downstream` INT NULL DEFAULT 0 ,
-  `EssentialSpliceSite` INT NULL DEFAULT 0 ,
-  `FrameshiftCoding` INT NULL DEFAULT 0 ,
-  `Intergenic` INT NULL DEFAULT 0 ,
-  `Intronic` INT NULL DEFAULT 0 ,
-  `NMDTranscript` INT NULL DEFAULT 0 ,
-  `NonSynonymousCoding` INT NULL DEFAULT 0 ,
-  `PartialCodon` INT NULL DEFAULT 0 ,
-  `RegulatoryRegion` INT NULL DEFAULT 0 ,
-  `SpliceSite` INT NULL DEFAULT 0 ,
-  `StopGained` INT NULL DEFAULT 0 ,
-  `StopLost` INT NULL DEFAULT 0 ,
-  `SynonymousCoding` INT NULL DEFAULT 0 ,
-  `TranscriptionFactorBindingMotif` INT NULL DEFAULT 0 ,
-  `Upstream` INT NULL DEFAULT 0 ,
-  `WithinMatureMIRNA` INT NULL DEFAULT 0 ,
-  `WithinNonCodingGene` INT NULL DEFAULT 0 ,
-  INDEX `EnsemblGeneIDCosmic` (`EnsemblGeneID` ASC) ,
-  PRIMARY KEY (`EnsemblTranscriptID`, `VariantID`) ,
-  CONSTRAINT `EnsemblGeneIDCosmic`
-    FOREIGN KEY (`EnsemblGeneID` )
-    REFERENCES `proteindatabase`.`ensemblgene` (`EnsemblGeneID` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `proteindatabase`.`homologs`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`homologs` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`homologs` (
   `HumanGene` VARCHAR(45) NOT NULL ,
   `HomologGene` VARCHAR(45) NOT NULL ,
@@ -509,8 +405,6 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`ppi`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`ppi` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`ppi` (
   `PPIProteinOne` VARCHAR(10) NOT NULL ,
   `PPIProteinTwo` VARCHAR(10) NOT NULL ,
@@ -531,8 +425,6 @@ COMMENT = 'PPIProteinTwo: not foreign key as may not be human.';
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`drugs`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`drugs` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`drugs` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `DrugID` VARCHAR(45) NOT NULL ,
@@ -553,8 +445,6 @@ COMMENT = 'The Kd and Ki values are in nM.';
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`pathways`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`pathways` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`pathways` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `NumberOfPathways` INT NULL ,
@@ -571,8 +461,6 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`stability`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `proteindatabase`.`stability` ;
-
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`stability` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `HalfLife` FLOAT NULL DEFAULT 0.0 ,
@@ -580,6 +468,174 @@ CREATE  TABLE IF NOT EXISTS `proteindatabase`.`stability` (
   PRIMARY KEY (`UPAccession`) ,
   INDEX `UPAccStability` (`UPAccession` ASC) ,
   CONSTRAINT `UPAccStability`
+    FOREIGN KEY (`UPAccession` )
+    REFERENCES `proteindatabase`.`proteininfo` (`UPAccession` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `proteindatabase`.`cosmicgene`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `proteindatabase`.`cosmicgene` (
+  `gene` VARCHAR(255) NOT NULL ,
+  `transcript` VARCHAR(45) NULL ,
+  `HGNC` INT NULL DEFAULT -1 ,
+  `adrenal_gland` INT NULL DEFAULT 0 ,
+  `autonomic_ganglia` INT NULL DEFAULT 0 ,
+  `biliary_tract` INT NULL DEFAULT 0 ,
+  `bone` INT NULL DEFAULT 0 ,
+  `breast` INT NULL DEFAULT 0 ,
+  `central_nervous_system` INT NULL DEFAULT 0 ,
+  `cervix` INT NULL DEFAULT 0 ,
+  `endometrium` INT NULL DEFAULT 0 ,
+  `eye` INT NULL DEFAULT 0 ,
+  `fallopian_tube` INT NULL DEFAULT 0 ,
+  `female_genital_tract_(site_indeterminate)` INT NULL DEFAULT 0 ,
+  `gastrointestinal_tract_(site_indeterminate)` INT NULL DEFAULT 0 ,
+  `genital_tract` INT NULL DEFAULT 0 ,
+  `haematopoietic_and_lymphoid_tissue` INT NULL DEFAULT 0 ,
+  `kidney` INT NULL DEFAULT 0 ,
+  `large_intestine` INT NULL DEFAULT 0 ,
+  `liver` INT NULL DEFAULT 0 ,
+  `lung` INT NULL DEFAULT 0 ,
+  `mediastinum` INT NULL DEFAULT 0 ,
+  `meninges` INT NULL DEFAULT 0 ,
+  `midline_organs` INT NULL DEFAULT 0 ,
+  `oesophagus` INT NULL DEFAULT 0 ,
+  `ovary` INT NULL DEFAULT 0 ,
+  `pancreas` INT NULL DEFAULT 0 ,
+  `paratesticular_tissues` INT NULL DEFAULT 0 ,
+  `parathyroid` INT NULL DEFAULT 0 ,
+  `penis` INT NULL DEFAULT 0 ,
+  `pericardium` INT NULL DEFAULT 0 ,
+  `peritoneum` INT NULL DEFAULT 0 ,
+  `pituitary` INT NULL DEFAULT 0 ,
+  `placenta` INT NULL DEFAULT 0 ,
+  `pleura` INT NULL DEFAULT 0 ,
+  `prostate` INT NULL DEFAULT 0 ,
+  `retroperitoneum` INT NULL DEFAULT 0 ,
+  `salivary_gland` INT NULL DEFAULT 0 ,
+  `skin` INT NULL DEFAULT 0 ,
+  `small_intestine` INT NULL DEFAULT 0 ,
+  `soft_tissue` INT NULL DEFAULT 0 ,
+  `stomach` INT NULL DEFAULT 0 ,
+  `testis` INT NULL DEFAULT 0 ,
+  `thymus` INT NULL DEFAULT 0 ,
+  `thyroid` INT NULL DEFAULT 0 ,
+  `upper_aerodigestive_tract` INT NULL DEFAULT 0 ,
+  `urinary_tract` INT NULL DEFAULT 0 ,
+  `vagina` INT NULL DEFAULT 0 ,
+  `vulva` INT NULL DEFAULT 0 ,
+  PRIMARY KEY (`gene`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `proteindatabase`.`cosmicmutation`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `proteindatabase`.`cosmicmutation` (
+  `mutation` INT NOT NULL ,
+  `aachange` VARCHAR(255) NULL ,
+  `mutationtype` VARCHAR(45) NULL ,
+  `complex` INT NULL DEFAULT 0 ,
+  `complex_compound_substitution` INT NULL DEFAULT 0 ,
+  `complex_deletion_in_frame` INT NULL DEFAULT 0 ,
+  `complex_frameshift` INT NULL DEFAULT 0 ,
+  `complex_insertion_in_frame` INT NULL DEFAULT 0 ,
+  `deletion_in_frame` INT NULL DEFAULT 0 ,
+  `deletion_frameshift` INT NULL DEFAULT 0 ,
+  `insertion_frameshift` INT NULL DEFAULT 0 ,
+  `insertion_in_frame` INT NULL DEFAULT 0 ,
+  `no_detectable_mrna_or_protein` INT NULL DEFAULT 0 ,
+  `nonstop_extension` INT NULL DEFAULT 0 ,
+  `substitution_coding_silent` INT NULL DEFAULT 0 ,
+  `substitution_missense` INT NULL DEFAULT 0 ,
+  `substitution_nonsense` INT NULL DEFAULT 0 ,
+  `unknown` INT NULL DEFAULT 0 ,
+  `whole_gene_deletion` INT NULL DEFAULT 0 ,
+  `adrenal_gland` INT NULL DEFAULT 0 ,
+  `autonomic_ganglia` INT NULL DEFAULT 0 ,
+  `biliary_tract` INT NULL DEFAULT 0 ,
+  `bone` INT NULL DEFAULT 0 ,
+  `breast` INT NULL DEFAULT 0 ,
+  `central_nervous_system` INT NULL DEFAULT 0 ,
+  `cervix` INT NULL DEFAULT 0 ,
+  `endometrium` INT NULL DEFAULT 0 ,
+  `eye` INT NULL DEFAULT 0 ,
+  `fallopian_tube` INT NULL DEFAULT 0 ,
+  `female_genital_tract_(site_indeterminate)` INT NULL DEFAULT 0 ,
+  `gastrointestinal_tract_(site_indeterminate)` INT NULL DEFAULT 0 ,
+  `genital_tract` INT NULL DEFAULT 0 ,
+  `haematopoietic_and_lymphoid_tissue` INT NULL DEFAULT 0 ,
+  `kidney` INT NULL DEFAULT 0 ,
+  `large_intestine` INT NULL DEFAULT 0 ,
+  `liver` INT NULL DEFAULT 0 ,
+  `lung` INT NULL DEFAULT 0 ,
+  `mediastinum` INT NULL DEFAULT 0 ,
+  `meninges` INT NULL DEFAULT 0 ,
+  `midline_organs` INT NULL DEFAULT 0 ,
+  `oesophagus` INT NULL DEFAULT 0 ,
+  `ovary` INT NULL DEFAULT 0 ,
+  `pancreas` INT NULL DEFAULT 0 ,
+  `paratesticular_tissues` INT NULL DEFAULT 0 ,
+  `parathyroid` INT NULL DEFAULT 0 ,
+  `penis` INT NULL DEFAULT 0 ,
+  `pericardium` INT NULL DEFAULT 0 ,
+  `peritoneum` INT NULL DEFAULT 0 ,
+  `pituitary` INT NULL DEFAULT 0 ,
+  `placenta` INT NULL DEFAULT 0 ,
+  `pleura` INT NULL DEFAULT 0 ,
+  `prostate` INT NULL DEFAULT 0 ,
+  `retroperitoneum` INT NULL DEFAULT 0 ,
+  `salivary_gland` INT NULL DEFAULT 0 ,
+  `skin` INT NULL DEFAULT 0 ,
+  `small_intestine` INT NULL DEFAULT 0 ,
+  `soft_tissue` INT NULL DEFAULT 0 ,
+  `stomach` INT NULL DEFAULT 0 ,
+  `testis` INT NULL DEFAULT 0 ,
+  `thymus` INT NULL DEFAULT 0 ,
+  `thyroid` INT NULL DEFAULT 0 ,
+  `upper_aerodigestive_tract` INT NULL DEFAULT 0 ,
+  `urinary_tract` INT NULL DEFAULT 0 ,
+  `vagina` INT NULL DEFAULT 0 ,
+  `vulva` INT NULL DEFAULT 0 ,
+  PRIMARY KEY (`mutation`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `proteindatabase`.`cosmicgene2mutation`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `proteindatabase`.`cosmicgene2mutation` (
+  `gene` VARCHAR(255) NOT NULL ,
+  `mutation` INT NOT NULL ,
+  PRIMARY KEY (`gene`, `mutation`) ,
+  INDEX `gene2mut` (`gene` ASC) ,
+  INDEX `mut2gene` (`mutation` ASC) ,
+  CONSTRAINT `gene2mut`
+    FOREIGN KEY (`gene` )
+    REFERENCES `proteindatabase`.`cosmicgene` (`gene` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `mut2gene`
+    FOREIGN KEY (`mutation` )
+    REFERENCES `proteindatabase`.`cosmicmutation` (`mutation` )
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `proteindatabase`.`uniprot2hgnc`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `proteindatabase`.`uniprot2hgnc` (
+  `UPAccession` VARCHAR(10) NOT NULL ,
+  `HGNC` INT NOT NULL ,
+  PRIMARY KEY (`UPAccession`, `HGNC`) ,
+  INDEX `hgncUPAccession` (`UPAccession` ASC) ,
+  CONSTRAINT `hgncUPAccession`
     FOREIGN KEY (`UPAccession` )
     REFERENCES `proteindatabase`.`proteininfo` (`UPAccession` )
     ON DELETE CASCADE
@@ -675,12 +731,12 @@ CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_germvariants` (`UPAccession`
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`upacc_expression`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_expression` (`UPAccession` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `Total` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_expression` (`UPAccession` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`all_all_targ_nr_p`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`all_all_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`all_all_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`upacc_genetrans`
@@ -695,142 +751,72 @@ CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_variantsnumber` (`UPAccessio
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`all_all_targ_nr_n`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`all_all_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`all_all_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`ill_cancer_targ_nr_p`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`ill_cancer_targ_nr_n`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`type_gpcr_targ_nr_p`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_gpcr_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_gpcr_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`type_gpcr_targ_nr_n`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_gpcr_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_gpcr_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`type_ionchannel_targ_nr_p`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_ionchannel_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_ionchannel_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`type_ionchannel_targ_nr_n`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_ionchannel_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_ionchannel_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`type_kinase_targ_nr_p`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_kinase_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_kinase_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`type_kinase_targ_nr_n`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_kinase_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_kinase_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`type_protease_targ_nr_p`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_protease_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_protease_targ_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`type_protease_targ_nr_n`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_protease_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`type_protease_targ_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_ovarian`
+-- Placeholder table for view `proteindatabase`.`ill_cancer_ctncnt_r_n`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_ovarian` (`UPAccession` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_ctncnt_r_n` (`UPAccession` INT, `Sequence` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_melanoma`
+-- Placeholder table for view `proteindatabase`.`ill_cancer_prot_nr_p`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_melanoma` (`UPAccession` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_prot_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_breast`
+-- Placeholder table for view `proteindatabase`.`ill_cancer_prot_nr_n`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_breast` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_lung`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_lung` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_pancreatic`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_pancreatic` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_liver`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_liver` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_colon`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_colon` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_prostate`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_prostate` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_testicular`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_testicular` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_oesophageal`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_oesophageal` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_stomach`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_stomach` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_heart`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_heart` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_oral_cavity`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_oral_cavity` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_leukaemia`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_leukaemia` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_lymphoma`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_lymphoma` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_intestinal`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_intestinal` (`UPAccession` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`upacc_cancer_brain`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`upacc_cancer_brain` (`UPAccession` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_prot_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`ill_cancer_prot_r_p`
@@ -843,19 +829,29 @@ CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_prot_r_p` (`UPAccession
 CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_prot_r_n` (`UPAccession` INT, `Sequence` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`ill_cancer_prot_nr_p`
+-- Placeholder table for view `proteindatabase`.`ill_cancer_type_nr_n`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_prot_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_type_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`ill_cancer_prot_nr_n`
+-- Placeholder table for view `proteindatabase`.`ill_cancer_type_nr_p`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_prot_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_type_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`ill_cancer_type_r_p`
+-- Placeholder table for view `proteindatabase`.`ill_cancer_ctncnt_r_p`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_type_r_p` (`UPAccession` INT, `Sequence` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_ctncnt_r_p` (`UPAccession` INT, `Sequence` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `proteindatabase`.`ill_cancer_ctncnt_nr_n`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_ctncnt_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `proteindatabase`.`ill_cancer_ctncnt_nr_p`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_ctncnt_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `Turns` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `proteindatabase`.`ill_cancer_type_r_n`
@@ -863,19 +859,13 @@ CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_type_r_p` (`UPAccession
 CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_type_r_n` (`UPAccession` INT, `Sequence` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`ill_cancer_type_nr_n`
+-- Placeholder table for view `proteindatabase`.`ill_cancer_type_r_p`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_type_nr_n` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `proteindatabase`.`ill_cancer_type_nr_p`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_type_nr_p` (`UPAccession` INT, `A` INT, `C` INT, `D` INT, `E` INT, `F` INT, `G` INT, `H` INT, `I` INT, `K` INT, `L` INT, `M` INT, `P` INT, `N` INT, `Q` INT, `R` INT, `S` INT, `T` INT, `V` INT, `W` INT, `Y` INT, `NegativelyCharged` INT, `PositivelyCharged` INT, `Basic` INT, `Charged` INT, `Polar` INT, `NonPolar` INT, `Aromatic` INT, `Aliphatic` INT, `Small` INT, `Tiny` INT, `PESTMotif` INT, `LowComplexity` INT, `Hydrophobicity` INT, `Isoelectric` INT, `ECNumber` INT, `OGlycosylation` INT, `NGlycosylation` INT, `Phosphoserine` INT, `Phosphothreonine` INT, `Phosphotyrosine` INT, `SubcellularLocation` INT, `TopologicalDomain` INT, `PredictedSubcellularLocation` INT, `SignalPeptide` INT, `TransmembraneHelices` INT, `AlphaHelices` INT, `BetaStrands` INT, `PredictedAlphaHelices` INT, `PredictedBetaSheets` INT, `Sequence` INT, `3Untranslated` INT, `5Untranslated` INT, `NonSynonymousCoding` INT, `SynonymousCoding` INT, `Paralogs` INT, `BinaryPPI` INT, `AlternativeTranscripts` INT, `DS_Embryoid_Body` INT, `DS_Blastocyst` INT, `DS_Fetus` INT, `DS_Neonate` INT, `DS_Infant` INT, `DS_Juvenile` INT, `DS_Adult` INT, `HS_Adrenal_Tumor` INT, `HS_Bladder_Carcinoma` INT, `HS_Breast_Mammary_Gland_Tumor` INT, `HS_Cervical_Tumor` INT, `HS_Chondrosarcoma` INT, `HS_Colorectal_Tumor` INT, `HS_Esophageal_Tumor` INT, `HS_Gastrointestinal_Tumor` INT, `HS_Germ_Cell_Tumor` INT, `HS_Glioma` INT, `HS_Head_And_Neck_Tumor` INT, `HS_Kidney_Tumor` INT, `HS_Leukemia_Tumor` INT, `HS_Liver_Tumor` INT, `HS_Lung_Tumor` INT, `HS_Lymphoma` INT, `HS_Non_neoplasia` INT, `HS_Normal` INT, `HS_Ovarian_Tumor` INT, `HS_Pancreatic_Tumor` INT, `HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS` INT, `HS_Prostate_Cancer` INT, `HS_Retinoblastoma` INT, `HS_Skin_Tumor` INT, `HS_Soft_Tissue_Muscle_Tissue_Tumor` INT, `HS_Uterine_Tumor` INT, `BS_Adipose_Tissue` INT, `BS_Adrenal_Gland` INT, `BS_Ascites` INT, `BS_Bladder` INT, `BS_Blood` INT, `BS_Bone` INT, `BS_Bone_Marrow` INT, `BS_Brain` INT, `BS_Cervix` INT, `BS_Connective_Tissue` INT, `BS_Ear` INT, `BS_Embryonic_Tissue` INT, `BS_Esophagus` INT, `BS_Eye` INT, `BS_Heart` INT, `BS_Intestine` INT, `BS_Kidney` INT, `BS_Larynx` INT, `BS_Liver` INT, `BS_Lung` INT, `BS_Lymph` INT, `BS_Lymph_Node` INT, `BS_Mammary_Gland` INT, `BS_Mouth` INT, `BS_Muscle` INT, `BS_Nerve` INT, `BS_Ovary` INT, `BS_Pancreas` INT, `BS_Parathyroid` INT, `BS_Pharynx` INT, `BS_Pituitary_Gland` INT, `BS_Placenta` INT, `BS_Prostate` INT, `BS_Salivary_Gland` INT, `BS_Skin` INT, `BS_Spleen` INT, `BS_Stomach` INT, `BS_Testis` INT, `BS_Thymus` INT, `BS_Thyroid` INT, `BS_Tonsil` INT, `BS_Trachea` INT, `BS_Umbilical_Cord` INT, `BS_Uterus` INT, `BS_Vascular` INT, `HalfLife` INT, `InstabilityIndex` INT);
+CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_type_r_p` (`UPAccession` INT, `Sequence` INT);
 
 -- -----------------------------------------------------
 -- View `proteindatabase`.`all_all_targ_r_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`all_all_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`all_all_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_r_p` AS
@@ -885,7 +875,6 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`all_all_targ_r_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`all_all_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`all_all_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_r_n` AS
@@ -895,7 +884,6 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_gpcr_targ_r_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_gpcr_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_gpcr_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_r_p` AS
@@ -905,7 +893,6 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_gpcr_targ_r_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_gpcr_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_gpcr_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_r_n` AS
@@ -915,7 +902,6 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_kinase_targ_r_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_kinase_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_kinase_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_r_p` AS
@@ -925,7 +911,6 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_protease_targ_r_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_protease_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_protease_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_r_p` AS
@@ -935,7 +920,6 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_ionchannel_targ_r_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_ionchannel_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_ionchannel_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_r_p` AS
@@ -945,7 +929,6 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_kinase_targ_r_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_kinase_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_kinase_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_r_n` AS
@@ -955,7 +938,6 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_protease_targ_r_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_protease_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_protease_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_r_n` AS
@@ -965,7 +947,6 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_ionchannel_targ_r_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_ionchannel_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_ionchannel_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_r_n` AS
@@ -975,58 +956,51 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_cancer`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer` AS
     SELECT
         DISTINCT `UPAccession`
     FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
+        `proteindatabase`.`cancergene`
     WHERE
-        entrez.`Cancer_All` = "Y";
+        `Cancer` = "Y";
 
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_targ_r_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_r_n` AS
     SELECT
-        `proteininfo`.`UPAccession`, `Sequence`
+        prot.`UPAccession`, prot.`Sequence`
     FROM
-        `proteindatabase`.`proteininfo`
-        INNER JOIN
-        `proteindatabase`.`upacc_cancer`
-        ON `proteininfo`.`UPAccession` = `upacc_cancer`.`UPAccession`
+        `proteindatabase`.`proteininfo` AS prot,
+        `proteindatabase`.`cancergene` AS cancer
     WHERE
-        `proteininfo`.`Target` = "N";
+        cancer.`UPAccession` = prot.`UPAccession` AND
+        cancer.`Cancer` = "Y" AND
+        cancer.`Target` = "N";
 
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_targ_r_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_r_p` AS
     SELECT
-        `proteininfo`.`UPAccession`, `Sequence`
+        prot.`UPAccession`, prot.`Sequence`
     FROM
-        `proteindatabase`.`proteininfo`
-        INNER JOIN
-        `proteindatabase`.`upacc_cancer`
-        ON `proteininfo`.`UPAccession` = `upacc_cancer`.`UPAccession`
+        `proteindatabase`.`proteininfo` AS prot,
+        `proteindatabase`.`cancergene` AS cancer
     WHERE
-        `proteininfo`.`Target` = "Y";
+        cancer.`UPAccession` = prot.`UPAccession` AND
+        cancer.`Cancer` = "Y" AND
+        cancer.`Target` = "Y";
 
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_transcripts`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_transcripts` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_transcripts`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_transcripts` AS
@@ -1045,7 +1019,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_transcripts` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_ppi`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_ppi` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_ppi`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_ppi` AS
@@ -1060,7 +1033,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_ppi` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_paralogs`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_paralogs` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_paralogs`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_paralogs` AS
@@ -1075,7 +1047,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_paralogs` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_germvariants`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_germvariants` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_germvariants`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_germvariants` AS
@@ -1096,7 +1067,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_germvariants` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_expression`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_expression` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_expression`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_expression` AS
@@ -1179,8 +1149,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_expression` AS
         IFNULL((SELECT SUM(unigene.BS_Trachea) FROM uniprot2unigene AS u2u, unigene WHERE prot.UPAccession = u2u.UPAccession AND u2u.UniGeneID = unigene.UniGeneID), 0) AS BS_Trachea,
         IFNULL((SELECT SUM(unigene.BS_Umbilical_Cord) FROM uniprot2unigene AS u2u, unigene WHERE prot.UPAccession = u2u.UPAccession AND u2u.UniGeneID = unigene.UniGeneID), 0) AS BS_Umbilical_Cord,
         IFNULL((SELECT SUM(unigene.BS_Uterus) FROM uniprot2unigene AS u2u, unigene WHERE prot.UPAccession = u2u.UPAccession AND u2u.UniGeneID = unigene.UniGeneID), 0) AS BS_Uterus,
-        IFNULL((SELECT SUM(unigene.BS_Vascular) FROM uniprot2unigene AS u2u, unigene WHERE prot.UPAccession = u2u.UPAccession AND u2u.UniGeneID = unigene.UniGeneID), 0) AS BS_Vascular,
-        IFNULL((SELECT SUM(unigene.DS_Embryoid_Body) + SUM(unigene.DS_Blastocyst) + SUM(unigene.DS_Fetus) + SUM(unigene.DS_Neonate) + SUM(unigene.DS_Infant) + SUM(unigene.DS_Juvenile) + SUM(unigene.DS_Adult) + SUM(unigene.HS_Adrenal_Tumor) + SUM(unigene.HS_Bladder_Carcinoma) + SUM(unigene.HS_Breast_Mammary_Gland_Tumor) + SUM(unigene.HS_Cervical_Tumor) + SUM(unigene.HS_Chondrosarcoma) + SUM(unigene.HS_Colorectal_Tumor) + SUM(unigene.HS_Esophageal_Tumor) + SUM(unigene.HS_Gastrointestinal_Tumor) + SUM(unigene.HS_Germ_Cell_Tumor) + SUM(unigene.HS_Glioma) + SUM(unigene.HS_Head_And_Neck_Tumor) + SUM(unigene.HS_Kidney_Tumor) + SUM(unigene.HS_Leukemia_Tumor) + SUM(unigene.HS_Liver_Tumor) + SUM(unigene.HS_Lung_Tumor) + SUM(unigene.HS_Lymphoma) + SUM(unigene.HS_Non_neoplasia) + SUM(unigene.HS_Normal) + SUM(unigene.HS_Ovarian_Tumor) + SUM(unigene.HS_Pancreatic_Tumor) + SUM(unigene.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS) + SUM(unigene.HS_Prostate_Cancer) + SUM(unigene.HS_Retinoblastoma) + SUM(unigene.HS_Skin_Tumor) + SUM(unigene.HS_Soft_Tissue_Muscle_Tissue_Tumor) + SUM(unigene.HS_Uterine_Tumor) + SUM(unigene.BS_Adipose_Tissue) + SUM(unigene.BS_Adrenal_Gland) + SUM(unigene.BS_Ascites) + SUM(unigene.BS_Bladder) + SUM(unigene.BS_Blood) + SUM(unigene.BS_Bone) + SUM(unigene.BS_Bone_Marrow) + SUM(unigene.BS_Brain) + SUM(unigene.BS_Cervix) + SUM(unigene.BS_Connective_Tissue) + SUM(unigene.BS_Ear) + SUM(unigene.BS_Embryonic_Tissue) + SUM(unigene.BS_Esophagus) + SUM(unigene.BS_Eye) + SUM(unigene.BS_Heart) + SUM(unigene.BS_Intestine) + SUM(unigene.BS_Kidney) + SUM(unigene.BS_Larynx) + SUM(unigene.BS_Liver) + SUM(unigene.BS_Lung) + SUM(unigene.BS_Lymph) + SUM(unigene.BS_Lymph_Node) + SUM(unigene.BS_Mammary_Gland) + SUM(unigene.BS_Mouth) + SUM(unigene.BS_Muscle) + SUM(unigene.BS_Nerve) + SUM(unigene.BS_Ovary) + SUM(unigene.BS_Pancreas) + SUM(unigene.BS_Parathyroid) + SUM(unigene.BS_Pharynx) + SUM(unigene.BS_Pituitary_Gland) + SUM(unigene.BS_Placenta) + SUM(unigene.BS_Prostate) + SUM(unigene.BS_Salivary_Gland) + SUM(unigene.BS_Skin) + SUM(unigene.BS_Spleen) + SUM(unigene.BS_Stomach) + SUM(unigene.BS_Testis) + SUM(unigene.BS_Thymus) + SUM(unigene.BS_Thyroid) + SUM(unigene.BS_Tonsil) + SUM(unigene.BS_Trachea) + SUM(unigene.BS_Umbilical_Cord) + SUM(unigene.BS_Uterus) + SUM(unigene.BS_Vascular) FROM uniprot2unigene AS u2u, unigene WHERE prot.UPAccession = u2u.UPAccession AND u2u.UniGeneID = unigene.UniGeneID), 0) AS Total
+        IFNULL((SELECT SUM(unigene.BS_Vascular) FROM uniprot2unigene AS u2u, unigene WHERE prot.UPAccession = u2u.UPAccession AND u2u.UniGeneID = unigene.UniGeneID), 0) AS BS_Vascular
     FROM
         proteininfo AS prot
     GROUP BY
@@ -1189,7 +1158,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_expression` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`all_all_targ_nr_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`all_all_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`all_all_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_p` AS
@@ -1243,6 +1211,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_p` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -1253,84 +1222,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_p` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -1357,7 +1326,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_genetrans`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_genetrans` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_genetrans`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_genetrans` AS
@@ -1374,7 +1342,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_genetrans` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_variantsnumber`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_variantsnumber` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_variantsnumber`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_variantsnumber` AS
@@ -1393,7 +1360,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_variantsnumber` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`all_all_targ_nr_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`all_all_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`all_all_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_n` AS
@@ -1447,6 +1413,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_n` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -1457,84 +1424,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_n` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -1561,7 +1528,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_targ_nr_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_p` AS
@@ -1615,6 +1581,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_p` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -1625,84 +1592,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_p` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -1729,7 +1696,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_targ_nr_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_n` AS
@@ -1783,6 +1749,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_n` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -1793,84 +1760,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_n` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -1897,7 +1864,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_gpcr_targ_nr_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_gpcr_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_gpcr_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_p` AS
@@ -1951,6 +1917,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_p` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -1961,84 +1928,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_p` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -2065,7 +2032,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_gpcr_targ_nr_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_gpcr_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_gpcr_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_n` AS
@@ -2119,6 +2085,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_n` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -2129,84 +2096,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_n` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -2233,7 +2200,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_ionchannel_targ_nr_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_ionchannel_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_ionchannel_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_p` AS
@@ -2287,6 +2253,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_p` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -2297,84 +2264,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_p` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -2401,7 +2368,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_ionchannel_targ_nr_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_ionchannel_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_ionchannel_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_n` AS
@@ -2455,6 +2421,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_n` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -2465,84 +2432,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_n` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -2569,7 +2536,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_kinase_targ_nr_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_kinase_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_kinase_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_p` AS
@@ -2623,6 +2589,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_p` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -2633,84 +2600,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_p` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -2737,7 +2704,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_kinase_targ_nr_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_kinase_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_kinase_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_n` AS
@@ -2791,6 +2757,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_n` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -2801,84 +2768,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_n` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -2905,7 +2872,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_protease_targ_nr_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_protease_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_protease_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_p` AS
@@ -2959,6 +2925,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_p` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -2969,84 +2936,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_p` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -3073,7 +3040,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_protease_targ_nr_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`type_protease_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_protease_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_n` AS
@@ -3127,6 +3093,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_n` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -3137,84 +3104,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_n` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -3239,329 +3206,25 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_n` AS
         prot.UPAccession;
 
 -- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_ovarian`
+-- View `proteindatabase`.`ill_cancer_ctncnt_r_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_ovarian` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_ovarian`;
+DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_r_n`;
 USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_ovarian` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Ovarian` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_melanoma`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_melanoma` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_melanoma`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_melanoma` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Melanoma` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_breast`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_breast` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_breast`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_breast` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Breast` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_lung`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_lung` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_lung`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_lung` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Lung` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_pancreatic`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_pancreatic` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_pancreatic`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_pancreatic` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Pancreatic` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_liver`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_liver` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_liver`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_liver` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Liver` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_colon`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_colon` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_colon`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_colon` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Colon` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_prostate`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_prostate` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_prostate`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_prostate` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Prostate` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_testicular`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_testicular` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_testicular`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_testicular` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Testicular` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_oesophageal`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_oesophageal` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_oesophageal`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_oesophageal` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Oesophageal` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_stomach`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_stomach` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_stomach`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_stomach` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Stomach` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_heart`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_heart` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_heart`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_heart` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Heart` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_oral_cavity`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_oral_cavity` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_oral_cavity`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_oral_cavity` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Oral_Cavity` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_leukaemia`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_leukaemia` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_leukaemia`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_leukaemia` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Leukaemia` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_lymphoma`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_lymphoma` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_lymphoma`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_lymphoma` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Lymphoma` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_intestinal`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_intestinal` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_intestinal`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_intestinal` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Intestinal` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`upacc_cancer_brain`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer_brain` ;
-DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer_brain`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer_brain` AS
-    SELECT
-        DISTINCT `UPAccession`
-    FROM
-        `proteindatabase`.`uniprot2entrez` AS UP2Entrez
-        INNER JOIN
-        `proteindatabase`.`entrezgene` AS entrez
-        ON UP2Entrez.`GeneID` = entrez.`GeneID`
-    WHERE
-        entrez.`Cancer_Brain` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`ill_cancer_prot_r_p`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_prot_r_p` ;
-DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_prot_r_p`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_r_p` AS
-    SELECT
-        `proteininfo`.`UPAccession`, `Sequence`
-    FROM
-        `proteindatabase`.`proteininfo`
-        INNER JOIN
-        `proteindatabase`.`upacc_cancer`
-        ON `proteininfo`.`UPAccession` = `upacc_cancer`.`UPAccession`;
-
--- -----------------------------------------------------
--- View `proteindatabase`.`ill_cancer_prot_r_n`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_prot_r_n` ;
-DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_prot_r_n`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_r_n` AS
+CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_r_n` AS
     SELECT
         prot.`UPAccession`, prot.`Sequence`
     FROM
-        `proteindatabase`.`proteininfo` AS prot LEFT JOIN `proteindatabase`.`upacc_cancer` AS cancer
-    ON
-        prot.`UPAccession` = cancer.`UPAccession`
+        `proteindatabase`.`proteininfo` AS prot,
+        `proteindatabase`.`cancergene` AS cancer
     WHERE
-        cancer.`UPAccession` IS NULL;
+        cancer.`UPAccession` = prot.`UPAccession` AND
+        cancer.`Cancer` = "N" AND
+        prot.`Target` = "N"
+;
 
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_prot_nr_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_prot_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_prot_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_p` AS
@@ -3615,6 +3278,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_p` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -3625,84 +3289,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_p` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -3729,7 +3393,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_prot_nr_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_prot_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_prot_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_n` AS
@@ -3783,6 +3446,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_n` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -3793,84 +3457,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_n` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -3895,43 +3559,38 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_n` AS
         prot.UPAccession;
 
 -- -----------------------------------------------------
--- View `proteindatabase`.`ill_cancer_type_r_p`
+-- View `proteindatabase`.`ill_cancer_prot_r_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_type_r_p` ;
-DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_type_r_p`;
+DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_prot_r_p`;
 USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_r_p` AS
-    SELECT
-        `proteininfo`.`UPAccession`, `Sequence`
-    FROM
-        `proteindatabase`.`proteininfo`
-        INNER JOIN
-        `proteindatabase`.`upacc_cancer`
-        ON `proteininfo`.`UPAccession` = `upacc_cancer`.`UPAccession`
-    WHERE
-        `proteininfo`.`Target` = "Y";
-
--- -----------------------------------------------------
--- View `proteindatabase`.`ill_cancer_type_r_n`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_type_r_n` ;
-DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_type_r_n`;
-USE `proteindatabase`;
-CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_r_n` AS
+CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_r_p` AS
     SELECT
         prot.`UPAccession`, prot.`Sequence`
     FROM
-        `proteindatabase`.`proteininfo` AS prot LEFT JOIN `proteindatabase`.`upacc_cancer` AS cancer
-    ON
-        prot.`UPAccession` = cancer.`UPAccession`
+        `proteindatabase`.`proteininfo` AS prot,
+        `proteindatabase`.`cancergene` AS cancer
     WHERE
-        cancer.`UPAccession` IS NULL AND
-        prot.`Target` = "Y";
+        cancer.`UPAccession` = prot.`UPAccession` AND
+        cancer.`Cancer` = "Y";
+
+-- -----------------------------------------------------
+-- View `proteindatabase`.`ill_cancer_prot_r_n`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_prot_r_n`;
+USE `proteindatabase`;
+CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_r_n` AS
+    SELECT
+        prot.`UPAccession`, prot.`Sequence`
+    FROM
+        `proteindatabase`.`proteininfo` AS prot,
+        `proteindatabase`.`cancergene` AS cancer
+    WHERE
+        cancer.`UPAccession` = prot.`UPAccession` AND
+        cancer.`Cancer` = "N";
 
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_type_nr_n`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_type_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_type_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_n` AS
@@ -3985,6 +3644,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_n` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -3995,84 +3655,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_n` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -4099,7 +3759,6 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_type_nr_p`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_type_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_type_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_p` AS
@@ -4153,6 +3812,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_p` AS
         prot.TransmembraneHelices,
         prot.AlphaHelices,
         prot.BetaStrands,
+        prot.Turns,
         prot.PredictedAlphaHelices,
         prot.PredictedBetaSheets,
         prot.Sequence,
@@ -4163,84 +3823,84 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_p` AS
         IFNULL(para.Paralogs, 0) AS Paralogs,
         IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
         IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
-        IFNULL(exp.DS_Embryoid_Body / NULLIF(exp.Total, 0), 0) AS DS_Embryoid_Body,
-        IFNULL(exp.DS_Blastocyst / NULLIF(exp.Total, 0), 0) AS DS_Blastocyst,
-        IFNULL(exp.DS_Fetus / NULLIF(exp.Total, 0), 0) AS DS_Fetus,
-        IFNULL(exp.DS_Neonate / NULLIF(exp.Total, 0), 0) AS DS_Neonate,
-        IFNULL(exp.DS_Infant / NULLIF(exp.Total, 0), 0) AS DS_Infant,
-        IFNULL(exp.DS_Juvenile / NULLIF(exp.Total, 0), 0) AS DS_Juvenile,
-        IFNULL(exp.DS_Adult / NULLIF(exp.Total, 0), 0) AS DS_Adult,
-        IFNULL(exp.HS_Adrenal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Adrenal_Tumor,
-        IFNULL(exp.HS_Bladder_Carcinoma / NULLIF(exp.Total, 0), 0) AS HS_Bladder_Carcinoma,
-        IFNULL(exp.HS_Breast_Mammary_Gland_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Breast_Mammary_Gland_Tumor,
-        IFNULL(exp.HS_Cervical_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Cervical_Tumor,
-        IFNULL(exp.HS_Chondrosarcoma / NULLIF(exp.Total, 0), 0) AS HS_Chondrosarcoma,
-        IFNULL(exp.HS_Colorectal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Colorectal_Tumor,
-        IFNULL(exp.HS_Esophageal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Esophageal_Tumor,
-        IFNULL(exp.HS_Gastrointestinal_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Gastrointestinal_Tumor,
-        IFNULL(exp.HS_Germ_Cell_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Germ_Cell_Tumor,
-        IFNULL(exp.HS_Glioma / NULLIF(exp.Total, 0), 0) AS HS_Glioma,
-        IFNULL(exp.HS_Head_And_Neck_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Head_And_Neck_Tumor,
-        IFNULL(exp.HS_Kidney_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Kidney_Tumor,
-        IFNULL(exp.HS_Leukemia_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Leukemia_Tumor,
-        IFNULL(exp.HS_Liver_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Liver_Tumor,
-        IFNULL(exp.HS_Lung_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Lung_Tumor,
-        IFNULL(exp.HS_Lymphoma / NULLIF(exp.Total, 0), 0) AS HS_Lymphoma,
-        IFNULL(exp.HS_Non_neoplasia / NULLIF(exp.Total, 0), 0) AS HS_Non_neoplasia,
-        IFNULL(exp.HS_Normal / NULLIF(exp.Total, 0), 0) AS HS_Normal,
-        IFNULL(exp.HS_Ovarian_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Ovarian_Tumor,
-        IFNULL(exp.HS_Pancreatic_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Pancreatic_Tumor,
-        IFNULL(exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS / NULLIF(exp.Total, 0), 0) AS HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
-        IFNULL(exp.HS_Prostate_Cancer / NULLIF(exp.Total, 0), 0) AS HS_Prostate_Cancer,
-        IFNULL(exp.HS_Retinoblastoma / NULLIF(exp.Total, 0), 0) AS HS_Retinoblastoma,
-        IFNULL(exp.HS_Skin_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Skin_Tumor,
-        IFNULL(exp.HS_Soft_Tissue_Muscle_Tissue_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Soft_Tissue_Muscle_Tissue_Tumor,
-        IFNULL(exp.HS_Uterine_Tumor / NULLIF(exp.Total, 0), 0) AS HS_Uterine_Tumor,
-        IFNULL(exp.BS_Adipose_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Adipose_Tissue,
-        IFNULL(exp.BS_Adrenal_Gland / NULLIF(exp.Total, 0), 0) AS BS_Adrenal_Gland,
-        IFNULL(exp.BS_Ascites / NULLIF(exp.Total, 0), 0) AS BS_Ascites,
-        IFNULL(exp.BS_Bladder / NULLIF(exp.Total, 0), 0) AS BS_Bladder,
-        IFNULL(exp.BS_Blood / NULLIF(exp.Total, 0), 0) AS BS_Blood,
-        IFNULL(exp.BS_Bone / NULLIF(exp.Total, 0), 0) AS BS_Bone,
-        IFNULL(exp.BS_Bone_Marrow / NULLIF(exp.Total, 0), 0) AS BS_Bone_Marrow,
-        IFNULL(exp.BS_Brain / NULLIF(exp.Total, 0), 0) AS BS_Brain,
-        IFNULL(exp.BS_Cervix / NULLIF(exp.Total, 0), 0) AS BS_Cervix,
-        IFNULL(exp.BS_Connective_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Connective_Tissue,
-        IFNULL(exp.BS_Ear / NULLIF(exp.Total, 0), 0) AS BS_Ear,
-        IFNULL(exp.BS_Embryonic_Tissue / NULLIF(exp.Total, 0), 0) AS BS_Embryonic_Tissue,
-        IFNULL(exp.BS_Esophagus / NULLIF(exp.Total, 0), 0) AS BS_Esophagus,
-        IFNULL(exp.BS_Eye / NULLIF(exp.Total, 0), 0) AS BS_Eye,
-        IFNULL(exp.BS_Heart / NULLIF(exp.Total, 0), 0) AS BS_Heart,
-        IFNULL(exp.BS_Intestine / NULLIF(exp.Total, 0), 0) AS BS_Intestine,
-        IFNULL(exp.BS_Kidney / NULLIF(exp.Total, 0), 0) AS BS_Kidney,
-        IFNULL(exp.BS_Larynx / NULLIF(exp.Total, 0), 0) AS BS_Larynx,
-        IFNULL(exp.BS_Liver / NULLIF(exp.Total, 0), 0) AS BS_Liver,
-        IFNULL(exp.BS_Lung / NULLIF(exp.Total, 0), 0) AS BS_Lung,
-        IFNULL(exp.BS_Lymph / NULLIF(exp.Total, 0), 0) AS BS_Lymph,
-        IFNULL(exp.BS_Lymph_Node / NULLIF(exp.Total, 0), 0) AS BS_Lymph_Node,
-        IFNULL(exp.BS_Mammary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Mammary_Gland,
-        IFNULL(exp.BS_Mouth / NULLIF(exp.Total, 0), 0) AS BS_Mouth,
-        IFNULL(exp.BS_Muscle / NULLIF(exp.Total, 0), 0) AS BS_Muscle,
-        IFNULL(exp.BS_Nerve / NULLIF(exp.Total, 0), 0) AS BS_Nerve,
-        IFNULL(exp.BS_Ovary / NULLIF(exp.Total, 0), 0) AS BS_Ovary,
-        IFNULL(exp.BS_Pancreas / NULLIF(exp.Total, 0), 0) AS BS_Pancreas,
-        IFNULL(exp.BS_Parathyroid / NULLIF(exp.Total, 0), 0) AS BS_Parathyroid,
-        IFNULL(exp.BS_Pharynx / NULLIF(exp.Total, 0), 0) AS BS_Pharynx,
-        IFNULL(exp.BS_Pituitary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Pituitary_Gland,
-        IFNULL(exp.BS_Placenta / NULLIF(exp.Total, 0), 0) AS BS_Placenta,
-        IFNULL(exp.BS_Prostate / NULLIF(exp.Total, 0), 0) AS BS_Prostate,
-        IFNULL(exp.BS_Salivary_Gland / NULLIF(exp.Total, 0), 0) AS BS_Salivary_Gland,
-        IFNULL(exp.BS_Skin / NULLIF(exp.Total, 0), 0) AS BS_Skin,
-        IFNULL(exp.BS_Spleen / NULLIF(exp.Total, 0), 0) AS BS_Spleen,
-        IFNULL(exp.BS_Stomach / NULLIF(exp.Total, 0), 0) AS BS_Stomach,
-        IFNULL(exp.BS_Testis / NULLIF(exp.Total, 0), 0) AS BS_Testis,
-        IFNULL(exp.BS_Thymus / NULLIF(exp.Total, 0), 0) AS BS_Thymus,
-        IFNULL(exp.BS_Thyroid / NULLIF(exp.Total, 0), 0) AS BS_Thyroid,
-        IFNULL(exp.BS_Tonsil / NULLIF(exp.Total, 0), 0) AS BS_Tonsil,
-        IFNULL(exp.BS_Trachea / NULLIF(exp.Total, 0), 0) AS BS_Trachea,
-        IFNULL(exp.BS_Umbilical_Cord / NULLIF(exp.Total, 0), 0) AS BS_Umbilical_Cord,
-        IFNULL(exp.BS_Uterus / NULLIF(exp.Total, 0), 0) AS BS_Uterus,
-        IFNULL(exp.BS_Vascular / NULLIF(exp.Total, 0), 0) AS BS_Vascular,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
         stab.HalfLife,
         stab.InstabilityIndex
     FROM
@@ -4263,6 +3923,392 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_p` AS
         prot.UPAccession = trans.UPAccession
     GROUP BY
         prot.UPAccession;
+
+-- -----------------------------------------------------
+-- View `proteindatabase`.`ill_cancer_ctncnt_r_p`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_r_p`;
+USE `proteindatabase`;
+CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_r_p` AS
+    SELECT
+        prot.`UPAccession`, prot.`Sequence`
+    FROM
+        `proteindatabase`.`proteininfo` AS prot,
+        `proteindatabase`.`cancergene` AS cancer
+    WHERE
+        cancer.`UPAccession` = prot.`UPAccession` AND
+        cancer.`Target` = "Y"
+;
+
+-- -----------------------------------------------------
+-- View `proteindatabase`.`ill_cancer_ctncnt_nr_n`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_nr_n`;
+USE `proteindatabase`;
+CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_nr_n` AS
+    SELECT
+        DISTINCT
+        prot.UPAccession,
+        prot.A,
+        prot.C,
+        prot.D,
+        prot.E,
+        prot.F,
+        prot.G,
+        prot.H,
+        prot.I,
+        prot.K,
+        prot.L,
+        prot.M,
+        prot.P,
+        prot.N,
+        prot.Q,
+        prot.R,
+        prot.S,
+        prot.T,
+        prot.V,
+        prot.W,
+        prot.Y,
+        prot.NegativelyCharged,
+        prot.PositivelyCharged,
+        prot.Basic,
+        prot.Charged,
+        prot.Polar,
+        prot.NonPolar,
+        prot.Aromatic,
+        prot.Aliphatic,
+        prot.Small,
+        prot.Tiny,
+        prot.PESTMotif,
+        prot.LowComplexity,
+        prot.Hydrophobicity,
+        prot.Isoelectric,
+        prot.ECNumber,
+        prot.OGlycosylation,
+        prot.NGlycosylation,
+        prot.Phosphoserine,
+        prot.Phosphothreonine,
+        prot.Phosphotyrosine,
+        prot.SubcellularLocation,
+        prot.TopologicalDomain,
+        prot.PredictedSubcellularLocation,
+        prot.SignalPeptide,
+        prot.TransmembraneHelices,
+        prot.AlphaHelices,
+        prot.BetaStrands,
+        prot.Turns,
+        prot.PredictedAlphaHelices,
+        prot.PredictedBetaSheets,
+        prot.Sequence,
+        IFNULL(gv.3Untranslated / NULLIF(gv.Total, 0), 0) AS 3Untranslated,
+        IFNULL(gv.5Untranslated / NULLIF(gv.Total, 0), 0) AS 5Untranslated,
+        IFNULL(gv.NonSynonymousCoding / NULLIF(gv.Total, 0), 0) AS NonSynonymousCoding,
+        IFNULL(gv.SynonymousCoding / NULLIF(gv.Total, 0), 0) AS SynonymousCoding,
+        IFNULL(para.Paralogs, 0) AS Paralogs,
+        IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
+        IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
+        stab.HalfLife,
+        stab.InstabilityIndex
+    FROM
+        proteininfo AS prot,
+        nonredundant AS nr,
+        stability AS stab,
+        upacc_expression AS exp,
+        upacc_variantsnumber AS gv,
+        upacc_paralogs AS para,
+        upacc_ppi AS ppi,
+        upacc_transcripts AS trans
+    WHERE
+        prot.UPAccession = nr.UPAccession AND
+        nr.CancerCTNCNTNegative = "Y" AND
+        prot.UPAccession = stab.UPAccession AND
+        prot.UPAccession = exp.UPAccession AND
+        prot.UPAccession = gv.UPAccession AND
+        prot.UPAccession = para.UPAccession AND
+        prot.UPAccession = ppi.UPAccession AND
+        prot.UPAccession = trans.UPAccession
+    GROUP BY
+        prot.UPAccession;
+
+-- -----------------------------------------------------
+-- View `proteindatabase`.`ill_cancer_ctncnt_nr_p`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_nr_p`;
+USE `proteindatabase`;
+CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_nr_p` AS
+    SELECT
+        DISTINCT
+        prot.UPAccession,
+        prot.A,
+        prot.C,
+        prot.D,
+        prot.E,
+        prot.F,
+        prot.G,
+        prot.H,
+        prot.I,
+        prot.K,
+        prot.L,
+        prot.M,
+        prot.P,
+        prot.N,
+        prot.Q,
+        prot.R,
+        prot.S,
+        prot.T,
+        prot.V,
+        prot.W,
+        prot.Y,
+        prot.NegativelyCharged,
+        prot.PositivelyCharged,
+        prot.Basic,
+        prot.Charged,
+        prot.Polar,
+        prot.NonPolar,
+        prot.Aromatic,
+        prot.Aliphatic,
+        prot.Small,
+        prot.Tiny,
+        prot.PESTMotif,
+        prot.LowComplexity,
+        prot.Hydrophobicity,
+        prot.Isoelectric,
+        prot.ECNumber,
+        prot.OGlycosylation,
+        prot.NGlycosylation,
+        prot.Phosphoserine,
+        prot.Phosphothreonine,
+        prot.Phosphotyrosine,
+        prot.SubcellularLocation,
+        prot.TopologicalDomain,
+        prot.PredictedSubcellularLocation,
+        prot.SignalPeptide,
+        prot.TransmembraneHelices,
+        prot.AlphaHelices,
+        prot.BetaStrands,
+        prot.Turns,
+        prot.PredictedAlphaHelices,
+        prot.PredictedBetaSheets,
+        prot.Sequence,
+        IFNULL(gv.3Untranslated / NULLIF(gv.Total, 0), 0) AS 3Untranslated,
+        IFNULL(gv.5Untranslated / NULLIF(gv.Total, 0), 0) AS 5Untranslated,
+        IFNULL(gv.NonSynonymousCoding / NULLIF(gv.Total, 0), 0) AS NonSynonymousCoding,
+        IFNULL(gv.SynonymousCoding / NULLIF(gv.Total, 0), 0) AS SynonymousCoding,
+        IFNULL(para.Paralogs, 0) AS Paralogs,
+        IFNULL(ppi.BinaryPPI, 0) AS BinaryPPI,
+        IFNULL(trans.ProteinCodingTranscripts, 1) AS AlternativeTranscripts,
+        exp.DS_Embryoid_Body,
+        exp.DS_Blastocyst,
+        exp.DS_Fetus,
+        exp.DS_Neonate,
+        exp.DS_Infant,
+        exp.DS_Juvenile,
+        exp.DS_Adult,
+        exp.HS_Adrenal_Tumor,
+        exp.HS_Bladder_Carcinoma,
+        exp.HS_Breast_Mammary_Gland_Tumor,
+        exp.HS_Cervical_Tumor,
+        exp.HS_Chondrosarcoma,
+        exp.HS_Colorectal_Tumor,
+        exp.HS_Esophageal_Tumor,
+        exp.HS_Gastrointestinal_Tumor,
+        exp.HS_Germ_Cell_Tumor,
+        exp.HS_Glioma,
+        exp.HS_Head_And_Neck_Tumor,
+        exp.HS_Kidney_Tumor,
+        exp.HS_Leukemia_Tumor,
+        exp.HS_Liver_Tumor,
+        exp.HS_Lung_Tumor,
+        exp.HS_Lymphoma,
+        exp.HS_Non_neoplasia,
+        exp.HS_Normal,
+        exp.HS_Ovarian_Tumor,
+        exp.HS_Pancreatic_Tumor,
+        exp.HS_Primitive_Neuroectodermal_Tumor_Of_The_CNS,
+        exp.HS_Prostate_Cancer,
+        exp.HS_Retinoblastoma,
+        exp.HS_Skin_Tumor,
+        exp.HS_Soft_Tissue_Muscle_Tissue_Tumor,
+        exp.HS_Uterine_Tumor,
+        exp.BS_Adipose_Tissue,
+        exp.BS_Adrenal_Gland,
+        exp.BS_Ascites,
+        exp.BS_Bladder,
+        exp.BS_Blood,
+        exp.BS_Bone,
+        exp.BS_Bone_Marrow,
+        exp.BS_Brain,
+        exp.BS_Cervix,
+        exp.BS_Connective_Tissue,
+        exp.BS_Ear,
+        exp.BS_Embryonic_Tissue,
+        exp.BS_Esophagus,
+        exp.BS_Eye,
+        exp.BS_Heart,
+        exp.BS_Intestine,
+        exp.BS_Kidney,
+        exp.BS_Larynx,
+        exp.BS_Liver,
+        exp.BS_Lung,
+        exp.BS_Lymph,
+        exp.BS_Lymph_Node,
+        exp.BS_Mammary_Gland,
+        exp.BS_Mouth,
+        exp.BS_Muscle,
+        exp.BS_Nerve,
+        exp.BS_Ovary,
+        exp.BS_Pancreas,
+        exp.BS_Parathyroid,
+        exp.BS_Pharynx,
+        exp.BS_Pituitary_Gland,
+        exp.BS_Placenta,
+        exp.BS_Prostate,
+        exp.BS_Salivary_Gland,
+        exp.BS_Skin,
+        exp.BS_Spleen,
+        exp.BS_Stomach,
+        exp.BS_Testis,
+        exp.BS_Thymus,
+        exp.BS_Thyroid,
+        exp.BS_Tonsil,
+        exp.BS_Trachea,
+        exp.BS_Umbilical_Cord,
+        exp.BS_Uterus,
+        exp.BS_Vascular,
+        stab.HalfLife,
+        stab.InstabilityIndex
+    FROM
+        proteininfo AS prot,
+        nonredundant AS nr,
+        stability AS stab,
+        upacc_expression AS exp,
+        upacc_variantsnumber AS gv,
+        upacc_paralogs AS para,
+        upacc_ppi AS ppi,
+        upacc_transcripts AS trans
+    WHERE
+        prot.UPAccession = nr.UPAccession AND
+        nr.CancerCTNCNTPositive = "Y" AND
+        prot.UPAccession = stab.UPAccession AND
+        prot.UPAccession = exp.UPAccession AND
+        prot.UPAccession = gv.UPAccession AND
+        prot.UPAccession = para.UPAccession AND
+        prot.UPAccession = ppi.UPAccession AND
+        prot.UPAccession = trans.UPAccession
+    GROUP BY
+        prot.UPAccession;
+
+-- -----------------------------------------------------
+-- View `proteindatabase`.`ill_cancer_type_r_n`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_type_r_n`;
+USE `proteindatabase`;
+CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_r_n` AS
+    SELECT
+        prot.`UPAccession`, prot.`Sequence`
+    FROM
+        `proteindatabase`.`proteininfo` AS prot,
+        `proteindatabase`.`cancergene` AS cancer
+    WHERE
+        cancer.`UPAccession` = prot.`UPAccession` AND
+        cancer.`Target` = "N" AND
+        prot.`Target` = "Y"
+;
+
+-- -----------------------------------------------------
+-- View `proteindatabase`.`ill_cancer_type_r_p`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_type_r_p`;
+USE `proteindatabase`;
+CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_r_p` AS
+    SELECT
+        prot.`UPAccession`, prot.`Sequence`
+    FROM
+        `proteindatabase`.`proteininfo` AS prot,
+        `proteindatabase`.`cancergene` AS cancer
+    WHERE
+        cancer.`UPAccession` = prot.`UPAccession` AND
+        cancer.`Cancer` = "Y" AND
+        cancer.`Target` = "Y"
+;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

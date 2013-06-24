@@ -1,7 +1,6 @@
 import utilities.MySQLaccess as mysql
 
-def main(CGCParsed, cancerTargets, CGIHGNCIDs, CGIUPAccessions, UPExternalLinks, UPHumanAccessionMap,
-         schemaProteins, tableCancerGene, tableCOSMICGene, tableCOSMICGene2Mutation, tableCOSMICMutation, DATABASEPASSWORD):
+def main(CGCParsed, cancerTargets, UPExternalLinks, UPHumanAccessionMap, TTDTarget2Drug, DBTargetIDs, schemaProteins, tableCancerGene, DATABASEPASSWORD):
 
     # Record the mapping of non-representative UniProt accessions to representative accessions.
     accMap = {}
@@ -22,17 +21,38 @@ def main(CGCParsed, cancerTargets, CGIHGNCIDs, CGIUPAccessions, UPExternalLinks,
         CGCData[geneID] = {'Cancer' : 'Y', 'Target' : 'N', 'Somatic' : somatic, 'Germline' : germline}
     readIn.close()
 
-    # Read in the information about proteins that are targets of anti-neoplastic drugs.
+    # Read in the information about anti-neoplastic drugs.
+    cancerTTDTargets = set([])
+    cancerDrugBankDrugs = set([])
     cancerDrugTargetUPAccs = set([])
     readIn = open(cancerTargets, 'r')
     readIn.readline()  # Strip the header line.
     for line in readIn:
-        line = line[:-1]  # Strip the newline.
-        UPAccs = line.split('\t')[10]
-        UPAccs = set(UPAccs.split(';'))
-        cancerDrugTargetUPAccs |= UPAccs
+        chunks = line.split('\t')
+        cancerTTDTargets.add(chunks[2])
+        cancerDrugBankDrugs.add(chunks[4])
     readIn.close()
-    cancerDrugTargetUPAccs -= set([''])
+    cancerTTDTargets -= set([''])
+    cancerDrugBankDrugs -= set([''])
+
+    # Determine the UniProt accessions of the TTD targets.
+    readIn = open(TTDTarget2Drug, 'r')
+    for line in readIn:
+        accessions = line.split('\t')[1]
+        for i in accessions.split(','):
+            cancerDrugTargetUPAccs.add(i)
+    readIn.close()
+
+    # Determine the UniProt accessions of the targets of the DrugBank drugs.
+    readIn = open(DBTargetIDs, 'r')
+    for line in readIn:
+        chunks = line.split('\t')
+        accession = chunks[0]
+        drugs = chunks[1].split(';')
+        for i in drugs:
+            if i in cancerDrugBankDrugs:
+                cancerDrugTargetUPAccs.add(i)
+    readIn.close()
 
     geneXRef = {}
     readIn = open(UPExternalLinks, 'r')
@@ -79,8 +99,13 @@ def main(CGCParsed, cancerTargets, CGIHGNCIDs, CGIUPAccessions, UPExternalLinks,
 
     for i in cancerDrugTargetUPAccs:
         # Record all the proteins that are targets of anti-neoplastic drugs as being implicated in cancer and being targets.
-        cancerProteins[i]['Cancer'] = 'Y'
-        cancerProteins[i]['Target'] = 'Y'
+        try:
+            # Only adding representative accessions.
+            representativeAcc = accMap[i]
+            cancerProteins[representativeAcc]['Cancer'] = 'Y'
+            cancerProteins[representativeAcc]['Target'] = 'Y'
+        except:
+            pass
 
     dataRecords = [tuple([i, cancerProteins[i]['Cancer'], cancerProteins[i]['Target'], cancerProteins[i]['Somatic'], cancerProteins[i]['Germline']])
                    for i in cancerProteins]

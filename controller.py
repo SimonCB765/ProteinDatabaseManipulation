@@ -750,7 +750,7 @@ def main(args):
         developmentalStageAllLocation = outputDirectory + '/DevelopmentalStage-All.txt'
         blastOutput = outputDirectory + '/BlastData.txt'
         gaRedundantData = outputDirectory + '/' + gaDatasetToGenerate + '-Redundant.txt'
-        
+
         positiveNRViewDict = {'All' : viewAllAllTargNRP,
                             'GPCR' : viewTypeGPCRTargNRP,
                             'IonChannel' : viewTypeIonTargNRP,
@@ -814,9 +814,9 @@ def main(args):
 
         # Generate a FASTA format file of all the proteins in the dataset.
         conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)
-        positiveProteins = cursor.execute('SELECT * FROM ' + positiveRedundantView)
+        positiveProteins = cursor.execute('SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'Y\'')
         positiveProteins = cursor.fetchall()
-        unlabelledProteins = cursor.execute('SELECT * FROM ' + unlabelledRedundantView)
+        unlabelledProteins = cursor.execute('SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'N\'')
         unlabelledProteins = cursor.fetchall()
         results = positiveProteins + unlabelledProteins
         utilities.list2file.main(['>' + '\n'.join([j[0], j[1]]) for j in results], datasetFastaFile)
@@ -841,12 +841,12 @@ def main(args):
         nonredundantUnlabelledProteins = cursor.execute('SELECT UPAccession FROM ' + tableNonRedundant + ' WHERE ' + unlabelledColumn + '="Y"')
         nonredundantUnlabelledProteins = cursor.fetchall()
         unlabelledNonRedundantProteinAccs = [i[0] for i in nonredundantUnlabelledProteins]  # Determine the UniProt accessions of the proteins in the unlabelled non-redundant dataset.
-        redundantPositiveProteins = cursor.execute('SELECT UPAccession FROM ' + positiveRedundantView)
+        redundantPositiveProteins = cursor.execute('SELECT UPAccession FROM ' + tableProteinInfo + ' WHERE Target=\'Y\'')
         redundantPositiveProteins = cursor.fetchall()
-        positiveRedundantProteinAccs = [i[0] for i in redundantPositiveProteins]  # Determine the UniProt accessions of the proteins in the positive non-redundant dataset.
-        redundantUnlabelledProteins = cursor.execute('SELECT UPAccession FROM ' + unlabelledRedundantView)
+        positiveRedundantProteinAccs = [i[0] for i in redundantPositiveProteins if i[0] not in positiveNonRedundantProteinAccs]  # Determine the UniProt accessions of the proteins in the positive non-redundant dataset.
+        redundantUnlabelledProteins = cursor.execute('SELECT UPAccession FROM ' + tableProteinInfo + ' WHERE Target=\'N\'')
         redundantUnlabelledProteins = cursor.fetchall()
-        unlabelledRedundantProteinAccs = [i[0] for i in redundantUnlabelledProteins]  # Determine the UniProt accessions of the proteins in the unlabelled non-redundant dataset.
+        unlabelledRedundantProteinAccs = [i[0] for i in redundantUnlabelledProteins if i[0] not in unlabelledNonRedundantProteinAccs]  # Determine the UniProt accessions of the proteins in the unlabelled non-redundant dataset.
 
         # Get the names of the columns in the UniProt protein information table.
         protColumns = cursor.execute('SHOW COLUMNS FROM ' + tableProteinInfo)

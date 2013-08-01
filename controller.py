@@ -733,24 +733,22 @@ def main(args):
         os.mkdir(nonRedundantGOOutputDirectory)
         datasetFastaFile = outputDirectory + '/' + gaDatasetToGenerate + '.fasta'
         gaNonRedundantData = outputDirectory + '/' + gaDatasetToGenerate + '-NonRedundant.txt'
-        categoricalMappingNRDataLocation = outputDirectory + '/CategoricalMapping-NonRedundant.txt'
         columnNRDataLocation = outputDirectory + '/Columns-NonRedundant.txt'
         ECNRDataLocation = outputDirectory + '/ECNumbers-NonRedundant.txt'
         subcellNRLocation = outputDirectory + '/SubcellularLocation-NonRedundant.txt'
         healthStateNRLocation = outputDirectory + '/HealthState-NonRedundant.txt'
         bodySiteNRLocation = outputDirectory + '/BodySite-NonRedundant.txt'
         developmentalStageNRLocation = outputDirectory + '/DevelopmentalStage-NonRedundant.txt'
-        gaAllData = outputDirectory + '/' + gaDatasetToGenerate + '-All.txt'
-        categoricalMappingAllDataLocation = outputDirectory + '/CategoricalMapping-All.txt'
-        columnAllDataLocation = outputDirectory + '/Columns-All.txt'
-        ECAllDataLocation = outputDirectory + '/ECNumbers-All.txt'
-        subcellAllLocation = outputDirectory + '/SubcellularLocation-All.txt'
-        healthStateAllLocation = outputDirectory + '/HealthState-All.txt'
-        bodySiteAllLocation = outputDirectory + '/BodySite-All.txt'
-        developmentalStageAllLocation = outputDirectory + '/DevelopmentalStage-All.txt'
-        blastOutput = outputDirectory + '/BlastData.txt'
         gaRedundantData = outputDirectory + '/' + gaDatasetToGenerate + '-Redundant.txt'
-
+        columnRDataLocation = outputDirectory + '/Columns-Redundant.txt'
+        ECRDataLocation = outputDirectory + '/ECNumbers-Redundant.txt'
+        subcellRLocation = outputDirectory + '/SubcellularLocation-Redundant.txt'
+        healthStateRLocation = outputDirectory + '/HealthState-Redundant.txt'
+        bodySiteRLocation = outputDirectory + '/BodySite-Redundant.txt'
+        developmentalStageRLocation = outputDirectory + '/DevelopmentalStage-Redundant.txt'
+        blastOutput = outputDirectory + '/BlastData.txt'
+        gaAllData = outputDirectory + '/' + gaDatasetToGenerate + '-All.txt'
+        
         positiveNRViewDict = {'All' : viewAllAllTargNRP,
                             'GPCR' : viewTypeGPCRTargNRP,
                             'IonChannel' : viewTypeIonTargNRP,
@@ -769,24 +767,95 @@ def main(args):
                             'CancerType' : viewIllCancerTypeNRN,
                             'CancerProt' : viewIllCancerProtNRN,
                             'CancerCTNCNT' : viewIllCancerCTNCNTNRN}
-        positiveRedundantViewDict = {'All' : viewAllAllTargNRP,
-                            'GPCR' : viewTypeGPCRTargRP,
-                            'IonChannel' : viewTypeIonTargRP,
-                            'Kinase' : viewTypeKinaseTargRP,
-                            'Protease' : viewTypeProteaseTargRP,
-                            'CancerTarg' : viewIllCancerTargRP,
-                            'CancerType' : viewIllCancerTypeRP,
-                            'CancerProt' : viewIllCancerProtRP,
-                            'CancerCTNCNT' : viewIllCancerCTNCNTRP}
-        unlabelledRedundantViewDict = {'All' : viewAllAllTargRN,
-                            'GPCR' : viewTypeGPCRTargRN,
-                            'IonChannel' : viewTypeIonTargRN,
-                            'Kinase' : viewTypeKinaseTargRN,
-                            'Protease' : viewTypeProteaseTargRN,
-                            'CancerTarg' : viewIllCancerTargRN,
-                            'CancerType' : viewIllCancerTypeRN,
-                            'CancerProt' : viewIllCancerProtRN,
-                            'CancerCTNCNT' : viewIllCancerCTNCNTRN}
+        positiveRedundantViewSQLDict = {'All' : 'SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'Y\'',
+                            'GPCR' : 'SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'Y\' AND ModeOfAction = \'G-protein coupled receptor\'',
+                            'IonChannel' : 'SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'Y\' AND ModeOfAction = \'Ion Channel\'',
+                            'Kinase' : 'SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'Y\' AND ModeOfAction = \'Kinase\'',
+                            'Protease' : 'SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'Y\' AND ModeOfAction = \'Protease\'',
+                            'CancerTarg' : ('SELECT '
+                                                'prot.UPAccession, prot.Sequence '
+                                            'FROM ' +
+                                                tableProteinInfo + ' AS prot, ' +
+                                                tableCancerGene + ' AS cancer '
+                                            'WHERE '
+                                                'cancer.UPAccession = prot.UPAccession AND '
+                                                'cancer.Cancer=\'Y\' AND '
+                                                'cancer.Target=\'Y\''
+                                            ),
+                            'CancerType' : ('SELECT '
+                                                'prot.UPAccession, prot.Sequence '
+                                            'FROM ' +
+                                                tableProteinInfo + ' AS prot, ' +
+                                                tableCancerGene + ' AS cancer '
+                                            'WHERE '
+                                                'cancer.UPAccession = prot.UPAccession AND '
+                                                'cancer.Cancer=\'Y\' AND '
+                                                'cancer.Target=\'Y\''
+                                            ),
+                            'CancerProt' : ('SELECT '
+                                                'prot.UPAccession, prot.Sequence '
+                                            'FROM ' +
+                                                tableProteinInfo + ' AS prot, ' +
+                                                tableCancerGene + ' AS cancer '
+                                            'WHERE '
+                                                'cancer.UPAccession = prot.UPAccession AND '
+                                                'cancer.Cancer=\'Y\''
+                                            ),
+                            'CancerCTNCNT' : ('SELECT '
+                                                'prot.UPAccession, prot.Sequence '
+                                            'FROM ' +
+                                                tableProteinInfo + ' AS prot, ' +
+                                                tableCancerGene + ' AS cancer '
+                                            'WHERE '
+                                                'cancer.UPAccession = prot.UPAccession AND '
+                                                'cancer.Cancer=\'Y\' AND '
+                                                'cancer.Target=\'Y\''
+                                            ),}
+        unlabelledRedundantViewSQLDict = {'All' : 'SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'N\'',
+                            'GPCR' : 'SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'N\' AND ModeOfAction = \'G-protein coupled receptor\'',
+                            'IonChannel' : 'SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'N\' AND ModeOfAction = \'Ion Channel\'',
+                            'Kinase' : 'SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'N\' AND ModeOfAction = \'Kinase\'',
+                            'Protease' : 'SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'N\' AND ModeOfAction = \'Protease\'',
+                            'CancerTarg' : ('SELECT '
+                                                'prot.UPAccession, prot.Sequence '
+                                            'FROM ' +
+                                                tableProteinInfo + ' AS prot, ' +
+                                                tableCancerGene + ' AS cancer '
+                                            'WHERE '
+                                                'cancer.UPAccession = prot.UPAccession AND '
+                                                'cancer.Cancer=\'Y\' AND '
+                                                'cancer.Target=\'N\''
+                                            ),
+                            'CancerType' : ('SELECT '
+                                                'prot.UPAccession, prot.Sequence '
+                                             'FROM ' +
+                                                tableProteinInfo + ' AS prot, ' +
+                                                tableCancerGene + ' AS cancer '
+                                             'WHERE '
+                                                'cancer.UPAccession = prot.UPAccession AND '
+                                                'cancer.Cancer=\'Y\' AND '
+                                                'cancer.Target=\'N\' AND '
+                                                'prot.Target=\'Y\''
+                                            ),
+                            'CancerProt' : ('SELECT '
+                                                'prot.UPAccession, prot.Sequence '
+                                             'FROM ' +
+                                                tableProteinInfo + ' AS prot, ' +
+                                                tableCancerGene + ' AS cancer '
+                                             'WHERE '
+                                                'cancer.UPAccession = prot.UPAccession AND '
+                                                'cancer.Cancer=\'N\''
+                                            ),
+                            'CancerCTNCNT' : ('SELECT '
+                                                'prot.UPAccession, prot.Sequence '
+                                             'FROM ' +
+                                                tableProteinInfo + ' AS prot, ' +
+                                                tableCancerGene + ' AS cancer '
+                                             'WHERE '
+                                                'cancer.UPAccession = prot.UPAccession AND '
+                                                'cancer.Cancer=\'N\' AND '
+                                                'prot.Target=\'N\''
+                                            )}
         positiveColumnNameDict = {'All' : 'AllTargetPositive',
                             'GPCR' : 'GPCRTargetPositive',
                             'IonChannel' : 'IonChannelTargetPositive',
@@ -809,14 +878,14 @@ def main(args):
         unlabelledColumn = unlabelledColumnNameDict[gaDatasetToGenerate]  # Get the name of the unlabelled observation column in tableNonRedundant.
         positiveNRView = positiveNRViewDict[gaDatasetToGenerate]  # Get the name of the positive non-redundant observation view.
         unlabelledNRView = unlabelledNRViewDict[gaDatasetToGenerate]  # Get the name of the unlabelled non-redundant observation view.
-        positiveRedundantView = positiveRedundantViewDict[gaDatasetToGenerate]  # Get the name of the positive redundant observation view.
-        unlabelledRedundantView = unlabelledRedundantViewDict[gaDatasetToGenerate]  # Get the name of the unlabelled redundant observation view.
+        positiveRedundantViewSQL = positiveRedundantViewSQLDict[gaDatasetToGenerate]  # Get the SQL for generating the positive redundant observation view.
+        unlabelledRedundantViewSQL = unlabelledRedundantViewSQLDict[gaDatasetToGenerate]  # Get the SQL for generating the unlabelled redundant observation view.
 
         # Generate a FASTA format file of all the proteins in the dataset.
         conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)
-        positiveProteins = cursor.execute('SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'Y\'')
+        positiveProteins = cursor.execute(positiveRedundantViewSQL)
         positiveProteins = cursor.fetchall()
-        unlabelledProteins = cursor.execute('SELECT UPAccession, Sequence FROM ' + tableProteinInfo + ' WHERE Target=\'N\'')
+        unlabelledProteins = cursor.execute(unlabelledRedundantViewSQL)
         unlabelledProteins = cursor.fetchall()
         results = positiveProteins + unlabelledProteins
         utilities.list2file.main(['>' + '\n'.join([j[0], j[1]]) for j in results], datasetFastaFile)
@@ -841,10 +910,10 @@ def main(args):
         nonredundantUnlabelledProteins = cursor.execute('SELECT UPAccession FROM ' + tableNonRedundant + ' WHERE ' + unlabelledColumn + '="Y"')
         nonredundantUnlabelledProteins = cursor.fetchall()
         unlabelledNonRedundantProteinAccs = [i[0] for i in nonredundantUnlabelledProteins]  # Determine the UniProt accessions of the proteins in the unlabelled non-redundant dataset.
-        redundantPositiveProteins = cursor.execute('SELECT UPAccession FROM ' + tableProteinInfo + ' WHERE Target=\'Y\'')
+        redundantPositiveProteins = cursor.execute(positiveRedundantViewSQL)
         redundantPositiveProteins = cursor.fetchall()
         positiveRedundantProteinAccs = [i[0] for i in redundantPositiveProteins if i[0] not in positiveNonRedundantProteinAccs]  # Determine the UniProt accessions of the proteins in the positive non-redundant dataset.
-        redundantUnlabelledProteins = cursor.execute('SELECT UPAccession FROM ' + tableProteinInfo + ' WHERE Target=\'N\'')
+        redundantUnlabelledProteins = cursor.execute(unlabelledRedundantViewSQL)
         redundantUnlabelledProteins = cursor.fetchall()
         unlabelledRedundantProteinAccs = [i[0] for i in redundantUnlabelledProteins if i[0] not in unlabelledNonRedundantProteinAccs]  # Determine the UniProt accessions of the proteins in the unlabelled non-redundant dataset.
 
@@ -1151,13 +1220,13 @@ def main(args):
 
         # Generate the dataset and any additional information about the proteins in it (expression information, EC numbers, etc.).
         utilities.gadatageneration.pulearning(resultsNonRedundantPositive, resultsNonRedundantUnlabelled, columns, gaNonRedundantData,
-                                              categoricalMappingNRDataLocation, columnNRDataLocation, ECNRDataLocation, subcellNRLocation,
+                                              columnNRDataLocation, ECNRDataLocation, subcellNRLocation,
                                               healthStateNRLocation, bodySiteNRLocation, developmentalStageNRLocation)
-        utilities.gadatageneration.pulearning(resultsRedundantPositive, resultsRedundantUnlabelled, columns, gaAllData,
-                                              categoricalMappingAllDataLocation, columnAllDataLocation, ECAllDataLocation, subcellAllLocation,
-                                              healthStateAllLocation, bodySiteAllLocation, developmentalStageAllLocation)
+        utilities.gadatageneration.pulearning(resultsRedundantPositive, resultsRedundantUnlabelled, columns, gaRedundantData,
+                                              columnRDataLocation, ECRDataLocation, subcellRLocation,
+                                              healthStateRLocation, bodySiteRLocation, developmentalStageRLocation)
 
-        # Generate the redundant dataset.
+        # Generate the entire dataset.
         nonRedundantData = set([])
         readNonRedundant = open(gaNonRedundantData, 'r')
         headerOne = readNonRedundant.readline()
@@ -1166,22 +1235,22 @@ def main(args):
         for line in readNonRedundant:
             nonRedundantData.add(line)
         readNonRedundant.close()
-        allData = set([])
-        readAll = open(gaAllData, 'r')
-        headerOne = readAll.readline()
-        headerTwo = readAll.readline()
-        headerThree = readAll.readline()
-        for line in readAll:
-            allData.add(line)
-        readAll.close()
-        redundantData = allData - nonRedundantData
-        writeRedundant = open(gaRedundantData, 'w')
-        writeRedundant.write(headerOne)
-        writeRedundant.write(headerTwo)
-        writeRedundant.write(headerThree)
-        for i in redundantData:
-            writeRedundant.write(i)
-        writeRedundant.close()
+        redundantData = set([])
+        readRedundant = open(gaRedundantData, 'r')
+        headerOne = readRedundant.readline()
+        headerTwo = readRedundant.readline()
+        headerThree = readRedundant.readline()
+        for line in readRedundant:
+            redundantData.add(line)
+        readRedundant.close()
+        allData = redundantData | nonRedundantData
+        writeAll = open(gaAllData, 'w')
+        writeAll.write(headerOne)
+        writeAll.write(headerTwo)
+        writeAll.write(headerThree)
+        for i in allData:
+            writeAll.write(i)
+        writeAll.close()
 
         # Determine the BLAST similarity info for the proteins in the non-redundant dataset.
         conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)

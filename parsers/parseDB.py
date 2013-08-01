@@ -28,6 +28,7 @@ def main(approvedTargetInputFile, XMLInputFile, DBTargetExternalLinks, targetOut
     # Extract drug information from the XML file of the DrugTarget database.
     allDrugsFromXML = []  # Records tuples containing the information of interest about every drug in DrugBank.
     approvedDrugIDs = set([])  # Records all of the approved drugs found in DrugBank.
+    targetsOfDrugs = {}  # The numerical ID of the targets of each approved drug.
     parser = utilities.XMLparser.XMLParser(XMLInputFile)
     parser.parse()
     allInfo = parser.retrieve(['drugs.drug', 'drugs.drug.drugbank-id', 'drugs.drug.name', 'drugs.drug.cas-number',
@@ -39,10 +40,19 @@ def main(approvedTargetInputFile, XMLInputFile, DBTargetExternalLinks, targetOut
         if drugType == 'small molecule':
             # If the drug is a small molecule, then we are interested in it.
             drugID = allInfo[i]['drugs.drug.drugbank-id'][0].data  # Record the DrugBank ID of the drug.
-            groups = ';'.join([j.data for j in allInfo[i]['drugs.drug.groups.group']])  # Determine the groups that the drug is member of.
+            groups = ';'.join([j.data for j in allInfo[i]['drugs.drug.groups.group']])  # Determine the groups that the drug is a member of.
             if 'approved' in groups:
                 # If the drug is an approved drug, then add it the set of approved drugs.
                 approvedDrugIDs.add(drugID)
+                for j in allInfo[i]['drugs.drug.targets']:
+                    # Find the targets of this drug.
+                    for k in j.children:
+                        # Add each of the targets to the list of targets for this drug.
+                        targetID = k.parameters['partner']
+                        if not targetID in targetsOfDrugs:
+                            targetsOfDrugs[targetID] = [drugID]
+                        else:
+                            targetsOfDrugs[targetID].append(drugID)
             drugName = allInfo[i]['drugs.drug.name'][0].data  # Record the name of the drug.
             CASNumber = allInfo[i]['drugs.drug.cas-number'][0].data  # Record the CAS number of the drug.
             PubChemCIDs = []  # Used to record all the PubChem CIDs that are recorded for the drug.
@@ -68,39 +78,7 @@ def main(approvedTargetInputFile, XMLInputFile, DBTargetExternalLinks, targetOut
         DBToUP[chunks[0]] = chunks[5]
     readLinks.close()
 
-    # Extract target and sequence information from the list of approved drug targets.
-    approvedTargetsFromTarget = []  # Record all the approved drugs that target an approved drug target.
-
-    readTargets = open(approvedTargetInputFile, 'r')
-    for line in readTargets:
-        if line[0] == '>':
-            # Found the start of a protein entry.
-            # Split the line into two parts with the part containing the target ID at chunks[0].
-            chunks = line.split(' ', 1)
-            targetID = chunks[0]
-            # Split the target ID into two with the numeric portion of the ID in targetID[1].
-            targetID = targetID.split('|')
-            targetID = targetID[1]
-            if not DBToUP.has_key(targetID):
-                # If no UniProt accession was recorded for the target, then ignore it as no cross-referencing with the UniProt protein properties can be performed.
-                continue
-            targetID = DBToUP[targetID]
-            # Get the DrugBank drug IDs of the drugs that target the target.
-            drugs = re.findall('DB[0-9]{5}', line)
-            drugs = [i for i in drugs if i in approvedDrugIDs]
-            if drugs == []:
-                # If there are no approved drugs that target the protein (caused by all approved drugs targetting it
-                # being biotech drugs)
-                continue
-            drugs = ';'.join(drugs)
-            approvedTargetsFromTarget.append(targetID + '\t' + drugs)
-    readTargets.close()
-
+    # Write out the data abour the drugs and targets in DrugBank.
     allDrugs = list(set(allDrugsFromXML))
-    print '\tNumber of approved drugs in DrugBank:', len(allDrugs)
-    # Provided you have found some drugs write the information out
     utilities.list2file.main(allDrugs, drugOutputFile)
-
-    print '\tNumber of approved targets in DrugBank:', len(approvedTargetsFromTarget)
-    # Provided you have found some targets write the information out
-    utilities.list2file.main(approvedTargetsFromTarget, targetOutputFile)
+    utilities.list2file.main([DBToUP[i] + '\t' + ';'.join(targetsOfDrugs[i]) for i in targetsOfDrugs if i in DBToUP], targetOutputFile)

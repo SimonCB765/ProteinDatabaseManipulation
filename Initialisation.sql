@@ -2,12 +2,15 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 
+DROP SCHEMA IF EXISTS `proteindatabase` ;
 CREATE SCHEMA IF NOT EXISTS `proteindatabase` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci ;
 USE `proteindatabase` ;
 
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`goinfo`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`goinfo` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`goinfo` (
   `GOTermID` INT NOT NULL ,
   `GOName` LONGTEXT NULL ,
@@ -22,6 +25,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`proteininfo` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`proteininfo` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `ProteinName` VARCHAR(45) NULL ,
@@ -86,6 +91,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`cancergene`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`cancergene` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`cancergene` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `Cancer` VARCHAR(1) NULL DEFAULT 'N' ,
@@ -105,6 +112,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`ensemblgene`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`ensemblgene` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`ensemblgene` (
   `EnsemblGeneID` VARCHAR(45) NOT NULL ,
   `NumberTranscripts` INT NULL DEFAULT 0 ,
@@ -119,6 +128,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`germvariants`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`germvariants` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`germvariants` (
   `EnsemblTranscriptID` VARCHAR(45) NOT NULL ,
   `VariantID` VARCHAR(45) NOT NULL ,
@@ -158,6 +169,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`unigene`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`unigene` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`unigene` (
   `UniGeneID` INT NOT NULL ,
   `DS_Embryoid_Body` INT NULL DEFAULT 0 ,
@@ -245,6 +258,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`uniprot2go`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`uniprot2go` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`uniprot2go` (
   `UPAccession` VARCHAR(45) NOT NULL ,
   `GOTermID` INT NOT NULL ,
@@ -267,6 +282,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`uniprot2unigene`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`uniprot2unigene` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`uniprot2unigene` (
   `UPAccession` VARCHAR(45) NOT NULL ,
   `UniGeneID` INT NOT NULL ,
@@ -289,6 +306,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`uniprot2ensembl`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`uniprot2ensembl` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`uniprot2ensembl` (
   `UPAccession` VARCHAR(45) NOT NULL ,
   `EnsemblGeneID` VARCHAR(45) NOT NULL ,
@@ -313,6 +332,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`unigenetotals`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`unigenetotals` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`unigenetotals` (
   `StageStateSite` VARCHAR(100) NOT NULL ,
   `Total` INT NULL DEFAULT 0 ,
@@ -323,6 +344,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`blastresults`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`blastresults` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`blastresults` (
   `ProteinA` VARCHAR(10) NOT NULL ,
   `ProteinB` VARCHAR(10) NOT NULL ,
@@ -348,6 +371,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`nonredundant`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`nonredundant` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`nonredundant` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `AllTargetPositive` VARCHAR(1) NULL DEFAULT 'N' ,
@@ -381,6 +406,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`homologs`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`homologs` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`homologs` (
   `HumanGene` VARCHAR(45) NOT NULL ,
   `HomologGene` VARCHAR(45) NOT NULL ,
@@ -405,6 +432,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`ppi`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`ppi` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`ppi` (
   `PPIProteinOne` VARCHAR(10) NOT NULL ,
   `PPIProteinTwo` VARCHAR(10) NOT NULL ,
@@ -425,6 +454,8 @@ COMMENT = 'PPIProteinTwo: not foreign key as may not be human.';
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`drugs`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`drugs` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`drugs` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `DrugID` VARCHAR(45) NOT NULL ,
@@ -445,6 +476,8 @@ COMMENT = 'The Kd and Ki values are in nM.';
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`pathways`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`pathways` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`pathways` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `NumberOfPathways` INT NULL ,
@@ -461,6 +494,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`stability`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`stability` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`stability` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `HalfLife` FLOAT NULL DEFAULT 0.0 ,
@@ -478,6 +513,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`cosmicgene`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`cosmicgene` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`cosmicgene` (
   `gene` VARCHAR(255) NOT NULL ,
   `transcript` VARCHAR(45) NULL ,
@@ -535,6 +572,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`cosmicmutation`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`cosmicmutation` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`cosmicmutation` (
   `mutation` INT NOT NULL ,
   `aachange` VARCHAR(255) NULL ,
@@ -608,6 +647,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`cosmicgene2mutation`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`cosmicgene2mutation` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`cosmicgene2mutation` (
   `gene` VARCHAR(255) NOT NULL ,
   `mutation` INT NOT NULL ,
@@ -630,6 +671,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `proteindatabase`.`uniprot2hgnc`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `proteindatabase`.`uniprot2hgnc` ;
+
 CREATE  TABLE IF NOT EXISTS `proteindatabase`.`uniprot2hgnc` (
   `UPAccession` VARCHAR(10) NOT NULL ,
   `HGNC` INT NOT NULL ,
@@ -866,6 +909,7 @@ CREATE TABLE IF NOT EXISTS `proteindatabase`.`ill_cancer_type_r_p` (`UPAccession
 -- -----------------------------------------------------
 -- View `proteindatabase`.`all_all_targ_r_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`all_all_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`all_all_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_r_p` AS
@@ -875,6 +919,7 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`all_all_targ_r_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`all_all_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`all_all_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_r_n` AS
@@ -884,6 +929,7 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_gpcr_targ_r_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_gpcr_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_gpcr_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_r_p` AS
@@ -893,6 +939,7 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_gpcr_targ_r_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_gpcr_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_gpcr_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_r_n` AS
@@ -902,6 +949,7 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_kinase_targ_r_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_kinase_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_kinase_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_r_p` AS
@@ -911,6 +959,7 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_protease_targ_r_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_protease_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_protease_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_r_p` AS
@@ -920,6 +969,7 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_ionchannel_targ_r_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_ionchannel_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_ionchannel_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_r_p` AS
@@ -929,6 +979,7 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_kinase_targ_r_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_kinase_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_kinase_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_r_n` AS
@@ -938,6 +989,7 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_protease_targ_r_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_protease_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_protease_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_r_n` AS
@@ -947,6 +999,7 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_ionchannel_targ_r_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_ionchannel_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_ionchannel_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_r_n` AS
@@ -956,6 +1009,7 @@ SELECT `UPAccession`, `Sequence` FROM `proteindatabase`.`proteininfo`
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_cancer`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`upacc_cancer` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_cancer`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer` AS
@@ -969,6 +1023,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_cancer` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_targ_r_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_targ_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_targ_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_r_n` AS
@@ -985,6 +1040,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_r_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_targ_r_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_targ_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_targ_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_r_p` AS
@@ -1001,6 +1057,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_r_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_transcripts`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`upacc_transcripts` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_transcripts`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_transcripts` AS
@@ -1019,6 +1076,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_transcripts` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_ppi`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`upacc_ppi` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_ppi`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_ppi` AS
@@ -1033,6 +1091,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_ppi` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_paralogs`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`upacc_paralogs` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_paralogs`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_paralogs` AS
@@ -1047,6 +1106,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_paralogs` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_germvariants`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`upacc_germvariants` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_germvariants`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_germvariants` AS
@@ -1067,6 +1127,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_germvariants` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_expression`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`upacc_expression` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_expression`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_expression` AS
@@ -1158,6 +1219,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_expression` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`all_all_targ_nr_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`all_all_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`all_all_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_p` AS
@@ -1326,6 +1388,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_genetrans`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`upacc_genetrans` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_genetrans`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_genetrans` AS
@@ -1342,6 +1405,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_genetrans` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`upacc_variantsnumber`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`upacc_variantsnumber` ;
 DROP TABLE IF EXISTS `proteindatabase`.`upacc_variantsnumber`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_variantsnumber` AS
@@ -1360,6 +1424,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`upacc_variantsnumber` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`all_all_targ_nr_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`all_all_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`all_all_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_n` AS
@@ -1528,6 +1593,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`all_all_targ_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_targ_nr_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_p` AS
@@ -1696,6 +1762,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_targ_nr_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_n` AS
@@ -1864,6 +1931,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_targ_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_gpcr_targ_nr_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_gpcr_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_gpcr_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_p` AS
@@ -2032,6 +2100,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_gpcr_targ_nr_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_gpcr_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_gpcr_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_n` AS
@@ -2200,6 +2269,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_gpcr_targ_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_ionchannel_targ_nr_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_ionchannel_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_ionchannel_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_p` AS
@@ -2368,6 +2438,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_ionchannel_targ_nr_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_ionchannel_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_ionchannel_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_n` AS
@@ -2536,6 +2607,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_ionchannel_targ_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_kinase_targ_nr_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_kinase_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_kinase_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_p` AS
@@ -2704,6 +2776,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_kinase_targ_nr_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_kinase_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_kinase_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_n` AS
@@ -2872,6 +2945,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_kinase_targ_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_protease_targ_nr_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_protease_targ_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_protease_targ_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_p` AS
@@ -3040,6 +3114,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`type_protease_targ_nr_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`type_protease_targ_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`type_protease_targ_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_n` AS
@@ -3208,6 +3283,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`type_protease_targ_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_ctncnt_r_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_r_n` AS
@@ -3225,6 +3301,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_r_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_prot_nr_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_prot_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_prot_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_p` AS
@@ -3393,6 +3470,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_prot_nr_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_prot_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_prot_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_n` AS
@@ -3561,6 +3639,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_prot_r_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_prot_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_prot_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_r_p` AS
@@ -3576,6 +3655,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_r_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_prot_r_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_prot_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_prot_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_r_n` AS
@@ -3591,6 +3671,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_prot_r_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_type_nr_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_type_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_type_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_n` AS
@@ -3759,6 +3840,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_type_nr_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_type_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_type_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_p` AS
@@ -3927,6 +4009,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_ctncnt_r_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_r_p` AS
@@ -3943,6 +4026,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_r_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_ctncnt_nr_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_nr_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_nr_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_nr_n` AS
@@ -4111,6 +4195,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_nr_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_ctncnt_nr_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_nr_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_ctncnt_nr_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_nr_p` AS
@@ -4279,6 +4364,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_ctncnt_nr_p` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_type_r_n`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_type_r_n` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_type_r_n`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_r_n` AS
@@ -4296,6 +4382,7 @@ CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_r_n` AS
 -- -----------------------------------------------------
 -- View `proteindatabase`.`ill_cancer_type_r_p`
 -- -----------------------------------------------------
+DROP VIEW IF EXISTS `proteindatabase`.`ill_cancer_type_r_p` ;
 DROP TABLE IF EXISTS `proteindatabase`.`ill_cancer_type_r_p`;
 USE `proteindatabase`;
 CREATE  OR REPLACE VIEW `proteindatabase`.`ill_cancer_type_r_p` AS

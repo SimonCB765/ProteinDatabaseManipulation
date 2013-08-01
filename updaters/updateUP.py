@@ -26,265 +26,150 @@ def main(UPProteinInfo, schemaProteins, tableProteinInfo, folderSEG, SEGExe, fol
     uniprotData = utilities.file2list.main(UPProteinInfo)
     uniprotData = [eval(i) for i in uniprotData]
     uniprotDict = dict([(i[0], i) for i in uniprotData])
+    sequenceOfAllProteinsDict = dict([(i, uniprotDict[i][-1]) for i in uniprotDict])  # A dictionary indexed by UniProt accession with the value for each index being the sequence of the protein.
 
     #===========================================================================
-    # Extract the protein information recorded in the database.
+    # Add the data to the database.
     #===========================================================================
-    conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
-    cursor = mysql.tableSELECT(cursor, '*', tableProteinInfo)
-    results = cursor.fetchall()
-    mysql.closeConnection(conn, cursor)
-
-    #===========================================================================
-    # Compare the parsed data with the data recorded in the table.
-    #===========================================================================
-    sequenceIndex = 55
-    columnIndices = [1, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 53, sequenceIndex]
-    conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
-    cursor.execute('SHOW COLUMNS FROM ' + tableProteinInfo)
-    columns = cursor.fetchall()
-    mysql.closeConnection(conn, cursor)
-    columns = [i[0] for i in columns]
-
-    toRemove = []
-    toUpdate = {}
-    toAdd = uniprotDict.keys()
-    for i in results:
-        UPAcc = i[0]
-        if uniprotDict.has_key(UPAcc):
-            # If the key is in both the parsed file and the table, then it does not need to be added.
-            toAdd.remove(i[0])
-            # Compare the row from the table with the parsed file, to determine if the table needs updating.
-            for j in columnIndices:
-                if i[j] != uniprotDict[UPAcc][j]:
-                    if not toUpdate.has_key(UPAcc):
-                        toUpdate[UPAcc] = []
-                    toUpdate[UPAcc].append(j)
-        else:
-            # If the key is in the table, but not in the parsed file, then the row needs to be removed.
-            toRemove.append(i[0])
+    rowsToAdd = [uniprotDict[i] for i in uniprotDict]
     values = '(' + ('%s,' * len(uniprotData[0]))
     values = values[:-1] + ')'
-
-    # Record the proteins that have had their sequence changed/are newly added. These will need sequence properties
-    # calculated, BLASTing and to have predictions made.
-    sequenceChanged = [i for i in toUpdate.keys() if sequenceIndex in toUpdate[i]]
-    sequenceChanged.extend([i for i in toAdd])
-    sequenceChangedDict = dict([(i, uniprotDict[i][-1]) for i in sequenceChanged])
-    sequenceNotChanged = [i[0] for i in results if i[0] not in sequenceChanged and i[0] not in toRemove]
-    sequenceNotChangedDict = dict([(i, uniprotDict[i][-1]) for i in sequenceNotChanged])
-    sequenceOfAllProteins = [i for i in set(sequenceChanged).union(sequenceNotChanged)]
-    sequenceOfAllProteinsDict = dict([(i, uniprotDict[i][-1]) for i in sequenceOfAllProteins])
-
-    #===========================================================================
-    # Remove rows from the table that are not in the parsed file.
-    #===========================================================================
-    for i in toRemove:
-        conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
-        cursor = mysql.rowDELETE(cursor, tableProteinInfo, 'UPAccession="' + i + '"')
-        mysql.closeConnection(conn, cursor)
-    print '\tEntries removed from the UniProt table: ', len(toRemove)
-
-    #===========================================================================
-    # Update rows that have different values in the parsed file and the table.
-    #===========================================================================
-    for i in toUpdate.keys():
-        toSet = []
-        for j in toUpdate[i]:
-            updateString = columns[j] + ' = "' + uniprotDict[i][j] + '"'
-            toSet.append(updateString)
-        toSet = ', '.join(toSet)
-        conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
-        cursor = mysql.tableUPDATE(cursor, tableProteinInfo, toSet, 'UPAccession="' + i + '"')
-        mysql.closeConnection(conn, cursor)
-    print '\tEntries updated in the UniProt table: ', len(toUpdate)
-
-    #===========================================================================
-    # Add rows which are not in the table, but are in the parsed file.
-    #===========================================================================
-    rowsToAdd = [uniprotDict[i] for i in toAdd]
     conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
     cursor = mysql.tableINSERT(cursor, tableProteinInfo, values, rowsToAdd)
     mysql.closeConnection(conn, cursor)
     print '\tEntries added to the UniProt table: ', len(toAdd)
 
-    if len(sequenceChanged) > 0:
-        # If some sequences have changed then the annotations and BLASTing can be performed.
-        print '\tNow annotating added/altered proteins.'
-
-        #===========================================================================
-        # Annotate the proteins which have just been added to the table, or had
-        # their sequence updated.
-        #===========================================================================
-        # Calculate the number of low complexity regions.
-        proteinFasta = folderSEG + '/TempSEGFasta.fasta'
-        SEGOutput = folderSEG + '/TempSEGOutput.txt'
-        calculate_low_complexity(sequenceChangedDict, SEGExe, proteinFasta, SEGOutput, schemaProteins,
-                                 tableProteinInfo, databasePassword)
-        os.remove(proteinFasta)
-        os.remove(SEGOutput)
-
-        # Calculate the number of pest motifs.
-        proteinFasta = folderEpestfind + '/TempEpestfindFasta.fasta'
-        epestfindOutput = folderEpestfind + '/TempEpestfindOutput.txt'
-        calculate_pest_motif(sequenceChangedDict, epestfindExe, proteinFasta, epestfindOutput, schemaProteins,
+    #===========================================================================
+    # Annotate the proteins which have just been added to the database.
+    #===========================================================================
+    # Calculate the number of low complexity regions.
+    proteinFasta = folderSEG + '/TempSEGFasta.fasta'
+    SEGOutput = folderSEG + '/TempSEGOutput.txt'
+    calculate_low_complexity(sequenceOfAllProteinsDict, SEGExe, proteinFasta, SEGOutput, schemaProteins,
                              tableProteinInfo, databasePassword)
-        os.remove(proteinFasta)
-        os.remove(epestfindOutput)
+    os.remove(proteinFasta)
+    os.remove(SEGOutput)
 
-        # Calculate simple sequence statistics.
-        proteinFasta = folderPepstats + '/TempPepstatsFasta.fasta'
-        pepstatsOutput = folderPepstats + '/TempPepstatsOutput.txt'
-        calculate_sequence_stats(sequenceChangedDict, pepstatsExe, proteinFasta, pepstatsOutput, schemaProteins,
-                                 tableProteinInfo, databasePassword)
-        os.remove(proteinFasta)
-        os.remove(pepstatsOutput)
+    # Calculate the number of pest motifs.
+    proteinFasta = folderEpestfind + '/TempEpestfindFasta.fasta'
+    epestfindOutput = folderEpestfind + '/TempEpestfindOutput.txt'
+    calculate_pest_motif(sequenceOfAllProteinsDict, epestfindExe, proteinFasta, epestfindOutput, schemaProteins,
+                         tableProteinInfo, databasePassword)
+    os.remove(proteinFasta)
+    os.remove(epestfindOutput)
 
-        #===========================================================================
-        # Use BLAST to determine the pairwise sequence identity of all the proteins
-        # in the table. Not all sequence identities need to be calculated.
-        #===========================================================================
-        BLASTOutput = folderBLAST + '/ProcessedBLAST.txt'
-        if os.path.isfile(BLASTOutput):
-            os.remove(BLASTOutput)
+    # Calculate simple sequence statistics.
+    proteinFasta = folderPepstats + '/TempPepstatsFasta.fasta'
+    pepstatsOutput = folderPepstats + '/TempPepstatsOutput.txt'
+    calculate_sequence_stats(sequenceOfAllProteinsDict, pepstatsExe, proteinFasta, pepstatsOutput, schemaProteins,
+                             tableProteinInfo, databasePassword)
+    os.remove(proteinFasta)
+    os.remove(pepstatsOutput)
 
-        # Generate the two fasta files to make BLAST databases from.
-        changedFasta = folderBLAST + '/TempChangeFasta.fasta'
-        writeTo = open(changedFasta, 'w')
-        for i in sequenceChangedDict.keys():
-            writeTo.write('>' + i + '\n')
-            writeTo.write(sequenceChangedDict[i] + '\n')
+    #===========================================================================================
+    # Use BLAST to determine the pairwise sequence identity of all the proteins in the table.
+    #===========================================================================================
+    BLASTOutput = folderBLAST + '/ProcessedBLAST.txt'
+    if os.path.isfile(BLASTOutput):
+        os.remove(BLASTOutput)
+
+    # Generate the two fasta file to make the BLAST database from.
+    allProteinsFasta = folderBLAST + '/TempAllProteinsFasta.fasta'
+    writeTo = open(allProteinsFasta, 'w')
+    for i in sequenceOfAllProteinsDict.keys():
+        writeTo.write('>' + i + '\n')
+        writeTo.write(sequenceOfAllProteinsDict[i] + '\n')
+    writeTo.close()
+
+    # Set the non-unique PSI-BLAST parameters
+    tempQuery = folderBLAST + '/TempQuery.fasta'
+    evalue = ' -evalue 1'
+    inclusionEThresh = ' -inclusion_ethresh 0.0001'
+    numIterations = ' -num_iterations 3'
+    gapTrigger = ' -gap_trigger 18'
+    numDescriptions = ' -num_descriptions 10000'
+    numAlignments = ' -num_alignments 10000'
+    dbsize = ' -dbsize 0'
+    outputFormat = ' -outfmt "7 qseqid sseqid pident length evalue"'
+    numThreads = ' -num_threads 2'
+
+    # BLAST the proteins.
+    tempBlastDatabaseFolder = folderBLAST + '/TempAllProtDB'
+    os.mkdir(tempBlastDatabaseFolder)
+    tempBlastDatabase = tempBlastDatabaseFolder + '/AllProt'
+    makeDBArgs = makeBLASTDatabaseExe + ' -in ' + allProteinsFasta + ' -out ' + tempBlastDatabase
+    subprocess.call(makeDBArgs)
+    allBLASTOutput = folderBLAST + '/AllBLASTOutput.txt'
+    out = ' -out ' + allBLASTOutput
+    db = ' -db ' + tempBlastDatabase
+    for i in sequenceOfAllProteinsDict.keys():
+        writeTo = open(tempQuery, 'w')
+        writeTo.write('>' + i + '\n')
+        writeTo.write(sequenceOfAllProteinsDict[i] + '\n')
         writeTo.close()
-        allProteinsFasta = folderBLAST + '/TempAllProteinsFasta.fasta'
-        writeTo = open(allProteinsFasta, 'w')
-        for i in sequenceOfAllProteinsDict.keys():
-            writeTo.write('>' + i + '\n')
-            writeTo.write(sequenceOfAllProteinsDict[i] + '\n')
-        writeTo.close()
+        query = ' -query ' + tempQuery
+        argsPSI = (query + out + evalue + inclusionEThresh + numIterations + gapTrigger + numDescriptions +
+                   numAlignments + dbsize + db + outputFormat + numThreads)
+        subprocess.call(psiblastExe + argsPSI, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        parsers.parsePSIBLAST.main(allBLASTOutput, BLASTOutput)
+    shutil.rmtree(tempBlastDatabaseFolder)
+    os.remove(allBLASTOutput)
+    os.remove(tempQuery)
+    os.remove(allProteinsFasta)
 
-        # Set the non-unique PSI-BLAST parameters
-        tempQuery = folderBLAST + '/TempQuery.fasta'
-        evalue = ' -evalue 1'
-        inclusionEThresh = ' -inclusion_ethresh 0.0001'
-        numIterations = ' -num_iterations 3'
-        gapTrigger = ' -gap_trigger 18'
-        numDescriptions = ' -num_descriptions 10000'
-        numAlignments = ' -num_alignments 10000'
-        dbsize = ' -dbsize 0'
-        outputFormat = ' -outfmt "7 qseqid sseqid pident length evalue"'
-        numThreads = ' -num_threads 2'
-
-        # Blast the new and updated proteins against all the proteins.
-        tempBlastDatabaseFolder = folderBLAST + '/TempAllProtDB'
-        os.mkdir(tempBlastDatabaseFolder)
-        tempBlastDatabase = tempBlastDatabaseFolder + '/AllProt'
-        makeDBArgs = makeBLASTDatabaseExe + ' -in ' + allProteinsFasta + ' -out ' + tempBlastDatabase
-        subprocess.call(makeDBArgs)
-        changedAgainstAllOutput = folderBLAST + '/ChangedAgainstAll.txt'
-        out = ' -out ' + changedAgainstAllOutput
-        db = ' -db ' + tempBlastDatabase
-        for i in sequenceChangedDict.keys():
-            writeTo = open(tempQuery, 'w')
-            writeTo.write('>' + i + '\n')
-            writeTo.write(sequenceChangedDict[i] + '\n')
-            writeTo.close()
-            query = ' -query ' + tempQuery
-            argsPSI = (query + out + evalue + inclusionEThresh + numIterations + gapTrigger + numDescriptions +
-                       numAlignments + dbsize + db + outputFormat + numThreads)
-            subprocess.call(psiblastExe + argsPSI, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            parsers.parsePSIBLAST.main(changedAgainstAllOutput, BLASTOutput)
-        shutil.rmtree(tempBlastDatabaseFolder)
-        os.remove(changedAgainstAllOutput)
-        os.remove(tempQuery)
-
-        # Blast the non-updated proteins against the new and updated proteins, provided there are some unchanged ones.
-        if len(sequenceNotChanged) > 0:
-            tempBlastDatabaseFolder = folderBLAST + '/TempAddedAndChangedProtDB'
-            os.mkdir(tempBlastDatabaseFolder)
-            tempBlastDatabase = tempBlastDatabaseFolder + '/ChangedProt'
-            makeDBArgs = makeBLASTDatabaseExe + ' -in ' + changedFasta + ' -out ' + tempBlastDatabase
-            subprocess.call(makeDBArgs)
-            sameAgainstChangedOutput = folderBLAST + '/SameAgainstChanged.txt'
-            out = ' -out ' + sameAgainstChangedOutput
-            db = ' -db ' + tempBlastDatabase
-            for i in sequenceNotChangedDict.keys():
-                writeTo = open(tempQuery, 'w')
-                writeTo.write('>' + i + '\n')
-                writeTo.write(sequenceNotChangedDict[i] + '\n')
-                writeTo.close()
-                query = ' -query ' + tempQuery
-                argsPSI = (query + out + evalue + inclusionEThresh + numIterations + gapTrigger + numDescriptions +
-                           numAlignments + dbsize + db + outputFormat + numThreads)
-                subprocess.call(psiblastExe + argsPSI)
-                parsers.parsePSIBLAST.main(sameAgainstChangedOutput, BLASTOutput)
-            shutil.rmtree(tempBlastDatabaseFolder)
-            os.remove(sameAgainstChangedOutput)
-            os.remove(tempQuery)
-
-        os.remove(changedFasta)
-        os.remove(allProteinsFasta)
-
-        # Enter the BLAST information into the blast results table.
-        conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
-        matchesFound = {}
-        readIn = open(BLASTOutput, 'r')
-        for line in readIn:
-            chunks = line.split('\t')
-            index = tuple(sorted([chunks[0], chunks[1]]))
-            query = index[0]
-            hit = index[1]
-            similarity = float(chunks[2])
-            length = int(chunks[3])
-            eValue = float(chunks[4])
-            if not matchesFound.has_key(index):
-                # If this is the first time the (query, hit) pair has been found.
-                matchesFound[index] = {}
+    # Enter the BLAST information into the blast results table.
+    conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
+    matchesFound = {}
+    readIn = open(BLASTOutput, 'r')
+    for line in readIn:
+        chunks = line.split('\t')
+        index = tuple(sorted([chunks[0], chunks[1]]))
+        query = index[0]
+        hit = index[1]
+        similarity = float(chunks[2])
+        length = int(chunks[3])
+        eValue = float(chunks[4])
+        if not matchesFound.has_key(index):
+            # If this is the first time the (query, hit) pair has been found.
+            matchesFound[index] = {}
+            matchesFound[index]['Similarity'] = similarity
+            matchesFound[index]['Tuple'] = tuple([query, hit, similarity, length, eValue])
+        else:
+            # If the (query, hit) pair has been found previously.
+            if similarity < matchesFound[index]['Similarity']:
+                # If the similarity of the new (query, hit) pair is less than the previously found occurence of the
+                # pair, then discard this pair. This is because we are looking for the situation where the
+                # similarity is greatest, in order to know which pairs are redundant. Continue to next loop
+                # iteration as we do not want to update the database with this pair, or add this pair.
+                continue
+            else:
                 matchesFound[index]['Similarity'] = similarity
                 matchesFound[index]['Tuple'] = tuple([query, hit, similarity, length, eValue])
-            else:
-                # If the (query, hit) pair has been found previously.
-                if similarity < matchesFound[index]['Similarity']:
-                    # If the similarity of the new (query, hit) pair is less than the previously found occurence of the
-                    # pair, then discard this pair. This is because we are looking for the situation where the
-                    # similarity is greatest, in order to know which pairs are redundant. Continue to next loop
-                    # iteration as we do not want to update the database with this pair, or add this pair.
-                    continue
-                else:
-                    matchesFound[index]['Similarity'] = similarity
-                    matchesFound[index]['Tuple'] = tuple([query, hit, similarity, length, eValue])
-        readIn.close()
+    readIn.close()
 
-        tuplesToAdd = []
-        for i in matchesFound:
-            query = matchesFound[i]['Tuple'][0]
-            hit = matchesFound[i]['Tuple'][1]
-            if query in toAdd or hit in toAdd:
-                # If either of the query or hit protein is being added for the first time, then the tuple needs
-                # inserting.
-                tuplesToAdd.append(matchesFound[i]['Tuple'])
-            else:
-                # If neither protein is newly added, then either one of the proteins is already in the table and the
-                # other protein is being updated, or both proteins are being updated. In this case the tuple in the
-                # table needs to be updated.
-                toSet = ('Similarity="' + str(matchesFound[i]['Tuple'][2]) + '", Length="' +
-                         str(matchesFound[i]['Tuple'][3]) + '", EValue="' + str(matchesFound[i]['Tuple'][4]) + '"')
-                cursor = mysql.tableUPDATE(cursor, tableBLASTResults, toSet,
-                                           'ProteinA="' + query + '" AND ProteinB="' + hit + '"')
-        if tuplesToAdd != []:
-            values = '(' + ('%s,' * len(tuplesToAdd[0]))
-            values = values[:-1] + ')'
-            cursor = mysql.tableINSERT(cursor, tableBLASTResults, values, tuplesToAdd)
-        mysql.closeConnection(conn, cursor)
+    tuplesToAdd = []
+    for i in matchesFound:
+        query = matchesFound[i]['Tuple'][0]
+        hit = matchesFound[i]['Tuple'][1]
+        if not query == hit:
+            tuplesToAdd.append(matchesFound[i]['Tuple'])
 
-def calculate_low_complexity(sequenceChangedDict, SEGExe, proteinFasta, SEGOutput, schemaProteins,
+    if tuplesToAdd != []:
+        values = '(' + ('%s,' * len(tuplesToAdd[0]))
+        values = values[:-1] + ')'
+        cursor.execute('TRUNCATE TABLE ' + tableBLASTResults)
+        cursor = mysql.tableINSERT(cursor, tableBLASTResults, values, tuplesToAdd)
+    mysql.closeConnection(conn, cursor)
+
+def calculate_low_complexity(sequenceOfAllProteinsDict, SEGExe, proteinFasta, SEGOutput, schemaProteins,
                              tableProteinInfo, databasePassword):
 
     conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
 
-    for i in sequenceChangedDict.keys():
+    for i in sequenceOfAllProteinsDict.keys():
         # Run every protein in the table through segmasker.
         UPAcc = i
-        seq = sequenceChangedDict[i]
+        seq = sequenceOfAllProteinsDict[i]
 
         # Create a FASTA format file for the protein. This is the input format used for segmasker.
         SEGInput = open(proteinFasta, 'w')
@@ -304,16 +189,16 @@ def calculate_low_complexity(sequenceChangedDict, SEGExe, proteinFasta, SEGOutpu
 
     mysql.closeConnection(conn, cursor)
 
-def calculate_pest_motif(sequenceChangedDict, epestfindExe, proteinFasta, epestfindOutput, schemaProteins,
+def calculate_pest_motif(sequenceOfAllProteinsDict, epestfindExe, proteinFasta, epestfindOutput, schemaProteins,
                          tableProteinInfo, databasePassword):
 
     # Connect to the specified schema.
     conn, cursor = mysql.openConnection(inputPass=databasePassword, database=schemaProteins)
 
-    for i in sequenceChangedDict.keys():
+    for i in sequenceOfAllProteinsDict.keys():
         # Run every protein in the table through epestfind.
         UPAcc = i
-        seq = sequenceChangedDict[i]
+        seq = sequenceOfAllProteinsDict[i]
 
         # Create a FASTA format file for the protein. This is the input format used for epestfind.
         epestfindInput = open(proteinFasta, 'w')
@@ -333,7 +218,7 @@ def calculate_pest_motif(sequenceChangedDict, epestfindExe, proteinFasta, epestf
 
     mysql.closeConnection(conn, cursor)
 
-def calculate_sequence_stats(sequenceChangedDict, pepstatsExe, proteinFasta, pepstatsOutput, schemaProteins,
+def calculate_sequence_stats(sequenceOfAllProteinsDict, pepstatsExe, proteinFasta, pepstatsOutput, schemaProteins,
                              tableProteinInfo, databasePassword):
 
     # Create the lists of the different types of amino acids. trueAAs are the 20 amino acids that are coded for by the genetic code.
@@ -361,9 +246,9 @@ def calculate_sequence_stats(sequenceChangedDict, pepstatsExe, proteinFasta, pep
     # Run pepstats on all the proteins.
     #===========================================================================
     pepstatsInput = open(proteinFasta, 'w')
-    for i in sequenceChangedDict.keys():
+    for i in sequenceOfAllProteinsDict.keys():
         UPAcc = i
-        seq = sequenceChangedDict[i]
+        seq = sequenceOfAllProteinsDict[i]
         pepstatsInput.write('>' + UPAcc + '\n')
         pepstatsInput.write(seq + '\n')
     pepstatsInput.close()
@@ -374,7 +259,7 @@ def calculate_sequence_stats(sequenceChangedDict, pepstatsExe, proteinFasta, pep
     # Parse the Pepstats output file to get the isoelectric point of the protein.
     pIDict = parsers.parsePepstats.main(pepstatsOutput)
 
-    for i in sequenceChangedDict.keys():
+    for i in sequenceOfAllProteinsDict.keys():
         UPAcc = i
         pI = pIDict[UPAcc]['pI']
 
@@ -384,10 +269,10 @@ def calculate_sequence_stats(sequenceChangedDict, pepstatsExe, proteinFasta, pep
     #===========================================================================
     # Calculate the sequence statistics for the proteins.
     #===========================================================================
-    for i in sequenceChangedDict.keys():
+    for i in sequenceOfAllProteinsDict.keys():
         stats = [0.0]*numAA  # The summation of the number of each type of amino acid in the protein.
         UPAcc = i
-        seq = sequenceChangedDict[i]
+        seq = sequenceOfAllProteinsDict[i]
         seqLen = len(seq)
 
         # Go through the amino acids in the sequence and sum up the different types.

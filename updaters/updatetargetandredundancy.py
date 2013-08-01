@@ -15,10 +15,8 @@ def main(DBDrugIDs, DBTargetIDs, TTDUPAccessions, ChEMBLUPAccessions, UPHumanAcc
          UPDrugIDs, folderCulling, schemaProteins, tableProteinInfo, tableNonRedundant, tableBLASTResults,
          databasePassword, viewsDict):
 
-    allTargetsChEMBL = []#xref_chembl_uniprot(ChEMBLUPAccessions, UPHumanAccessionMap)
     allTargetsDB = xref_drugbank_uniprot(DBTargetIDs, UPHumanAccessionMap)
     allTargetsTTD = xref_TTD_uniprot(TTDUPAccessions, UPHumanAccessionMap)
-    allTargetsUP = xref_uniprot_drugbank(UPDrugIDs, DBDrugIDs)
     allTargets = list(set(allTargetsChEMBL) | set(allTargetsDB) | set(allTargetsTTD) | set(allTargetsUP))
     print '\tTotal number of unique targets found: ', len(allTargets)
 
@@ -99,26 +97,6 @@ def main(DBDrugIDs, DBTargetIDs, TTDUPAccessions, ChEMBLUPAccessions, UPHumanAcc
             mysql.tableUPDATE(cursor, tableNonRedundant, column + '="Y"', 'UPAccession="' + str(i) + '"')
     mysql.closeConnection(conn, cursor)
 
-def xref_chembl_uniprot(ChEMBLUPAccessions, UPHumanAccessionMap):
-    ChEMBlNonRepAccs = set([i.split('\t')[0] for i in utilities.file2list.main(ChEMBLUPAccessions)])
-    UPAccMap = utilities.file2list.main(UPHumanAccessionMap)
-
-    # Make a dictionary where the index is the, possibly deprecated, UniProt accession and the entry is the
-    # representative accession.
-    allUPID = {}
-    for i in UPAccMap:
-        chunks = i.split()
-        allUPID[chunks[0]] = chunks[1]
-
-    # Convert all the UniProt accessions recorded by ChEMBL, into the representative accessions.
-    validUPLinks = [allUPID[i] for i in ChEMBlNonRepAccs if allUPID.has_key(i)]
-    validUPLinks = list(set(validUPLinks))
-    validUPLinks.sort()
-
-    print '\tTargets of approved drugs recorded by ChEMBL: ', len(validUPLinks)
-
-    return validUPLinks
-
 def xref_drugbank_uniprot(DBTargetIDs, UPHumanAccessionMap):
     DBTargets = utilities.file2list.main(DBTargetIDs)
     UPAccMap = utilities.file2list.main(UPHumanAccessionMap)
@@ -161,26 +139,3 @@ def xref_TTD_uniprot(TTDUPAccessions, UPHumanAccessionMap):
     print '\tTargets of approved drugs recorded by the TTD: ', len(validUPLinks)
 
     return validUPLinks
-
-def xref_uniprot_drugbank(UPDrugIDs, DBDrugIDs):
-    accsDrugsUP = utilities.file2list.main(UPDrugIDs)
-    drugIDsDB = [(i.split('\t')) for i in utilities.file2list.main(DBDrugIDs)]
-    drugIDsDB = set([i[0] for i in drugIDsDB if 'approved' in i[2]])
-
-    approvedTargets = []
-    for up in accsDrugsUP:
-        chunks = up.split('\t')
-        # If the DrugBank drug ID recorded by UniProt is in the list of approved DrugBank drug IDs,
-        # record the UniProt accession as being a valid approved target.
-        drugsUP = chunks[1].split(';')
-        if drugIDsDB.intersection(drugsUP) != set([]):
-            approvedTargets.append(chunks[0])
-
-    # Ensure only unique results are returned.
-    approvedTargets = list(set(approvedTargets))
-    approvedTargets = [i for i in approvedTargets]
-    approvedTargets.sort()
-
-    print '\tTargets of approved drugs recorded by UniProt: ', str(len(approvedTargets))
-
-    return approvedTargets

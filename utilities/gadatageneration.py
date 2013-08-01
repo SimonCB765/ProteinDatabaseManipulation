@@ -8,8 +8,8 @@ import os
 import shutil
 import random
 
-def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeadings, outputLocation, categoricalMappingDataLocation, columnDataLocation,
-            ECDataLocation, subcellLocation, healthStateLocation, bodySiteLocation, developmentalStageLocation, missingValueCode='-999'):
+def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeadings, outputLocation, columnDataLocation,
+            ECDataLocation, subcellLocation, healthStateLocation, bodySiteLocation, developmentalStageLocation):
     """Generates the dataset in the format required by the Java random forest package.
 
     sqlPositiveQueryResults @type - list
@@ -20,8 +20,6 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
     columnHeadings @use  - A list of the names of the dependent variables in the dataset.
     outputLocation @type - string
     outputLocation @use  - The location where the output dataset will be stored.
-    categoricalMappingDataLocation @type - string
-    categoricalMappingDataLocation @use  - Categorical data is mapped to the range 1:numberOfCategories. This location will contain the mapping from category names to the 1:numberOfCategories range.
     columnDataLocation @type - string
     columnDataLocation @use  - The location where the names of the dependent variables are stored.
     ECDataLocation @type - string
@@ -44,11 +42,6 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
     unneededColumns = ['ECNumber', 'SubcellularLocation', 'TopologicalDomain', 'PredictedSubcellularLocation', 'PredictedBetaSheets', 'PredictedAlphaHelices']
     # Define the categorical/discrete columns.
     discreteColumns = []
-    #discreteColumns = ['PESTMotif', 'LowComplexity', 'OGlycosylation', 'NGlycosylation', 'Phosphoserine', 'Phosphothreonine', 'Phosphotyrosine',
-    #                   'SignalPeptide', 'TransmembraneHelices', '3Untranslated', '5Untranslated', 'SynonymousCoding', 'Paralogs', 'BinaryPPI',
-    #                   'HalfLife', 'InstabilityIndex']
-    # Define the dependant variables that will be present in the training dataset, but are not to be used (do it this way so that they can be re-introduced easily).
-    markedOutColumns = ['UPAccession', 'HalfLife', 'InstabilityIndex']
     # Define the name of the response column.
     responseColumn = ['Classification']
     # Define the continuous valued columns.
@@ -119,10 +112,8 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
                     dataDict[protein][k] = '1' if j[columnIndices[k]] < 40 else '0'
                 elif k == 'HalfLife':
                     # For a few of the proteins the N-terminus is not one of the twenty amino acids that ProtPAram works for.
-                    # In these cases the value of the half life has been set to -1. When generating the data for the Orange data mining package,
-                    # a half life of -1 should be recorded as a blank. Assumed to be correct procedure by looking at this page:
-                    # http://orange.biolab.si/doc/reference/Orange.data.formats/
-                    dataDict[protein][k] = str(j[columnIndices[k]]) if j[columnIndices[k]] != -1 else missingValueCode
+                    # In these cases the value of the half life has been set to -1.
+                    dataDict[protein][k] = str(j[columnIndices[k]])
                 elif k in ['OGlycosylation', 'NGlycosylation', 'Phosphoserine', 'Phosphothreonine', 'Phosphotyrosine',
                            'SignalPeptide', 'TransmembraneHelices', 'PredictedAlphaHelices', 'PredictedBetaSheets', 'Turns',
                            'AlphaHelices', 'BetaStrands']:
@@ -200,53 +191,9 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
     # Determine all the dependant variables that will be used when training the random forest.
     allColumns = [i for i in columnHeadings if i in continuousColumns or i in discreteColumns] + responseColumn
 
-    # Determine the number of categories for each discrete column.
-    numberCategoriesMapping = dict([(i, set([])) for i in discreteColumns])
-    for i in discreteColumns:
-        for j in dataDict:
-            numberCategoriesMapping[i].add(dataDict[j][i])
-    # Determine how the values of the discrete columns should be mapped to the range 1:number of categories.
-    categoryMapping = dict([(i, {}) for i in discreteColumns])
-    for i in discreteColumns:
-        orderedCategories = sorted(numberCategoriesMapping[i])
-        numberCategories = range(1, len(orderedCategories) + 1)
-        mappingDict = dict([(orderedCategories[j - 1], str(j)) for j in numberCategories])
-        categoryMapping[i] = mappingDict
-    # Map the values of the discrete columns to the range 1:number of categories, and write out the mappings.
-    writeOutMappings = open(categoricalMappingDataLocation, 'w')
-    for i in discreteColumns:
-        mappingOutput = [i]
-        for j in categoryMapping[i]:
-            mappingOutput.append(j + '->' + categoryMapping[i][j])
-        writeOutMappings.write('\t'.join(mappingOutput) + '\n')
-        for j in dataDict:
-            dataDict[j][i] = categoryMapping[i][dataDict[j][i]]
-    writeOutMappings.close()
-
     # Write out the dataset in the format expected by the Java random forest implementation.
     writeOut = open(outputLocation, 'w')
-    # Create the header lines.
-    headerLineOne = []
-    headerLineTwo = []
-    headerLineThree = []
-    for i in allColumns:
-        headerLineOne.append(i)
-        if i in responseColumn:
-            headerLineTwo.append('r')
-            headerLineThree.append('')
-        elif i in markedOutColumns:
-            headerLineTwo.append('x')
-            headerLineThree.append('')
-        elif i in discreteColumns:
-            headerLineTwo.append('c')
-            headerLineThree.append(str(len(numberCategoriesMapping[i])))
-        elif i in continuousColumns:
-            headerLineTwo.append('n')
-            headerLineThree.append('')
-    # Write out the header lines.
-    writeOut.write('\t'.join(headerLineOne) + '\n')
-    writeOut.write('\t'.join(headerLineTwo) + '\n')
-    writeOut.write('\t'.join(headerLineThree) + '\n')
+    writeOut.write('\t'.join(allColumns) + '\n')
     for i in dataDict:
         proteinInfo = []
         for j in allColumns:

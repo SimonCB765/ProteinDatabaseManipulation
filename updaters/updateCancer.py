@@ -21,10 +21,11 @@ def main(CGCParsed, cancerTargets, UPExternalLinks, UPHumanAccessionMap, TTDTarg
         CGCData[geneID] = {'Cancer' : 'Y', 'Target' : 'N', 'Somatic' : somatic, 'Germline' : germline}
     readIn.close()
 
-    # Read in the information about anti-neoplastic drugs.
     cancerTTDTargets = set([])
     cancerDrugBankDrugs = set([])
     cancerDrugTargetUPAccs = set([])
+
+    # Read in the information about anti-neoplastic drugs.
     readIn = open(cancerTargets, 'r')
     readIn.readline()  # Strip the header line.
     for line in readIn:
@@ -51,7 +52,7 @@ def main(CGCParsed, cancerTargets, UPExternalLinks, UPHumanAccessionMap, TTDTarg
         drugs = chunks[1].split(';')
         for i in drugs:
             if i in cancerDrugBankDrugs:
-                cancerDrugTargetUPAccs.add(i)
+                cancerDrugTargetUPAccs.add(accession)
     readIn.close()
 
     geneXRef = {}

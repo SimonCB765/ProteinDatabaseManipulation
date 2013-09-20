@@ -143,7 +143,11 @@ def main(adj, names):
 
     """
 
-    rem = pruneGraph(adj.adjList(), range(len(names)))
-    proteinsToCull = [names[x] for x in rem]
+    if names:
+        # Only bother performing the culling if there is at least one protein in the similarity graph.
+        rem = pruneGraph(adj.adjList(), range(len(names)))
+        proteinsToCull = [names[x] for x in rem]
+    else:
+        proteinsToCull = []
 
     return proteinsToCull

@@ -10,7 +10,7 @@ import utilities.list2file
 
 def main(TTDTargets, TTDUPAccessions, TTDDrugXref, TTDTarget2Drug):
     """
-    Takes the TTD target database data and the TTD drug data, and returns ont file of the UniProt accessions of the approved target proteins and one containing a mapping of approved targets to approved drugs.
+    Takes the TTD target database data and the TTD drug cross-reference data, and returns ont file of the UniProt accessions of the approved target proteins and one containing a mapping of approved targets to approved drugs.
     TDUPAccessions - A file of UniProt accessions, one on each line.
         Each UP accession in the file is the target of an approved drug (as recorded by the TTD).
     TTDTarget2Drug - A tab separated (tsv) file, with three elements on each line.

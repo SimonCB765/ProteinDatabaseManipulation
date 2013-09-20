@@ -248,7 +248,7 @@ def main(args):
     TTDTargets = folderTTD + '/TTDTargetDataset.txt'  # The TTD drug target database in the raw format.
     TTDUPAccessions = folderTTD + '/UPAccessions.txt'  # A file of UniProt accessions, one on each line.
                                                        # Each UP accession in the file is the target of an approved drug (as recorded by the TTD).
-    TTDDrugXref = folderTTD + '/TTDDrugXref.txt'  # The TTD data for the drugs in the database.
+    TTDDrugXref = folderTTD + '/TTDDrugXref.txt'  # The external cross-reference data for the drugs in the database.
     TTDTarget2Drug = folderTTD + '/TTDTarget2Drug.txt'  # A tab separated (tsv) file, with three elements on each line.
                                                         # The first element is the TTD ID for the protein.
                                                         # The second element is a comma separated list of UniProt accessions that the first element is linked to.
@@ -833,8 +833,7 @@ def main(args):
                                                 tableCancerGene + ' AS cancer '
                                              'WHERE '
                                                 'cancer.UPAccession = prot.UPAccession AND '
-                                                'cancer.Cancer=\'Y\' AND '
-                                                'cancer.Target=\'N\' AND '
+                                                'cancer.Cancer=\'N\' AND '
                                                 'prot.Target=\'Y\''
                                             ),
                             'CancerProt' : ('SELECT '
@@ -1230,24 +1229,18 @@ def main(args):
         nonRedundantData = set([])
         readNonRedundant = open(gaNonRedundantData, 'r')
         headerOne = readNonRedundant.readline()
-        headerTwo = readNonRedundant.readline()
-        headerThree = readNonRedundant.readline()
         for line in readNonRedundant:
             nonRedundantData.add(line)
         readNonRedundant.close()
         redundantData = set([])
         readRedundant = open(gaRedundantData, 'r')
         headerOne = readRedundant.readline()
-        headerTwo = readRedundant.readline()
-        headerThree = readRedundant.readline()
         for line in readRedundant:
             redundantData.add(line)
         readRedundant.close()
         allData = redundantData | nonRedundantData
         writeAll = open(gaAllData, 'w')
         writeAll.write(headerOne)
-        writeAll.write(headerTwo)
-        writeAll.write(headerThree)
         for i in allData:
             writeAll.write(i)
         writeAll.close()

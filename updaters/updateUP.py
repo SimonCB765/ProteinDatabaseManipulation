@@ -226,15 +226,15 @@ def calculate_sequence_stats(sequenceOfAllProteinsDict, pepstatsExe, proteinFast
     trueAAs = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
     numAA = len(aminoAcids)
     tinyAAs = ['A', 'C', 'G', 'S', 'T']
-    smallAAs = ['A', 'B', 'C', 'D', 'G', 'N', 'P', 'S', 'T', 'V']
+    smallAAs = ['A', 'C', 'D', 'G', 'N', 'P', 'S', 'T', 'V']
     aliphaticAAs = ['I', 'L', 'V']
     aromaticAAs = ['F', 'H', 'W', 'Y']
     nonpolarAAs = ['A', 'C', 'F', 'G', 'I', 'L', 'M', 'P', 'V', 'W', 'Y']
-    polarAAs = ['D', 'E', 'H', 'K', 'N', 'Q', 'R', 'S', 'T', 'Z']
-    chargedAAs = ['B', 'D', 'E', 'H', 'K', 'R', 'Z']
+    polarAAs = ['D', 'E', 'H', 'K', 'N', 'Q', 'R', 'S', 'T']
+    chargedAAs = ['D', 'E', 'H', 'K', 'R']
     basicAAs = ['H', 'K', 'R']
-    negativelyCharged = ['B', 'D', 'E', 'Z']
-    positivelyCharged = ['H', 'K', 'O', 'R']
+    negativelyCharged = ['D', 'E']
+    positivelyCharged = ['H', 'K', 'R']
     # The hydrophobicity of different amino acid residues, as measured by the Kyte and Doolittle scale.
     hydro = {'A' : 1.8, 'C' : 2.5, 'D' : -3.5, 'E' : -3.5, 'F' : 2.8, 'G' : -0.4, 'H' : -3.2, 'I' : 4.5,
              'K' : -3.9, 'L' : 3.8, 'M' : 1.9, 'N' : -3.5, 'P' : -1.6, 'Q' : -3.5, 'R' : -4.5, 'S' : -0.8,

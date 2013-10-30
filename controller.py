@@ -733,20 +733,11 @@ def main(args):
         os.mkdir(nonRedundantGOOutputDirectory)
         datasetFastaFile = outputDirectory + '/' + gaDatasetToGenerate + '.fasta'
         gaNonRedundantData = outputDirectory + '/' + gaDatasetToGenerate + '-NonRedundant.txt'
-        columnNRDataLocation = outputDirectory + '/Columns-NonRedundant.txt'
         ECNRDataLocation = outputDirectory + '/ECNumbers-NonRedundant.txt'
         subcellNRLocation = outputDirectory + '/SubcellularLocation-NonRedundant.txt'
-        healthStateNRLocation = outputDirectory + '/HealthState-NonRedundant.txt'
-        bodySiteNRLocation = outputDirectory + '/BodySite-NonRedundant.txt'
-        developmentalStageNRLocation = outputDirectory + '/DevelopmentalStage-NonRedundant.txt'
         gaRedundantData = outputDirectory + '/' + gaDatasetToGenerate + '-Redundant.txt'
-        columnRDataLocation = outputDirectory + '/Columns-Redundant.txt'
         ECRDataLocation = outputDirectory + '/ECNumbers-Redundant.txt'
         subcellRLocation = outputDirectory + '/SubcellularLocation-Redundant.txt'
-        healthStateRLocation = outputDirectory + '/HealthState-Redundant.txt'
-        bodySiteRLocation = outputDirectory + '/BodySite-Redundant.txt'
-        developmentalStageRLocation = outputDirectory + '/DevelopmentalStage-Redundant.txt'
-        blastOutput = outputDirectory + '/BlastData.txt'
         gaAllData = outputDirectory + '/' + gaDatasetToGenerate + '-All.txt'
         
         positiveNRViewDict = {'All' : viewAllAllTargNRP,
@@ -1219,11 +1210,9 @@ def main(args):
 
         # Generate the dataset and any additional information about the proteins in it (expression information, EC numbers, etc.).
         utilities.gadatageneration.pulearning(resultsNonRedundantPositive, resultsNonRedundantUnlabelled, columns, gaNonRedundantData,
-                                              columnNRDataLocation, ECNRDataLocation, subcellNRLocation,
-                                              healthStateNRLocation, bodySiteNRLocation, developmentalStageNRLocation)
+                                              ECNRDataLocation, subcellNRLocation)
         utilities.gadatageneration.pulearning(resultsRedundantPositive, resultsRedundantUnlabelled, columns, gaRedundantData,
-                                              columnRDataLocation, ECRDataLocation, subcellRLocation,
-                                              healthStateRLocation, bodySiteRLocation, developmentalStageRLocation)
+                                              ECRDataLocation, subcellRLocation)
 
         # Generate the entire dataset.
         nonRedundantData = set([])
@@ -1244,39 +1233,6 @@ def main(args):
         for i in allData:
             writeAll.write(i)
         writeAll.close()
-
-        # Determine the BLAST similarity info for the proteins in the non-redundant dataset.
-        conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)
-        allRedundantProteinAccs = positiveRedundantProteinAccs + unlabelledRedundantProteinAccs
-        blastTableQuery = cursor.execute('SELECT * FROM ' + tableBLASTResults + ' WHERE ProteinA IN (' + ','.join(['\'' + i + '\'' for i in allRedundantProteinAccs]) + ') AND ProteinB IN (' + ','.join(['\'' + i + '\'' for i in allRedundantProteinAccs]) + ')')
-        blastTableQuery = cursor.fetchall()
-        blastSimilarities = dict([(i, {'Protein' : [], 'Similarity' : []}) for i in allRedundantProteinAccs])
-        for i in blastTableQuery:
-            protA = i[0]
-            protB = i[1]
-            similarity = i[2]
-            if similarity <= 20:
-                # If the similarity of the proteins is below the 20% threshold, then ignore the similarity.
-                continue
-            blastSimilarities[protB]['Protein'].append(protA)
-            blastSimilarities[protB]['Similarity'].append(similarity)
-            blastSimilarities[protA]['Protein'].append(protB)
-            blastSimilarities[protA]['Similarity'].append(similarity)
-        mysql.closeConnection(conn, cursor)
-        writeOut = open(blastOutput, 'w')
-        for i in blastSimilarities:
-            if blastSimilarities[i]['Protein']:
-                similarities, proteins = zip(*sorted(zip(blastSimilarities[i]['Similarity'], blastSimilarities[i]['Protein']), reverse=True))
-            else:
-                similarities = []
-                proteins = []
-            writeOut.write(i)
-            writeOut.write('\t')
-            writeOut.write(','.join(proteins))
-            writeOut.write('\t')
-            writeOut.write(','.join([str(i) for i in similarities]))
-            writeOut.write('\n')
-        writeOut.close()
 
         # Determine the GO term information for the proteins in the dataset.
         conn, cursor = mysql.openConnection(DATABASEPASSWORD, schemaProteins)

@@ -8,7 +8,7 @@ import os
 import shutil
 import random
 
-def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeadings, outputLocation, columnDataLocation,
+def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeadings, outputLocation,
             ECDataLocation, subcellLocation, healthStateLocation, bodySiteLocation, developmentalStageLocation):
     """Generates the dataset in the format required by the Java random forest package.
 
@@ -20,20 +20,10 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
     columnHeadings @use  - A list of the names of the dependent variables in the dataset.
     outputLocation @type - string
     outputLocation @use  - The location where the output dataset will be stored.
-    columnDataLocation @type - string
-    columnDataLocation @use  - The location where the names of the dependent variables are stored.
     ECDataLocation @type - string
     ECDataLocation @use  - The location where the EC number information should be stored.
     subcellLocation @type - string
     subcellLocation @use  - The location where the subcellular location information should be stored.
-    healthStateLocation @type - string
-    healthStateLocation @use  - The location where the health state expression information should be stored.
-    bodySiteLocation @type - string
-    bodySiteLocation @use  - The location where the body site expression information should be stored.
-    developmentalStageLocation @type - string
-    developmentalStageLocation @use  - The location where the developmental stage expression information should be stored.
-    missingValueCode @type - string
-    missingValueCode @use  - The value to give to variable observations that are missing.
     """
 
     columnIndices = dict([(columnHeadings[i], i) for i in range(len(columnHeadings))])
@@ -71,9 +61,6 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
     # Go through the observations and process the stored data into the format needed for the Java random forest.
     for i in [sqlPositiveQueryResults, sqlUnlabelledQueryResults]:
         for j in i:
-            healthStates = {}  # Records relative health state expression level information for the protein.
-            bodySites = {}  # Records relative body site expression level information for the protein.
-            developmentStages = {}  # Records relative developmental stage expression level information for the protein.
             for k in columnHeadings:
                 if k == 'UPAccession':
                     # If the column heading is UPAccession then record the name of the protein, and whether it is positive or unlabelled.
@@ -99,14 +86,8 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
                     # does not need to be recorded for the purpose of the genetic algorithm.
                     pass
                 elif k[:3] == 'HS_':
-                    # Get the Unigene health state expression information.
-                    healthStates[k] = int(j[columnIndices[k]])
-                elif k[:3] == 'BS_':
-                    # Get the Unigene body site expression information.
-                    bodySites[k] = int(j[columnIndices[k]])
-                elif k[:3] == 'DS_':
-                    # Get the Unigene developmental stage expression information.
-                    developmentStages[k] = int(j[columnIndices[k]])
+                    # Ignore the Unigene health state expression information.
+                    pass
                 elif k == 'InstabilityIndex':
                     # Determine whether the protein is predicted to be stable.
                     dataDict[protein][k] = '1' if j[columnIndices[k]] < 40 else '0'
@@ -127,66 +108,6 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
                     # for the column can serve as the actual value to store in the data dictionary. This is because
                     # the data for these columns in the dictionary is a numeric value.
                     dataDict[protein][k] = str(j[columnIndices[k]])
-            # Calculate the expression percentages for each of the three divisions.
-            percentExpressionLevels[protein] = {'HealthState' : {}, 'BodySite' : {}, 'DevelopmentalStage' : {}}
-
-            # Record relative data about the health state expression levels for the protein.
-            totalHealthStateExpr = float(sum([healthStates[k] for k in healthStates.keys()]))
-            healthStates = dict([(k, healthStates[k]/totalHealthStateExpr if healthStates[k] != 0 else 0) for k in healthStates.keys()])
-            sortedExpressions = sorted([healthStates[k] for k in healthStates.keys()], reverse=True)
-            if max(sortedExpressions) != 0:
-                expressionPercentages = {0.1 : 0, 0.2 : 0, 0.3 : 0, 0.4 : 0, 0.5 : 0, 0.6 : 0, 0.7 : 0, 0.8 : 0, 0.9 : 0}
-                for k in expressionPercentages.keys():
-                    total = 0
-                    index = 0
-                    while total < k:
-                        total += sortedExpressions[index]
-                        index += 1
-                    expressionPercentages[k] = index
-                expressionPercentages[1.0] = sum([1 if k != 0 else 0 for k in sortedExpressions])
-                percentExpressionLevels[protein]['HealthState'] = expressionPercentages
-            else:
-                percentExpressionLevels[protein]['HealthState'] = 'NA'
-
-            # Record relative data about the body site expression levels for the protein.
-            totalBodySiteExpr = float(sum([bodySites[k] for k in bodySites.keys()]))
-            bodySites = dict([(k, bodySites[k]/totalBodySiteExpr if bodySites[k] != 0 else 0) for k in bodySites.keys()])
-            for k in bodySites.keys():
-                dataDict[protein][k] = str(bodySites[k])
-            sortedExpressions = sorted([bodySites[k] for k in bodySites.keys()], reverse=True)
-            if max(sortedExpressions) != 0:
-                expressionPercentages = {0.1 : 0, 0.2 : 0, 0.3 : 0, 0.4 : 0, 0.5 : 0, 0.6 : 0, 0.7 : 0, 0.8 : 0, 0.9 : 0}
-                for k in expressionPercentages.keys():
-                    total = 0
-                    index = 0
-                    while total < k:
-                        total += sortedExpressions[index]
-                        index += 1
-                    expressionPercentages[k] = index
-                expressionPercentages[1.0] = sum([1 if k != 0 else 0 for k in sortedExpressions])
-                percentExpressionLevels[protein]['BodySite'] = expressionPercentages
-            else:
-                percentExpressionLevels[protein]['BodySite'] = 'NA'
-
-            # Record relative data about the developmental stage expression levels for the protein.
-            totalDevelopmentStageExpr = float(sum([developmentStages[k] for k in developmentStages.keys()]))
-            developmentStages = dict([(k, developmentStages[k]/totalDevelopmentStageExpr if developmentStages[k] != 0 else 0) for k in developmentStages.keys()])
-            for k in developmentStages.keys():
-                dataDict[protein][k] = str(developmentStages[k])
-            sortedExpressions = sorted([developmentStages[k] for k in developmentStages.keys()], reverse=True)
-            if max(sortedExpressions) != 0:
-                expressionPercentages = {0.1 : 0, 0.2 : 0, 0.3 : 0, 0.4 : 0, 0.5 : 0, 0.6 : 0, 0.7 : 0, 0.8 : 0, 0.9 : 0}
-                for k in expressionPercentages.keys():
-                    total = 0
-                    index = 0
-                    while total < k:
-                        total += sortedExpressions[index]
-                        index += 1
-                    expressionPercentages[k] = index
-                expressionPercentages[1.0] = sum([1 if k != 0 else 0 for k in sortedExpressions])
-                percentExpressionLevels[protein]['DevelopmentalStage'] = expressionPercentages
-            else:
-                percentExpressionLevels[protein]['DevelopmentalStage'] = 'NA'
 
     # Determine all the dependant variables that will be used when training the random forest.
     allColumns = [i for i in columnHeadings if i in continuousColumns or i in discreteColumns] + responseColumn
@@ -200,12 +121,6 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
             proteinInfo.append(dataDict[i][j])
         writeOut.write('\t'.join(proteinInfo))
         writeOut.write('\n')
-    writeOut.close()
-
-    # Write out the dependent variable names.
-    writeOut = open(columnDataLocation, 'w')
-    columnOut = '\n'.join(allColumns)
-    writeOut.write(columnOut)
     writeOut.close()
 
     # Write out the EC number information.
@@ -229,33 +144,3 @@ def pulearning(sqlPositiveQueryResults, sqlUnlabelledQueryResults, columnHeading
             outputValue.append(str(subcellLocDict[i][j]))
         writeOut.write('\t'.join(outputValue) + '\n')
     writeOut.close()
-
-    # Write out the expression information.
-    percentsUsed = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    writeOutHealthState = open(healthStateLocation, 'w')
-    writeOutHealthState.write('\t'.join([str(i) for i in percentsUsed]) + '\tClassification\n')
-    writeOutBodySite = open(bodySiteLocation, 'w')
-    writeOutBodySite.write('\t'.join([str(i) for i in percentsUsed]) + '\tClassification\n')
-    writeOutDevelopmentalStage = open(developmentalStageLocation, 'w')
-    writeOutDevelopmentalStage.write('\t'.join([str(i) for i in percentsUsed]) + '\tClassification\n')
-    for i in percentExpressionLevels.keys():
-        classification = dataDict[i]['Classification']
-
-        healthStateData = percentExpressionLevels[i]['HealthState']
-        if healthStateData != 'NA':
-            healthStateData = '\t'.join([str(healthStateData[j]) for j in percentsUsed])
-            writeOutHealthState.write(healthStateData + '\t' + classification + '\n')
-
-        bodySiteData = percentExpressionLevels[i]['BodySite']
-        if bodySiteData != 'NA':
-            bodySiteData = '\t'.join([str(bodySiteData[j]) for j in percentsUsed])
-            writeOutBodySite.write(bodySiteData + '\t' + classification + '\n')
-
-        developmentalStageData = percentExpressionLevels[i]['DevelopmentalStage']
-        if developmentalStageData != 'NA':
-            developmentalStageData = '\t'.join([str(developmentalStageData[j]) for j in percentsUsed])
-            writeOutDevelopmentalStage.write(developmentalStageData + '\t' + classification + '\n')
-
-    writeOutHealthState.close()
-    writeOutBodySite.close()
-    writeOutDevelopmentalStage.close()
